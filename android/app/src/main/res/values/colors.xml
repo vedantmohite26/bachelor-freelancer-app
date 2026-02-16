@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App primary colors -->
+    <color name="primary_blue">#2196F3</color>
+    <color name="primary_purple">#7C4DFF</color>
+    <color name="splash_background">#2196F3</color>
+</resources>

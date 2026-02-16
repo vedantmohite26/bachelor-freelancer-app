@@ -1,0 +1,4 @@
+Analyzing freelancer...                                         
+
+   info - 'androidProvider' is deprecated and shouldn't be used. Use providerAndroid instead. This parameter will be removed in a future major release - lib\features\auth\screens\loading_screen.dart:66:9 - deprecated_member_use
+

@@ -9,7 +9,7 @@ load_dotenv()
 app = FastAPI()
 
 HF_API_KEY = os.getenv("HF_API_KEY")
-MODEL_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
+MODEL_URL = "https://router.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
 
 class FinanceRequest(BaseModel):
     message: str

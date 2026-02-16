@@ -139,9 +139,8 @@ class FinanceService {
       // 2. Production (Render): "https://<your-service>.onrender.com/finance-ai"
       // ---------------------------------------------------------
 
-      // TODO: Replace with your actual Render URL after deployment
-      const String baseUrl = "http://10.0.2.2:8000";
-      // const String baseUrl = "https://freelancer-finance-backend.onrender.com";
+      // Production (Render)
+      const String baseUrl = "https://bachelor-freelancer-app.onrender.com";
 
       final url = Uri.parse("$baseUrl/finance-ai");
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Optimized launch splash screen for all devices -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Solid background color - efficient rendering on all devices -->
+    <item android:drawable="@color/splash_background" />
+
+    <!-- Centered logo with proper sizing -->
+    <item>
+        <bitmap android:gravity="center" android:src="@mipmap/ic_launcher" />
+    </item>
+</layer-list>
+

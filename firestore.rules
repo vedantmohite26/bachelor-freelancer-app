@@ -1,0 +1,255 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ============================================
+    // USER PROFILES
+    // ============================================
+    // ============================================
+    // USER PROFILES
+    // ============================================
+    match /users/{userId} {
+      // Any authenticated user can read profiles
+      allow read: if isAuthenticated();
+      
+      // Only owner can create/delete their profile
+      allow create: if isOwner(userId);
+      allow delete: if isOwner(userId);
+      
+      // Update: 
+      // 1. Owner can update general info
+      // 2. ANY authenticated user can update wallet/stats fields (for Payment Simulation)
+      //    This is required because the Seeker client needs to debit their own wallet AND credit the Helper's wallet
+      //    in a single atomic transaction. In a real app, this would be a server-side function.
+      allow update: if isOwner(userId) || 
+                    (isAuthenticated() && 
+                     request.resource.data.diff(resource.data).affectedKeys()
+                     .hasOnly(['rating', 'reviewCount', 'reviews', 'walletBalance', 'coins', 'totalEarnings', 'todaysEarnings', 'gigsCompleted', 'points']));
+      
+      // Friends subcollection
+      match /friends/{friendId} {
+        allow read: if isAuthenticated() && (isOwner(userId) || request.auth.uid == friendId);
+        allow create, delete: if isOwner(userId) || request.auth.uid == friendId;
+      }
+      
+      // Transactions subcollection
+      match /transactions/{txnId} {
+        allow read: if isOwner(userId);
+        // Allow ANY authenticated user to create a transaction record on another user's profile
+        // This is needed so the Seeker can write the "Payment Received" record to the Helper's subcollection
+        allow create: if isAuthenticated(); 
+      }
+      
+      // Finance Settings (Budget & Profile)
+      match /finance_settings/{document} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // ============================================
+    // EMAIL UNIQUENESS LOOKUP
+    // ============================================
+    match /email_lookup/{email} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && !exists(/databases/$(database)/documents/email_lookup/$(email));
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
+
+    // ============================================
+    // JOBS
+    // ============================================
+    match /jobs/{jobId} {
+      // Anyone can read jobs (public feed)
+      allow read: if true;
+      
+      // Authenticated users can create jobs.
+      // Validate: PosterId must match AuthId
+      allow create: if isAuthenticated() && request.resource.data.posterId == request.auth.uid;
+      
+      // Update: Job owner can update anything
+      // Anyone authenticated can update ONLY 'applications' count (needed for apply flow)
+      allow update: if isAuthenticated() && (
+        resource.data.posterId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applications']) ||
+        // Allow helper to update 'status' and verification tokens
+        // Now includes COMPLETION tokens for the end-job flow
+        (resource.data.assignedHelperId == request.auth.uid && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+           'status', 
+           'startedAt', 
+           'startRequested', 
+           'startRequestedAt', 
+           'verificationToken', 
+           'verificationTokenExpiresAt', 
+           'verifiedStart',
+           'updatedAt',
+           'completionToken',
+           'completionTokenExpiresAt',
+           'paymentRequestedAt'
+         ]))
+         // Allow Seeker to update status (e.g. to payment_pending) if they are the poster (covered by first condition)
+      );
+      
+      // Only owner can delete
+      allow delete: if isAuthenticated() && resource.data.posterId == request.auth.uid;
+    }
+
+    // ============================================
+    // PAYMENTS (New Collection)
+    // ============================================
+    match /payments/{paymentId} {
+      // Involved parties can read
+      allow read: if isAuthenticated() && (
+        resource.data.seekerId == request.auth.uid ||
+        resource.data.helperId == request.auth.uid
+      );
+      
+      // Allow creation if authenticated (Seeker creates it during simulation)
+      allow create: if isAuthenticated() && 
+                    request.resource.data.seekerId == request.auth.uid;
+
+      // Allow updates (e.g. status change) by involved parties
+      allow update: if isAuthenticated() && (
+        resource.data.seekerId == request.auth.uid ||
+        resource.data.helperId == request.auth.uid
+      );
+    }
+
+    // ============================================
+    // APPLICATIONS (Job Applications)
+    // ============================================
+    match /applications/{appId} {
+      // Read: Any authenticated user can read applications they're involved in
+      // Fallback: Allow if seekerId is missing (legacy data)
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.helperId == request.auth.uid || 
+        resource.data.seekerId == request.auth.uid ||
+        !('seekerId' in resource.data.keys())  // Fallback for legacy data
+      );
+      
+      // Create: Helper applies for a job
+      // Rule: HelperId must be AuthId. Status must be pending.
+      // Anti-Self-Apply: We can't easily check job.posterId here without a get(), which costs reads.
+      // We rely on client code (and the fact that Seeker UI doesn't show "Apply").
+      allow create: if isAuthenticated() && 
+                    request.resource.data.helperId == request.auth.uid &&
+                    request.resource.data.status == 'pending';
+      
+      // Update: Seeker (accept/reject) OR Helper (withdraw if pending)
+      allow update: if isAuthenticated() && (
+        resource.data.seekerId == request.auth.uid ||
+        (resource.data.helperId == request.auth.uid && resource.data.status == 'pending') ||
+        !('seekerId' in resource.data.keys())
+      );
+      
+      // Delete: Either party can delete
+      allow delete: if isAuthenticated() && (
+        resource.data.seekerId == request.auth.uid ||
+        resource.data.helperId == request.auth.uid ||
+        !('seekerId' in resource.data.keys())
+      );
+    }
+
+    // ============================================
+    // ACTIVITY / NOTIFICATIONS
+    // ============================================
+    match /activity/{activityId} {
+      // User can only read their own notifications
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      // Any authenticated user can create (for system triggers)
+      allow create: if isAuthenticated();
+      
+      // User can update/delete their own notifications (mark as read, dismiss)
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // ============================================
+    // RATINGS
+    // ============================================
+    match /ratings/{ratingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.seekerId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // ============================================
+    // COMMUNITY POSTS
+    // ============================================
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.authorId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy'])
+      );
+      allow delete: if isAuthenticated() && resource.data.authorId == request.auth.uid;
+    }
+
+    // ============================================
+    // FRIEND REQUESTS
+    // ============================================
+    match /friend_requests/{requestId} {
+      allow read: if isAuthenticated() && (
+        resource.data.senderId == request.auth.uid ||
+        resource.data.receiverId == request.auth.uid
+      );
+      allow create: if isAuthenticated() && 
+                    request.resource.data.senderId == request.auth.uid &&
+                    request.resource.data.status == 'pending';
+      allow update: if isAuthenticated() && (
+        resource.data.receiverId == request.auth.uid ||
+        resource.data.senderId == request.auth.uid
+      );
+      allow delete: if isAuthenticated() && (
+        resource.data.senderId == request.auth.uid ||
+        resource.data.receiverId == request.auth.uid
+      );
+    }
+
+    // ============================================
+    // CHATS & MESSAGES
+    // ============================================
+    match /chats/{chatId} {
+      // Participants can read/update chat
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read, create: if isAuthenticated() && 
+                            request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+      }
+    }
+
+    // ============================================
+    // CATEGORIES (Read-only reference data)
+    // ============================================
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ============================================
+    // DEFAULT DENY (Catch-all)
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

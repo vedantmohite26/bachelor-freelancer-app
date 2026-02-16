@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import requests
+from huggingface_hub import InferenceClient
 import os
 from dotenv import load_dotenv
 
@@ -8,8 +8,11 @@ load_dotenv()
 
 app = FastAPI()
 
+# HF_API_KEY is now loaded securely from environment variables
 HF_API_KEY = os.getenv("HF_API_KEY")
-MODEL_URL = "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2"
+MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
+
+client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
 
 class FinanceRequest(BaseModel):
     message: str
@@ -30,32 +33,12 @@ def finance_ai(request: FinanceRequest):
     [/INST]
     """
 
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 512,
-            "return_full_text": False,
-        }
-    }
-
-    response = requests.post(
-        MODEL_URL,
-        headers={
-            "Authorization": f"Bearer {HF_API_KEY}",
-            "Content-Type": "application/json"
-        },
-        json=payload
-    )
-
-    if response.status_code != 200:
-        return {"error": f"Error: {response.text}"}
-
-    result = response.json()
-    
-    # Hugging Face Inference API returns a list of dictionaries normally
-    if isinstance(result, list) and len(result) > 0:
-        return result[0]["generated_text"]
-    elif isinstance(result, dict) and "error" in result:
-        return result["error"]
-    else:
-        return str(result)
+    try:
+        response = client.text_generation(
+            prompt,
+            max_new_tokens=512,
+            return_full_text=False
+        )
+        return response
+    except Exception as e:
+        return {"error": f"Error: {str(e)}"}

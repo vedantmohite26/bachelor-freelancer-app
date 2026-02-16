@@ -18,6 +18,10 @@ class FinanceRequest(BaseModel):
     message: str
     expenses: str
 
+@app.get("/")
+def home():
+    return {"status": "online", "message": "Financial Assistant Backend is Running"}
+
 @app.post("/finance-ai")
 def finance_ai(request: FinanceRequest):
     print(f"Received request: {request.message}")

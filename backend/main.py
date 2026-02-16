@@ -25,24 +25,23 @@ def home():
 @app.post("/finance-ai")
 def finance_ai(request: FinanceRequest):
     print(f"Received request: {request.message}")
-    prompt = f"""[INST]
-    You are a professional personal finance assistant.
-    Analyze this user data:
-    {request.expenses}
-
-    User Question:
-    {request.message}
-
-    Give practical and realistic financial advice.
-    [/INST]
-    """
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a professional personal finance assistant. Give practical and realistic financial advice."
+        },
+        {
+            "role": "user",
+            "content": f"Analyze this user data:\n{request.expenses}\n\nUser Question:\n{request.message}"
+        }
+    ]
 
     try:
-        response = client.text_generation(
-            prompt,
-            max_new_tokens=512,
-            return_full_text=False
+        response = client.chat_completion(
+            messages,
+            max_tokens=512,
+            stream=False
         )
-        return response
+        return response.choices[0].message.content
     except Exception as e:
         return {"error": f"Error: {str(e)}"}

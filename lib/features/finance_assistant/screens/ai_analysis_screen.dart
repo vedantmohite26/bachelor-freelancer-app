@@ -1,10 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:freelancer/core/services/auth_service.dart';
-import 'package:freelancer/features/finance_assistant/models/transaction_model.dart';
 import 'package:freelancer/features/finance_assistant/services/finance_service.dart';
 
 class AIAnalysisScreen extends StatefulWidget {
@@ -15,216 +12,209 @@ class AIAnalysisScreen extends StatefulWidget {
 }
 
 class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
-  File? _selectedFile;
-  bool _isAnalyzing = false;
-  String _aiAdvice = '';
-  List<FinanceTransaction> _extractedTransactions = [];
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final List<Map<String, String>> _messages =
+      []; // {role: 'user'|'ai', text: '...'}
+  bool _isTyping = false;
 
-  Future<void> _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'csv', 'txt'],
-    );
-
-    if (result != null) {
-      setState(() {
-        _selectedFile = File(result.files.single.path!);
-        _extractedTransactions = [];
-        _aiAdvice = '';
-      });
-      _analyzeFile();
-    }
+  @override
+  void initState() {
+    super.initState();
+    // Add initial greeting
+    _messages.add({
+      'role': 'ai',
+      'text':
+          'Hello! I am your Smart Financial Assistant. 🤖\n\nI can analyze your spending, check your budget, and give advice. How can I help you today?',
+    });
   }
 
-  Future<void> _analyzeFile() async {
-    setState(() => _isAnalyzing = true);
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
+
+    setState(() {
+      _messages.add({'role': 'user', 'text': text});
+      _isTyping = true;
+      _messageController.clear();
+    });
+    _scrollToBottom();
 
     try {
       final user = Provider.of<AuthService>(context, listen: false).user;
-      if (user == null) return;
+      if (user == null) throw Exception("User not logged in");
 
       final financeService = Provider.of<FinanceService>(
         context,
         listen: false,
       );
 
-      // 1. Analyze file (extract transactions)
-      final transactions = await financeService.analyzeBankStatement(
-        _selectedFile!,
-        user.uid,
-      );
+      // Fetch context data
+      final transactions = await financeService.getTransactions(user.uid).first;
+      final budget = await financeService.getBudgetStream(user.uid).first;
 
-      // 2. Get AI Advice based on extracted + existing transactions
-      // We need to fetch budget and profile to pass to the AI
-      final budgetStream = financeService.getBudgetStream(user.uid);
-      final profileStream = financeService.getProfileStream(user.uid);
-
-      final budget = await budgetStream.first;
-      final profile = await profileStream.first;
-
-      final advice = await financeService.getAIAdvice(
+      // Get AI Response
+      final response = await financeService.getAIAdvice(
         transactions,
         budget: budget,
-        profile: profile,
+        userMessage: text,
       );
 
       if (mounted) {
         setState(() {
-          _extractedTransactions = transactions;
-          _aiAdvice = advice;
+          _messages.add({'role': 'ai', 'text': response});
         });
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error analyzing file: $e')));
+        setState(() {
+          _messages.add({
+            'role': 'ai',
+            'text': 'Sorry, I encountered an error: $e',
+          });
+        });
       }
     } finally {
-      if (mounted) setState(() => _isAnalyzing = false);
+      if (mounted) {
+        setState(() => _isTyping = false);
+        _scrollToBottom();
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('AI Financial Analysis')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildUploadSection(),
-            const SizedBox(height: 24),
-            if (_isAnalyzing)
-              const Center(child: CircularProgressIndicator())
-            else ...[
-              if (_aiAdvice.isNotEmpty) _buildAdviceSection(),
-              if (_extractedTransactions.isNotEmpty)
-                _buildExtractedDataSection(),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUploadSection() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            const Icon(Icons.upload_file, size: 48, color: Colors.blue),
-            const SizedBox(height: 16),
-            const Text(
-              'Upload Bank Statement',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      appBar: AppBar(title: const Text('AI Financial Assistant')),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16),
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final msg = _messages[index];
+                final isUser = msg['role'] == 'user';
+                return Align(
+                  alignment: isUser
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isUser
+                          ? Colors.indigo
+                          : Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(12),
+                        topRight: const Radius.circular(12),
+                        bottomLeft: isUser
+                            ? const Radius.circular(12)
+                            : Radius.zero,
+                        bottomRight: isUser
+                            ? Radius.zero
+                            : const Radius.circular(12),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.75,
+                    ),
+                    child: Text(
+                      msg['text']!,
+                      style: TextStyle(
+                        color: isUser ? Colors.white : null,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Supports PDF, CSV, TXT',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _pickFile,
-              child: const Text('Select File'),
-            ),
-            if (_selectedFile != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text('Selected: ${_selectedFile!.path.split('/').last}'),
+          ),
+          if (_isTyping)
+            Padding(
+              padding: const EdgeInsets.only(left: 16, bottom: 8),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Analyzing data...',
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
+                ],
               ),
-          ],
-        ),
+            ),
+          _buildInputArea(),
+        ],
       ),
     );
   }
 
-  Widget _buildAdviceSection() {
-    return Card(
-      color: Colors.indigo.shade50,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildInputArea() {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      color: Theme.of(context).cardColor,
+      child: SafeArea(
+        child: Row(
           children: [
-            Row(
-              children: [
-                Icon(Icons.auto_awesome, color: Colors.indigo),
-                const SizedBox(width: 8),
-                Text(
-                  'AI Recommendations',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.indigo,
+            Expanded(
+              child: TextField(
+                controller: _messageController,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
+                  hintText: 'Ask: "Can I spend 500?"',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Theme.of(context).scaffoldBackgroundColor,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
                   ),
                 ),
-              ],
+                onSubmitted: (_) => _sendMessage(),
+              ),
             ),
-            const Divider(),
-            Text(_aiAdvice),
+            const SizedBox(width: 8),
+            FloatingActionButton.small(
+              onPressed: _sendMessage,
+              backgroundColor: Colors.indigo,
+              child: const Icon(Icons.send, color: Colors.white),
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildExtractedDataSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 24),
-        const Text(
-          'Extracted Transactions',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _extractedTransactions.length,
-          itemBuilder: (context, index) {
-            final tx = _extractedTransactions[index];
-            return Card(
-              child: ListTile(
-                leading: Icon(
-                  tx.type == TransactionType.income
-                      ? Icons.arrow_downward
-                      : Icons.arrow_upward,
-                  color: tx.type == TransactionType.income
-                      ? Colors.green
-                      : Colors.red,
-                ),
-                title: Text(tx.description),
-                subtitle: Text(tx.category),
-                trailing: Text(
-                  '₹${tx.amount}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () {
-            // In a real app, we would save these to Firestore here
-            // Provider.of<FinanceService>(context, listen: false).addAll(transactions);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Transactions saved to your dashboard! (Simulated)',
-                ),
-              ),
-            );
-            Navigator.pop(context);
-          },
-          child: const Text('Confirm & Save to Dashboard'),
-        ),
-      ],
     );
   }
 }

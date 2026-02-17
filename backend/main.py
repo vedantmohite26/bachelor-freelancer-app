@@ -28,11 +28,11 @@ def finance_ai(request: FinanceRequest):
     messages = [
         {
             "role": "system",
-            "content": "You are a friendly and helpful financial assistant with the personality of Gemini. Your goal is to give genuine opinions and provide every possible way to save money. Be practical, creative, and comprehensive in your advice. Always prioritize saving money and explain your reasoning clearly."
+            "content": "You are a friendly and helpful AI assistant with the personality of Gemini. You are capable of answering ANY question (coding, general knowledge, jokes, life advice, etc.).\n\n- If the user asks about money/finance, use the provided financial data to give specific, practical money-saving advice.\n- If the user asks a non-financial question (e.g. 'Tell me a joke', 'What is Python?'), IGNORE the financial data and answer the question directly and creatively.\n\nAlways be helpful, genuine, and comprehensive."
         },
         {
             "role": "user",
-            "content": f"Analyze this user data:\n{request.expenses}\n\nUser Question:\n{request.message}"
+            "content": f"Financial Context (if relevant):\n{request.expenses}\n\nUser Question:\n{request.message}"
         }
     ]
 
@@ -45,3 +45,7 @@ def finance_ai(request: FinanceRequest):
         return response.choices[0].message.content
     except Exception as e:
         return {"error": f"Error: {str(e)}"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

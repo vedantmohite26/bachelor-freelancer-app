@@ -6,6 +6,7 @@ import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/features/finance_assistant/models/transaction_model.dart';
 import 'package:freelancer/features/finance_assistant/services/finance_service.dart';
 import 'package:freelancer/features/finance_assistant/screens/add_transaction_screen.dart';
+import 'package:freelancer/features/finance_assistant/screens/ai_analysis_screen.dart';
 import 'package:freelancer/features/finance_assistant/screens/budget_setup_screen.dart';
 import 'package:freelancer/features/finance_assistant/models/budget_model.dart';
 import 'package:intl/intl.dart';
@@ -81,7 +82,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
                 const SizedBox(height: 24),
                 _buildSummaryCards(transactions),
                 const SizedBox(height: 24),
-                _buildBehavioralInsights(transactions),
+                // _buildBehavioralInsights call removed
                 const SizedBox(height: 24),
                 _buildChartSection(transactions),
                 const SizedBox(height: 24),
@@ -91,16 +92,36 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddTransactionScreen(),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.small(
+            heroTag: "ai_fab",
+            backgroundColor: Colors.indigo,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AIAnalysisScreen(),
+                ),
+              );
+            },
+            child: const Icon(Icons.psychology, color: Colors.white),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: "add_fab",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddTransactionScreen(),
+                ),
+              );
+            },
+            child: const Icon(Icons.add),
+          ),
+        ],
       ),
     );
   }
@@ -136,7 +157,8 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
             .where(
               (tx) =>
                   tx.type == TransactionType.expense &&
-                  tx.date.month == DateTime.now().month,
+                  tx.date.month == DateTime.now().month &&
+                  !tx.isRecurring,
             )
             .fold(0, (sum, tx) => sum + tx.amount);
 
@@ -197,36 +219,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
     );
   }
 
-  Widget _buildBehavioralInsights(List<FinanceTransaction> transactions) {
-    int impulseBuys = transactions
-        .where((tx) => tx.mood == ExpenseMood.regretful)
-        .length;
-    int unnecessary = transactions
-        .where((tx) => tx.necessity == Necessity.waste)
-        .length;
-
-    if (impulseBuys == 0 && unnecessary == 0) return const SizedBox();
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Behavioral Insights',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            if (impulseBuys > 0)
-              Text('⚠️ $impulseBuys "Regretful" purchases this month.'),
-            if (unnecessary > 0)
-              Text('⚠️ $unnecessary expenses marked as "Waste".'),
-          ],
-        ),
-      ),
-    );
-  }
+  // Removed _buildBehavioralInsights
 
   Widget _buildEmptyState() {
     return Center(

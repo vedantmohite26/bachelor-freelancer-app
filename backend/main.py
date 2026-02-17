@@ -28,7 +28,7 @@ def finance_ai(request: FinanceRequest):
     messages = [
         {
             "role": "system",
-            "content": "You are a professional personal finance assistant. Give practical and realistic financial advice."
+            "content": "You are a friendly and helpful financial assistant with the personality of Gemini. Your goal is to give genuine opinions and provide every possible way to save money. Be practical, creative, and comprehensive in your advice. Always prioritize saving money and explain your reasoning clearly."
         },
         {
             "role": "user",

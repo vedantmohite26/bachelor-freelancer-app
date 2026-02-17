@@ -4,10 +4,6 @@ enum TransactionType { income, expense }
 
 enum PaymentMethod { cash, upi, creditCard, debitCard, netBanking, other }
 
-enum ExpenseMood { happy, sad, stressed, neutral, excited, regretful }
-
-enum Necessity { mustHave, niceToHave, waste }
-
 enum Frequency { daily, weekly, monthly, yearly, oneTime }
 
 class FinanceTransaction {
@@ -25,10 +21,6 @@ class FinanceTransaction {
   final bool isRecurring;
   final Frequency frequency;
 
-  // Expense Specific
-  final Necessity necessity;
-  final ExpenseMood mood;
-
   // Income Specific
   final String source; // e.g., Salary, Freelance
 
@@ -44,8 +36,6 @@ class FinanceTransaction {
     this.paymentMethod = PaymentMethod.upi,
     this.isRecurring = false,
     this.frequency = Frequency.oneTime,
-    this.necessity = Necessity.mustHave,
-    this.mood = ExpenseMood.neutral,
     this.source = 'Other',
   });
 
@@ -61,8 +51,6 @@ class FinanceTransaction {
       'paymentMethod': paymentMethod.toString().split('.').last,
       'isRecurring': isRecurring,
       'frequency': frequency.toString().split('.').last,
-      'necessity': necessity.toString().split('.').last,
-      'mood': mood.toString().split('.').last,
       'source': source,
     };
   }
@@ -87,14 +75,6 @@ class FinanceTransaction {
       frequency: Frequency.values.firstWhere(
         (e) => e.toString().split('.').last == (map['frequency'] ?? 'oneTime'),
         orElse: () => Frequency.oneTime,
-      ),
-      necessity: Necessity.values.firstWhere(
-        (e) => e.toString().split('.').last == (map['necessity'] ?? 'mustHave'),
-        orElse: () => Necessity.mustHave,
-      ),
-      mood: ExpenseMood.values.firstWhere(
-        (e) => e.toString().split('.').last == (map['mood'] ?? 'neutral'),
-        orElse: () => ExpenseMood.neutral,
       ),
       source: map['source'] ?? 'Other',
     );

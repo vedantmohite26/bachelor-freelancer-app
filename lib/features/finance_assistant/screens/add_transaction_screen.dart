@@ -27,8 +27,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   PaymentMethod _paymentMethod = PaymentMethod.upi;
   bool _isRecurring = false;
   Frequency _frequency = Frequency.monthly;
-  Necessity _necessity = Necessity.mustHave;
-  ExpenseMood _mood = ExpenseMood.neutral;
   String _source = 'Salary';
 
   bool _isLoading = false;
@@ -95,9 +93,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                     if (_type == TransactionType.expense) ...[
                       const SizedBox(height: 16),
-                      _buildNecessitySelector(),
-                      const SizedBox(height: 16),
-                      _buildMoodSelector(),
+                      // Removed Necessity and Mood selectors
                     ],
 
                     if (_type == TransactionType.income) ...[
@@ -255,39 +251,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
-  Widget _buildNecessitySelector() {
-    return DropdownButtonFormField<Necessity>(
-      decoration: const InputDecoration(
-        labelText: 'Was this necessary?',
-        border: OutlineInputBorder(),
-      ),
-      initialValue: _necessity,
-      items: Necessity.values
-          .map(
-            (e) =>
-                DropdownMenuItem(value: e, child: Text(e.name.toUpperCase())),
-          )
-          .toList(),
-      onChanged: (val) => setState(() => _necessity = val!),
-    );
-  }
-
-  Widget _buildMoodSelector() {
-    return DropdownButtonFormField<ExpenseMood>(
-      decoration: const InputDecoration(
-        labelText: 'Mood while spending',
-        border: OutlineInputBorder(),
-      ),
-      initialValue: _mood,
-      items: ExpenseMood.values
-          .map(
-            (e) =>
-                DropdownMenuItem(value: e, child: Text(e.name.toUpperCase())),
-          )
-          .toList(),
-      onChanged: (val) => setState(() => _mood = val!),
-    );
-  }
+  // Removed _buildNecessitySelector and _buildMoodSelector
 
   Future<void> _submitTransaction() async {
     if (_formKey.currentState!.validate()) {
@@ -309,8 +273,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           paymentMethod: _paymentMethod,
           isRecurring: _isRecurring,
           frequency: _frequency,
-          necessity: _necessity,
-          mood: _mood,
           source: _source,
         );
 
@@ -320,7 +282,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         ).addTransaction(transaction);
 
         if (mounted) {
-          Navigator.pop(context);
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Transaction added successfully')),
           );

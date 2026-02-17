@@ -195,7 +195,11 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
                       color: colorScheme.onSurfaceVariant,
                     ),
                     onPressed: () {
-                      // TODO: Implement voice input
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Voice input coming soon!'),
+                        ),
+                      );
                     },
                   ),
                 ],

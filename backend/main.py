@@ -12,7 +12,11 @@ app = FastAPI()
 HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+client = None
+if HF_API_KEY:
+    client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+else:
+    print("WARNING: HF_API_KEY not found. AI features will be mocked.")
 
 class FinanceRequest(BaseModel):
     message: str
@@ -36,10 +40,17 @@ def finance_ai(request: FinanceRequest):
         }
     ]
 
+    if not client:
+        # Mock response for local testing when API key is missing
+        return (
+            "This is a MOCK response because HF_API_KEY is not set. "
+            "In production, this would be a real AI response from Mistral-7B."
+        )
+
     try:
         response = client.chat_completion(
             messages,
-            max_tokens=512,
+            max_tokens=1024,
             stream=False
         )
         return response.choices[0].message.content

@@ -338,8 +338,21 @@ class FinanceService {
     Budget? budget,
     String? userMessage, // New optional parameter
   }) async {
+    // 1. Local-First Optimization: Check local logic for common intents (greetings, tips, etc.)
+    // This provides instant responses for simple queries and saves expensive AI calls.
+    final localAdvice = generateLocalAdvice(
+      transactions,
+      budget: budget,
+      userMessage: userMessage,
+    );
+
+    // If local advice recognizes a specific intent (not the generic fallback), return it immediately.
+    if (!localAdvice.contains("I'm a specialist in finance")) {
+      return localAdvice;
+    }
+
     try {
-      // 1. Prepare Expenses String
+      // 2. Prepare Context Data
       final expensesSummary = transactions
           .take(20)
           .map((tx) {
@@ -361,13 +374,15 @@ class FinanceService {
           : "No Budget Set";
 
       final dateTime = DateTime.now();
+      // Stability optimization: Truncate minutes to increase backend cache hit rate.
+      // Most financial advice doesn't change minute-by-minute.
       final dateString =
-          "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}";
+          "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:00";
 
       final fullData =
           "System Date/Time: $dateString\nUser Data:\n$budgetInfo\nRecent Transactions:\n$expensesSummary";
 
-      // 2. Call Backend API
+      // 3. Call Backend API
       // Use 10.0.2.2 for Android Emulator, localhost for iOS/Web
       // TODO: Replace with your Render URL for production (e.g., https://your-app.onrender.com/finance-ai)
       final url = Uri.parse(
@@ -411,7 +426,7 @@ class FinanceService {
       debugPrint("AI Connection Failed: $e");
     }
 
-    // 3. Fallback to Local Logic
+    // 4. Fallback to Local Logic
     return generateLocalAdvice(
       transactions,
       budget: budget,

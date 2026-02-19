@@ -9,6 +9,7 @@ import 'package:freelancer/features/search/screens/helper_scanning_gigs_screen.d
 import 'package:freelancer/features/ratings/screens/helper_reviews_screen.dart';
 import 'package:freelancer/features/ratings/widgets/rating_summary_card.dart';
 import 'package:freelancer/features/jobs/screens/helper_completed_jobs_screen.dart';
+import 'package:freelancer/core/widgets/shimmer_widgets.dart';
 
 class MyProfileScreen extends StatelessWidget {
   const MyProfileScreen({super.key});
@@ -51,7 +52,7 @@ class MyProfileScreen extends StatelessWidget {
         stream: userService.getUserProfileStream(userId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const ShimmerProfile();
           }
 
           if (snapshot.hasError || snapshot.data == null) {
@@ -67,6 +68,7 @@ class MyProfileScreen extends StatelessWidget {
           final rating = (profile['rating'] ?? 0.0).toDouble();
           final reviewCount = profile['reviewCount'] ?? 0;
           final photoUrl = profile['photoUrl'] as String?;
+          final totalPoints = (profile['points'] ?? 0) as int;
           final skills =
               (profile['skills'] as List?)?.map((s) => s.toString()).toList() ??
               [];
@@ -360,6 +362,11 @@ class MyProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
+                // XP Progress Bar
+                _XpProgressCard(totalPoints: totalPoints),
+
+                const SizedBox(height: 16),
+
                 // Skills
                 if (skills.isNotEmpty) ...[
                   Container(
@@ -450,7 +457,7 @@ class MyProfileScreen extends StatelessWidget {
                                   ),
                                 );
                               },
-                              child: Text(
+                              child: const Text(
                                 "See all",
                                 style: TextStyle(
                                   color: AppTheme.primaryBlue,
@@ -593,6 +600,154 @@ class _StatCard extends StatelessWidget {
           Text(
             label,
             style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _XpProgressCard extends StatelessWidget {
+  final int totalPoints;
+
+  const _XpProgressCard({required this.totalPoints});
+
+  // Level thresholds: 100 XP per level
+  static const int xpPerLevel = 100;
+
+  int get currentLevel => (totalPoints / xpPerLevel).floor();
+  int get xpInCurrentLevel => totalPoints % xpPerLevel;
+  int get xpNeededForNextLevel => xpPerLevel - xpInCurrentLevel;
+  double get progress => xpInCurrentLevel / xpPerLevel;
+
+  String _levelTitle(int level) {
+    if (level < 3) return 'Beginner';
+    if (level < 6) return 'Hustler';
+    if (level < 10) return 'Pro';
+    if (level < 15) return 'Expert';
+    if (level < 25) return 'Master';
+    return 'Legend';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final level = currentLevel;
+    final title = _levelTitle(level);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primaryBlue,
+                      AppTheme.primaryBlue.withValues(alpha: 0.7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.bolt_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Level $level — $title',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      '$totalPoints XP total',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Level badge
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'Lv.$level',
+                  style: const TextStyle(
+                    color: AppTheme.primaryBlue,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              height: 10,
+              child: LinearProgressIndicator(
+                value: progress,
+                backgroundColor: colorScheme.surfaceContainerHigh,
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppTheme.primaryBlue,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // XP info
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '$xpInCurrentLevel / $xpPerLevel XP',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                '$xpNeededForNextLevel XP to Level ${level + 1}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primaryBlue,
+                ),
+              ),
+            ],
           ),
         ],
       ),

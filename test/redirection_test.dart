@@ -415,7 +415,7 @@ void main() {
         Provider<RewardsService>.value(value: mockRewardsService),
         ChangeNotifierProvider<PaymentService>.value(value: mockPaymentService),
       ],
-      child: MaterialApp(home: const LoginScreen()),
+      child: const MaterialApp(home: LoginScreen()),
     );
   }
 

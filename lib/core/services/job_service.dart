@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+
+import 'package:freelancer/core/services/notification_service.dart';
 
 class JobService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final NotificationService _notificationService = NotificationService();
 
   // Retry logic for transient Firestore errors
   Future<T> _retryOperation<T>(
@@ -209,17 +213,45 @@ class JobService {
   }
 
   // Get helper's completed jobs (for resume)
+  // Get helper's completed jobs (for resume)
   Future<List<Map<String, dynamic>>> getHelperCompletedJobs(
     String helperId,
   ) async {
-    final snapshot = await _firestore
-        .collection('jobs')
-        .where('assignedHelperId', isEqualTo: helperId)
-        .where('status', isEqualTo: 'completed')
-        .orderBy('completedAt', descending: true)
-        .get();
+    try {
+      // Fetch ALL jobs assigned to this helper (Single-field index so it always works)
+      final snapshot = await _firestore
+          .collection('jobs')
+          .where('assignedHelperId', isEqualTo: helperId)
+          .get();
 
-    return snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+      final allJobs = snapshot.docs
+          .map((doc) => {...doc.data(), 'id': doc.id})
+          .toList();
+
+      // Filter client-side for completed or payment_pending
+      final completedJobs = allJobs.where((job) {
+        final status = job['status'];
+        return status == 'completed' || status == 'payment_pending';
+      }).toList();
+
+      // Sort by completedAt (or createdAt if null) descending
+      completedJobs.sort((a, b) {
+        final aTime = a['completedAt'] ?? a['createdAt'];
+        final bTime = b['completedAt'] ?? b['createdAt'];
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1; // Nulls last
+        if (bTime == null) return -1;
+        // Check if Timestamp or DateTime (handle both just in case)
+        final aDate = aTime is Timestamp ? aTime.toDate() : aTime as DateTime;
+        final bDate = bTime is Timestamp ? bTime.toDate() : bTime as DateTime;
+        return bDate.compareTo(aDate);
+      });
+
+      return completedJobs;
+    } catch (e) {
+      debugPrint('Error fetching helper completed jobs: $e');
+      rethrow;
+    }
   }
 
   // Update job status
@@ -240,32 +272,85 @@ class JobService {
     final batch = _firestore.batch();
     final userRef = _firestore.collection('users').doc(helperId);
 
-    // 1. Update Job Status
+    // 1. Update Job Status (Wait to update rewards until calculated below)
     batch.update(_firestore.collection('jobs').doc(jobId), {
       'status': 'completed',
       'completedAt': FieldValue.serverTimestamp(),
     });
 
-    // 2. Update Helper Stats (Earnings & XP)
+    // 2. Calculate Rewards
+    int pointsEarned = 0;
+    double coinsEarned = 0;
+
+    try {
+      final jobDoc = await _firestore.collection('jobs').doc(jobId).get();
+      final jobData = jobDoc.data() ?? {};
+      final jobType = jobData['jobType'] as String? ?? 'fixed';
+
+      if (jobType == 'hourly') {
+        // Hourly: 5 Coins, 15 Points per hour
+        final hourlyRate = (jobData['price'] as num?)?.toDouble() ?? 10.0;
+        final hoursWorked = earnings / (hourlyRate > 0 ? hourlyRate : 1);
+        coinsEarned = hoursWorked * 5;
+        pointsEarned = (hoursWorked * 15).round();
+      } else {
+        // Fixed: 20 Coins, 50 Points
+        coinsEarned = 20;
+        pointsEarned = 50;
+      }
+    } catch (e) {
+      // Fallback
+      coinsEarned = 20;
+      pointsEarned = 50;
+    }
+
+    // Check for Active Power-Ups
+    try {
+      final userDoc = await userRef.get();
+      if (userDoc.exists) {
+        final userData = userDoc.data();
+        final activePowerUps =
+            userData?['activePowerUps'] as Map<String, dynamic>? ?? {};
+        final now = DateTime.now();
+
+        // Check XP Boost
+        if (activePowerUps.containsKey('XP Boost (24h)')) {
+          final expiresAt = (activePowerUps['XP Boost (24h)'] as Timestamp)
+              .toDate();
+          if (now.isBefore(expiresAt)) {
+            pointsEarned *= 2;
+          }
+        }
+
+        // Check Coins Boost
+        if (activePowerUps.containsKey('Coins Boost (24h)')) {
+          final expiresAt = (activePowerUps['Coins Boost (24h)'] as Timestamp)
+              .toDate();
+          if (now.isBefore(expiresAt)) {
+            coinsEarned *= 2;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error checking power-ups: $e");
+    }
+
+    // 3. Update Helper Stats (Earnings & XP)
     batch.update(userRef, {
       'totalEarnings': FieldValue.increment(earnings),
-      'walletBalance': FieldValue.increment(
-        earnings,
-      ), // Update spendable balance
+      'walletBalance': FieldValue.increment(earnings),
       'todaysEarnings': FieldValue.increment(earnings),
       'gigsCompleted': FieldValue.increment(1),
-      'points': FieldValue.increment(50), // 50 XP for completion
+      'points': FieldValue.increment(pointsEarned),
+      'coins': FieldValue.increment(coinsEarned),
     });
 
-    // 3. Create Transaction Record
-    final txnRef = userRef.collection('transactions').doc();
-    batch.set(txnRef, {
-      'title': "Completed: $jobTitle",
-      'amount': earnings,
-      'isCoin': false,
-      'type': 'job_payment',
-      'timestamp': FieldValue.serverTimestamp(),
-      'relatedJobId': jobId,
+    // ----------------------------------
+
+    // 5. Save reward summary to Job for the helper screen
+    batch.update(_firestore.collection('jobs').doc(jobId), {
+      'coinsEarned': coinsEarned,
+      'pointsEarned': pointsEarned,
     });
 
     await batch.commit();
@@ -377,6 +462,16 @@ class JobService {
       }
 
       await batch.commit();
+
+      // Notify the helper
+      await _notificationService.createNotification(
+        userId: helperId,
+        title: 'Application Accepted! 🎉',
+        subtitle:
+            'You have been hired for a job. Check your "My Jobs" section.',
+        type: 'job',
+        relatedId: jobId,
+      );
     });
   }
 

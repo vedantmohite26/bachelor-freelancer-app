@@ -33,8 +33,8 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
   @override
   Widget build(BuildContext context) {
     // Colors from design
-    final primaryColor = const Color(0xFF2b8cee);
-    final backgroundColorLight = const Color(0xFFf6f7f8);
+    const primaryColor = Color(0xFF2b8cee);
+    const backgroundColorLight = Color(0xFFf6f7f8);
     // final backgroundColorDark = const Color(0xFF101922); // For dark mode support later
 
     return Scaffold(
@@ -45,7 +45,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.transparent,
             ),
@@ -87,7 +87,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                           children: [
                             // Main Image
                             Container(
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 image: DecorationImage(
                                   image: NetworkImage(
                                     "https://lh3.googleusercontent.com/aida-public/AB6AXuAhu_Vfo8RpNzyXqZAKBb-xBYW8ybIll9gz_wJ3o2nLZcot8BtuAQghWsma31scR5BGd9mkObZggfKimD0iRhbz08cniZaJ-EstAIqs2SHJU-quBBxl4OHd3bTErbbvwjLLoe7ZECfelWNG43aNAImKB6mxm9AWAbt14YlFZdWHOPGOMm3Qdjpdwh4MduVE3E4SO_v-m1FPzESDsAczfvD9pW5N6ksqu2zmfsjBF-fgBHek_EkfeFlumivWSGdddWPUJ6AcGFx-xvA",
@@ -126,7 +126,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                                     color: Colors.grey.shade100,
                                   ),
                                 ),
-                                child: Icon(
+                                child: const Icon(
                                   Icons.cleaning_services,
                                   color: primaryColor,
                                   size: 30,
@@ -155,7 +155,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                                     color: Colors.grey.shade100,
                                   ),
                                 ),
-                                child: Icon(
+                                child: const Icon(
                                   Icons.laptop_mac,
                                   color: primaryColor,
                                   size: 24,
@@ -224,9 +224,9 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                             ),
                             ClipRRect(
                               borderRadius: BorderRadius.circular(9999),
-                              child: LinearProgressIndicator(
+                              child: const LinearProgressIndicator(
                                 value: 0.45,
-                                backgroundColor: const Color(0xFFdbe0e6),
+                                backgroundColor: Color(0xFFdbe0e6),
                                 color: primaryColor,
                                 minHeight: 8,
                               ),
@@ -254,24 +254,24 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Row(
+                  const Row(
                     children: [
-                      _buildQuickCategory(
-                        Icons.local_cafe,
-                        "Coffee Run",
-                        primaryColor,
+                      _QuickCategory(
+                        icon: Icons.local_cafe,
+                        label: "Coffee Run",
+                        primaryColor: primaryColor,
                       ),
-                      const SizedBox(width: 12),
-                      _buildQuickCategory(
-                        Icons.menu_book,
-                        "Tutoring",
-                        primaryColor,
+                      SizedBox(width: 12),
+                      _QuickCategory(
+                        icon: Icons.menu_book,
+                        label: "Tutoring",
+                        primaryColor: primaryColor,
                       ),
-                      const SizedBox(width: 12),
-                      _buildQuickCategory(
-                        Icons.shopping_bag,
-                        "Groceries",
-                        primaryColor,
+                      SizedBox(width: 12),
+                      _QuickCategory(
+                        icon: Icons.shopping_bag,
+                        label: "Groceries",
+                        primaryColor: primaryColor,
                       ),
                     ],
                   ),
@@ -283,8 +283,21 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
       ),
     );
   }
+}
 
-  Widget _buildQuickCategory(IconData icon, String label, Color primaryColor) {
+class _QuickCategory extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color primaryColor;
+
+  const _QuickCategory({
+    required this.icon,
+    required this.label,
+    required this.primaryColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),

@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/features/finance_assistant/services/finance_service.dart';
+import 'package:freelancer/core/services/user_service.dart';
+import 'package:freelancer/core/services/job_service.dart';
 
 class AIAnalysisScreen extends StatefulWidget {
   const AIAnalysisScreen({super.key});
@@ -60,16 +62,64 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
         context,
         listen: false,
       );
+      final userService = Provider.of<UserService>(context, listen: false);
+      final jobService = Provider.of<JobService>(context, listen: false);
 
       // Fetch context data
       final transactions = await financeService.getTransactions(user.uid).first;
       final budget = await financeService.getBudgetStream(user.uid).first;
+
+      // --- NEW: Fetch App Data ---
+
+      final userProfile = await userService.getUserProfile(user.uid);
+      final activeJobs = await jobService
+          .getActiveJobsForUser(
+            user.uid,
+            isSeeker: userProfile?['role'] == 'seeker',
+          )
+          .first;
+      final applications = await jobService
+          .getHelperApplications(user.uid)
+          .first;
+
+      String appData = "User Profile:\n";
+      if (userProfile != null) {
+        appData += "- Name: ${userProfile['name']}\n";
+        appData += "- Role: ${userProfile['role']}\n";
+        appData += "- Wallet Balance: ₹${userProfile['walletBalance']}\n";
+        appData += "- Total Earnings: ₹${userProfile['totalEarnings']}\n";
+        appData += "- Gigs Completed: ${userProfile['gigsCompleted']}\n";
+        appData += "- Points: ${userProfile['points']}\n";
+      }
+
+      appData += "\nWork Status:\n";
+      appData +=
+          "- Active Jobs: ${activeJobs.length} (${activeJobs.map((j) => j['title']).join(', ')})\n";
+      appData += "- Pending Applications: ${applications.length}\n";
+      // ---------------------------
+
+      // Extract last 5 messages for history (excluding current user message)
+      // _messages contains the current user message at the end.
+      // We want to skip that one.
+      final history = _messages
+          .where((m) => m['role'] != 'system')
+          .take(_messages.length - 1)
+          .toList();
+
+      List<Map<String, String>> recentHistory = [];
+      if (history.length > 5) {
+        recentHistory = history.sublist(history.length - 5);
+      } else {
+        recentHistory = history;
+      }
 
       // Get AI Response
       final response = await financeService.getAIAdvice(
         transactions,
         budget: budget,
         userMessage: text,
+        history: recentHistory,
+        appData: appData, // Pass aggregated data
       );
 
       if (mounted) {
@@ -120,8 +170,8 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: isUser
-                          ? Colors.indigo
-                          : Theme.of(context).cardColor,
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(12),
                         topRight: const Radius.circular(12),
@@ -134,7 +184,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 5,
                           offset: const Offset(0, 2),
                         ),
@@ -146,7 +196,9 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
                     child: Text(
                       msg['text']!,
                       style: TextStyle(
-                        color: isUser ? Colors.white : null,
+                        color: isUser
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : Theme.of(context).colorScheme.onSurface,
                         height: 1.4,
                       ),
                     ),
@@ -182,7 +234,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
   Widget _buildInputArea() {
     return Container(
       padding: const EdgeInsets.all(8),
-      color: Theme.of(context).cardColor,
+      color: Theme.of(context).colorScheme.surfaceContainer,
       child: SafeArea(
         child: Row(
           children: [
@@ -209,8 +261,11 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
             const SizedBox(width: 8),
             FloatingActionButton.small(
               onPressed: _sendMessage,
-              backgroundColor: Colors.indigo,
-              child: const Icon(Icons.send, color: Colors.white),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              child: Icon(
+                Icons.send,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
           ],
         ),

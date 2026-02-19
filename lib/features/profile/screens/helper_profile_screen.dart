@@ -10,6 +10,9 @@ import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 import 'package:freelancer/features/profile/screens/edit_profile_screen.dart';
 import 'package:freelancer/features/community/screens/friend_requests_screen.dart';
 import 'package:freelancer/features/search/screens/helper_scanning_gigs_screen.dart';
+import 'package:freelancer/features/ratings/screens/helper_reviews_screen.dart';
+import 'package:freelancer/core/services/rating_service.dart';
+import 'package:freelancer/features/jobs/screens/helper_completed_jobs_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class HelperProfileScreen extends StatelessWidget {
@@ -26,13 +29,14 @@ class HelperProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final userService = Provider.of<UserService>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
+    final ratingService = Provider.of<RatingService>(context, listen: false);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(
-          "My Profile",
+          authService.user?.uid == helperId ? "My Profile" : "Helper Profile",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,
@@ -43,14 +47,16 @@ class HelperProfileScreen extends StatelessWidget {
         elevation: 0,
         foregroundColor: colorScheme.onSurface,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Settings coming soon!")),
-              );
-            },
-          ),
+          if (authService.user?.uid == helperId)
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+                );
+              },
+            ),
         ],
       ),
       body: StreamBuilder<Map<String, dynamic>?>(
@@ -100,15 +106,18 @@ class HelperProfileScreen extends StatelessWidget {
 
           final name = helper['name'] ?? 'Unknown';
           final bio = helper['bio'] ?? 'Verified Student @ State University';
-          final profilePic = helper['profilePic'];
+          final profilePic = helper['photoUrl'];
           final isOnline = helper['isOnline'] ?? false;
           final walletBalance = (helper['walletBalance'] ?? 0.0).toDouble();
           final gigsCompleted = helper['gigsCompleted'] ?? 0;
           final skills =
               (helper['skills'] as List?)?.map((s) => s.toString()).toList() ??
               [];
-          final reviewCount = helper['reviewCount'] ?? 0;
-          final rating = (helper['rating'] ?? 0.0).toDouble();
+          final skillCertificates =
+              (helper['skillCertificates'] as Map<String, dynamic>?)?.map(
+                (key, value) => MapEntry(key, value.toString()),
+              ) ??
+              <String, String>{};
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -131,7 +140,10 @@ class HelperProfileScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isOnline ? const Color(0xFF10B981) : Colors.grey,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
+                        border: Border.all(
+                          color: colorScheme.surface,
+                          width: 3,
+                        ),
                       ),
                     ),
                   ],
@@ -144,7 +156,7 @@ class HelperProfileScreen extends StatelessWidget {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
-                            backgroundColor: Colors.white,
+                            backgroundColor: colorScheme.surface,
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -221,7 +233,7 @@ class HelperProfileScreen extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           helper['university'],
-                          style: TextStyle(color: Colors.grey[700]),
+                          style: TextStyle(color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -235,7 +247,7 @@ class HelperProfileScreen extends StatelessWidget {
                       const SizedBox(width: 6),
                       Text(
                         helper['phoneNumber'],
-                        style: TextStyle(color: Colors.grey[700]),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -256,8 +268,8 @@ class HelperProfileScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[100],
-                            foregroundColor: Colors.black,
+                            backgroundColor: colorScheme.surfaceContainerLow,
+                            foregroundColor: colorScheme.onSurface,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -270,7 +282,13 @@ class HelperProfileScreen extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            // Public View Logic
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Public Profile View coming soon!',
+                                ),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.primaryBlue,
@@ -437,15 +455,9 @@ class HelperProfileScreen extends StatelessWidget {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: Row(
                     children: [
@@ -470,14 +482,17 @@ class HelperProfileScreen extends StatelessWidget {
                         children: [
                           Text(
                             isOnline ? "You are Online" : "You are Offline",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
                           ),
                           Text(
                             isOnline
                                 ? "Receiving new gig offers"
                                 : "Not receiving gigs",
-                            style: const TextStyle(
-                              color: Colors.grey,
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
                               fontSize: 12,
                             ),
                           ),
@@ -520,139 +535,141 @@ class HelperProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // 4. Earnings
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: const Text(
-                    "Earnings",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                if (isMe) ...[
+                  // 4. Earnings
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Earnings",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade200),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.02),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "TOTAL EARNINGS",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "₹${walletBalance.toStringAsFixed(2)}",
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.trending_up,
-                            color: Color(0xFF10B981),
-                            size: 16,
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "TOTAL EARNINGS",
+                          style: TextStyle(
+                            color: colorScheme.onSurfaceVariant,
+                            fontSize: 12,
+                            letterSpacing: 1,
                           ),
-                          const SizedBox(width: 4),
-                          const Text(
-                            "+₹50.00 this week",
-                            style: TextStyle(
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "₹${walletBalance.toStringAsFixed(2)}",
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.trending_up,
                               color: Color(0xFF10B981),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                              size: 16,
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "$gigsCompleted",
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            SizedBox(width: 4),
+                            Text(
+                              "+₹50.00 this week",
+                              style: TextStyle(
+                                color: Color(0xFF10B981),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
                               ),
-                              const Text(
-                                "Gigs Completed",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Gig history feature coming soon!',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "$gigsCompleted",
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
-                              );
-                            },
-                            child: const Row(
-                              children: [
-                                Text("View History"),
-                                SizedBox(width: 4),
-                                Icon(Icons.arrow_forward, size: 16),
+                                Text(
+                                  "Gigs Completed",
+                                  style: TextStyle(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const HelperCompletedJobsScreen(),
+                                  ),
+                                );
+                              },
+                              child: const Row(
+                                children: [
+                                  Text("View History"),
+                                  SizedBox(width: 4),
+                                  Icon(Icons.arrow_forward, size: 16),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
+                ],
 
                 // 5. My Skills
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      "My Skills",
+                    Text(
+                      isMe ? "My Skills" : "Skills",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const EditProfileScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text("Edit"),
-                    ),
+                    if (isMe)
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const EditProfileScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text("Edit"),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -660,17 +677,26 @@ class HelperProfileScreen extends StatelessWidget {
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    ...skills.map((skill) => _SkillChip(label: skill)),
-                    // Add Button Placeholder
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade300),
+                    ...skills.map(
+                      (skill) => _SkillChip(
+                        label: skill,
+                        certificateUrl: skillCertificates[skill],
                       ),
-                      child: const Icon(Icons.add, color: Colors.grey),
                     ),
+                    // Add Button Placeholder (only for own profile)
+                    if (isMe)
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerLow,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: colorScheme.outlineVariant),
+                        ),
+                        child: Icon(
+                          Icons.add,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                   ],
                 ),
 
@@ -679,80 +705,129 @@ class HelperProfileScreen extends StatelessWidget {
                 // 6. Reviews
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: const Text(
+                  child: Text(
                     "Reviews",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade200),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
-                  child: Column(
-                    children: [
-                      Row(
+                  child: StreamBuilder<List<Map<String, dynamic>>>(
+                    stream: ratingService.getHelperRatings(helperId),
+                    builder: (context, ratingsSnapshot) {
+                      final reviews = ratingsSnapshot.data ?? [];
+                      final count = reviews.length;
+                      final avg = count > 0
+                          ? reviews
+                                    .map(
+                                      (r) => (r['overallRating'] as num)
+                                          .toDouble(),
+                                    )
+                                    .reduce((a, b) => a + b) /
+                                count
+                          : 0.0;
+
+                      // Calculate distribution
+                      final distribution = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+                      for (var r in reviews) {
+                        final star = (r['overallRating'] as num).toInt();
+                        if (distribution.containsKey(star)) {
+                          distribution[star] = (distribution[star] ?? 0) + 1;
+                        }
+                      }
+
+                      return Column(
                         children: [
-                          Text(
-                            rating.toStringAsFixed(1),
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
+                          Row(
+                            children: [
+                              Text(
+                                avg.toStringAsFixed(1),
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "/ 5.0",
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const Spacer(),
+                              Row(
+                                children: List.generate(5, (index) {
+                                  return Icon(
+                                    index < avg.round()
+                                        ? Icons.star
+                                        : Icons.star_border,
+                                    color: Colors.amber,
+                                    size: 24,
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Based on $count reviews",
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            "/ 5.0",
-                            style: TextStyle(color: Colors.grey, fontSize: 16),
-                          ),
-                          const Spacer(),
-                          Row(
-                            children: List.generate(5, (index) {
-                              return Icon(
-                                index < rating ? Icons.star : Icons.star_border,
-                                color: Colors.amber,
-                                size: 24,
-                              );
-                            }),
+                          const SizedBox(height: 16),
+                          // Dynamic Progress Bars
+                          ...[5, 4, 3, 2, 1].map((star) {
+                            final starCount = distribution[star] ?? 0;
+                            final pct = count > 0 ? starCount / count : 0.0;
+                            return _buildRatingBar(context, star, pct);
+                          }),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => HelperReviewsScreen(
+                                      helperId: helperId,
+                                      averageRating: avg,
+                                      reviewCount: count,
+                                    ),
+                                  ),
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide.none,
+                                backgroundColor:
+                                    colorScheme.surfaceContainerLow,
+                                foregroundColor: colorScheme.onSurface,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text("Read all reviews"),
+                            ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 4),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Based on $reviewCount reviews",
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Mock Progress Bars (Visual only for now)
-                      _buildRatingBar(5, 0.75),
-                      _buildRatingBar(4, 0.15),
-                      _buildRatingBar(3, 0.05),
-                      _buildRatingBar(2, 0.05),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: () {
-                            // View all reviews
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide.none,
-                            backgroundColor: Colors.grey[100],
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text("Read all reviews"),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -777,19 +852,27 @@ class HelperProfileScreen extends StatelessWidget {
     }
   }
 
-  Widget _buildRatingBar(int star, double pct) {
+  Widget _buildRatingBar(BuildContext context, int star, double pct) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Text("$star", style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            "$star",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: pct,
-                backgroundColor: Colors.grey[100],
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest,
                 color: AppTheme.primaryBlue,
                 minHeight: 8,
               ),
@@ -798,7 +881,10 @@ class HelperProfileScreen extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             "${(pct * 100).toInt()}%",
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 12,
+            ),
           ),
         ],
       ),
@@ -808,31 +894,141 @@ class HelperProfileScreen extends StatelessWidget {
 
 class _SkillChip extends StatelessWidget {
   final String label;
-  const _SkillChip({required this.label});
+  final String? certificateUrl;
+  const _SkillChip({required this.label, this.certificateUrl});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Mock Icons for variety
-          if (label.toLowerCase().contains('dog'))
-            const Icon(Icons.pets, size: 16, color: Colors.brown)
-          else if (label.toLowerCase().contains('clean'))
-            const Icon(Icons.cleaning_services, size: 16, color: Colors.orange)
-          else
-            const Icon(Icons.star, size: 16, color: Colors.blue),
+    final colorScheme = Theme.of(context).colorScheme;
+    final hasCertificate = certificateUrl != null && certificateUrl!.isNotEmpty;
 
-          const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-        ],
+    return GestureDetector(
+      onTap: hasCertificate ? () => _showCertificate(context) : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: hasCertificate
+              ? Colors.green.withValues(alpha: 0.08)
+              : colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: hasCertificate
+                ? Colors.green.withValues(alpha: 0.4)
+                : colorScheme.outlineVariant,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasCertificate)
+              const Icon(Icons.verified, size: 16, color: Colors.green)
+            else if (label.toLowerCase().contains('dog'))
+              const Icon(Icons.pets, size: 16, color: Colors.brown)
+            else if (label.toLowerCase().contains('clean'))
+              const Icon(
+                Icons.cleaning_services,
+                size: 16,
+                color: Colors.orange,
+              )
+            else
+              Icon(Icons.star, size: 16, color: colorScheme.primary),
+
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCertificate(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
+              child: Row(
+                children: [
+                  const Icon(Icons.verified, color: Colors.green, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "$label Certificate",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: InteractiveViewer(
+                  child: Image.network(
+                    certificateUrl!,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return SizedBox(
+                        height: 200,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) => SizedBox(
+                      height: 200,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.broken_image,
+                              size: 48,
+                              color: colorScheme.outlineVariant,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Failed to load certificate",
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

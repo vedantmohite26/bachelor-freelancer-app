@@ -6,9 +6,9 @@ import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/core/services/notification_service.dart';
 import 'package:freelancer/core/services/friend_service.dart';
-import 'package:freelancer/core/services/user_service.dart';
 import 'package:freelancer/core/services/payment_service.dart';
 import 'package:freelancer/features/community/screens/friend_requests_screen.dart';
+import 'package:freelancer/core/widgets/shimmer_widgets.dart';
 
 class ActivityScreen extends StatelessWidget {
   const ActivityScreen({super.key});
@@ -51,8 +51,8 @@ class ActivityScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: TabBarView(
-          children: [const _UpdatesList(), _PaymentsList(), _CommunityTab()],
+        body: const TabBarView(
+          children: [_UpdatesList(), _PaymentsList(), _CommunityTab()],
         ),
       ),
     );
@@ -77,7 +77,7 @@ class _UpdatesList extends StatelessWidget {
       stream: notificationService.getUserNotifications(userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const ShimmerListScreen();
         }
 
         final notifications = snapshot.data ?? [];
@@ -375,82 +375,64 @@ class _PaymentsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context, listen: false);
-    final userService = Provider.of<UserService>(context, listen: false);
     final paymentService = Provider.of<PaymentService>(context, listen: false);
     final userId = authService.user?.uid;
 
     if (userId == null) return const Center(child: Text("Please login"));
 
-    return FutureBuilder<Map<String, dynamic>?>(
-      future: userService.getUserProfile(userId),
-      builder: (context, userSnapshot) {
-        if (userSnapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: paymentService.getAllUserPaymentsStream(userId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const ShimmerListScreen();
         }
 
-        final userProfile = userSnapshot.data;
-        final isSeeker = userProfile?['role'] != 'helper';
+        final payments = snapshot.data ?? [];
 
-        return StreamBuilder<List<Map<String, dynamic>>>(
-          stream: paymentService.getUserPaymentsStream(
-            userId,
-            asSeeker: isSeeker,
-          ),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            final payments = snapshot.data ?? [];
-
-            if (payments.isEmpty) {
-              return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.payments_outlined, size: 64, color: Colors.grey),
-                    SizedBox(height: 16),
-                    Text(
-                      "No payment history",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ],
+        if (payments.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.payments_outlined, size: 64, color: Colors.grey),
+                SizedBox(height: 16),
+                Text(
+                  "No payment history",
+                  style: TextStyle(color: Colors.grey),
                 ),
-              );
-            }
+              ],
+            ),
+          );
+        }
 
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: payments.length,
-              itemBuilder: (context, index) {
-                final payment = payments[index];
-                final timestamp =
-                    (payment['createdAt'] as Timestamp?)?.toDate() ??
-                    DateTime.now();
-                final amount = (payment['amount'] ?? 0).toDouble();
-                final isIncoming = !isSeeker; // Incoming if helper
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: payments.length,
+          itemBuilder: (context, index) {
+            final payment = payments[index];
+            final timestamp =
+                (payment['createdAt'] as Timestamp?)?.toDate() ??
+                DateTime.now();
+            final amount = (payment['amount'] ?? 0).toDouble();
+            final isIncoming = payment['isIncoming'] == true;
 
-                return _ActivityItem(
-                  icon: isIncoming
-                      ? Icons.arrow_downward
-                      : Icons.arrow_upward, // Arrow down for receiving
-                  iconBgColor: isIncoming
-                      ? AppTheme.growthGreen.withValues(alpha: 0.1)
-                      : Colors.red.withValues(alpha: 0.1),
-                  iconColor: isIncoming ? AppTheme.growthGreen : Colors.red,
-                  title: payment['jobTitle'] ?? 'Payment',
-                  subtitle: isIncoming ? 'Received' : 'Paid',
-                  time: _formatDate(timestamp),
-                  trailing: Text(
-                    "${isIncoming ? '+' : '-'}₹${amount.toStringAsFixed(2)}",
-                    style: TextStyle(
-                      color: isIncoming ? AppTheme.growthGreen : Colors.red,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                );
-              },
+            return _ActivityItem(
+              icon: isIncoming ? Icons.arrow_downward : Icons.arrow_upward,
+              iconBgColor: isIncoming
+                  ? AppTheme.growthGreen.withValues(alpha: 0.1)
+                  : Colors.red.withValues(alpha: 0.1),
+              iconColor: isIncoming ? AppTheme.growthGreen : Colors.red,
+              title: payment['jobTitle'] ?? 'Payment',
+              subtitle: isIncoming ? 'Earned (as Helper)' : 'Paid (as Seeker)',
+              time: _formatDate(timestamp),
+              trailing: Text(
+                "${isIncoming ? '+' : '-'}₹${amount.toStringAsFixed(2)}",
+                style: TextStyle(
+                  color: isIncoming ? AppTheme.growthGreen : Colors.red,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
             );
           },
         );

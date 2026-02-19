@@ -96,7 +96,7 @@ class _SelectJobLocationScreenState extends State<SelectJobLocationScreen> {
           if (_selectedLocation != null)
             TextButton(
               onPressed: _onConfirmLocation,
-              child: Text(
+              child: const Text(
                 'Confirm',
                 style: TextStyle(
                   color: AppTheme.primaryBlue,

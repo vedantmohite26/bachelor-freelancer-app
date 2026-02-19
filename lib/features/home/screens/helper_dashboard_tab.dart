@@ -9,6 +9,7 @@ import 'package:freelancer/features/community/screens/leaderboard_screen.dart';
 import 'package:freelancer/features/wallet/screens/coin_shop_screen.dart';
 import 'package:freelancer/features/safety/screens/safety_center_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:freelancer/core/widgets/shimmer_widgets.dart';
 import 'package:freelancer/features/jobs/screens/helper_completed_jobs_screen.dart';
 import 'package:freelancer/features/chat/screens/chat_list_screen.dart';
 
@@ -19,9 +20,14 @@ class HelperDashboardTab extends StatefulWidget {
   State<HelperDashboardTab> createState() => _HelperDashboardTabState();
 }
 
-class _HelperDashboardTabState extends State<HelperDashboardTab> {
+class _HelperDashboardTabState extends State<HelperDashboardTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final authService = Provider.of<AuthService>(context, listen: false);
     final userService = Provider.of<UserService>(context, listen: false);
     final jobService = Provider.of<JobService>(context, listen: false);
@@ -40,7 +46,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab> {
         stream: userService.getUserProfileStream(userId),
         builder: (context, profileSnapshot) {
           if (profileSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const ShimmerDashboard();
           }
 
           final profile = profileSnapshot.data ?? {};
@@ -303,12 +309,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const SliverToBoxAdapter(
-                      child: Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
+                      child: Column(children: [ShimmerCard(), ShimmerCard()]),
                     );
                   }
 
@@ -516,7 +517,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab> {
                 subtitle: "Check your rank and stats",
                 icon: Icons.emoji_events,
                 color: Colors.amber,
-                gradientColors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
                 onTap: () {
                   Navigator.pop(context); // Close bottom sheet
                   Navigator.push(
@@ -534,7 +535,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab> {
                 subtitle: "Redeem your hard-earned coins",
                 icon: Icons.shopping_bag,
                 color: Colors.purple,
-                gradientColors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                gradientColors: const [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
                 onTap: () {
                   Navigator.pop(context); // Close bottom sheet
                   Navigator.push(

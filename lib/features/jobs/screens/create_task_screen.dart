@@ -287,7 +287,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
             const SizedBox(height: 12),
 
-            Wrap(
+            const Wrap(
               spacing: 8,
               children: [
                 _QuickTagButton(label: "+ Heavy Lifting"),

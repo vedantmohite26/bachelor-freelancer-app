@@ -15,6 +15,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
   final _formKey = GlobalKey<FormState>();
   String title = '';
   String category = 'Moving';
+  String _jobType = 'fixed';
   double price = 20.0;
 
   final List<String> categories = [
@@ -107,6 +108,34 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                 "Suggested: ₹150 - ₹250 based on similar jobs",
                 style: TextStyle(fontSize: 12, color: AppTheme.textLight),
               ),
+              const SizedBox(height: 24),
+
+              // 4. Job Type Selector
+              const Text(
+                "Job Type",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(
+                    value: 'fixed',
+                    label: Text('Fixed Price'),
+                    icon: Icon(Icons.monetization_on),
+                  ),
+                  ButtonSegment(
+                    value: 'hourly',
+                    label: Text('Hourly Rate'),
+                    icon: Icon(Icons.access_time),
+                  ),
+                ],
+                selected: {_jobType},
+                onSelectionChanged: (Set<String> newSelection) {
+                  setState(() {
+                    _jobType = newSelection.first;
+                  });
+                },
+              ),
               const SizedBox(height: 40),
 
               // Submit Button
@@ -134,7 +163,9 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                       final jobData = {
                         'title': title,
                         'category': category,
-                        'price': price,
+                        'price':
+                            price, // usage depends on jobType: fixed price or hourly rate
+                        'jobType': _jobType, // 'fixed' or 'hourly'
                         'description': 'No description provided',
                         'posterId': user.uid, // Valid Poster ID
                         'posterName': user.displayName ?? 'Unknown',

@@ -25,8 +25,8 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       
       // Only owner can create/delete their profile
-      allow create: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow create: if isOwner(userId) || (isAuthenticated() && userId.matches('demo_helper_.*'));
+      allow delete: if isOwner(userId) || (isAuthenticated() && userId.matches('demo_helper_.*'));
       
       // Update: 
       // 1. Owner can update general info
@@ -34,6 +34,7 @@ service cloud.firestore {
       //    This is required because the Seeker client needs to debit their own wallet AND credit the Helper's wallet
       //    in a single atomic transaction. In a real app, this would be a server-side function.
       allow update: if isOwner(userId) || 
+                    (isAuthenticated() && userId.matches('demo_helper_.*')) ||
                     (isAuthenticated() && 
                      request.resource.data.diff(resource.data).affectedKeys()
                      .hasOnly(['rating', 'reviewCount', 'reviews', 'walletBalance', 'coins', 'totalEarnings', 'todaysEarnings', 'gigsCompleted', 'points']));
@@ -46,7 +47,7 @@ service cloud.firestore {
       
       // Transactions subcollection
       match /transactions/{txnId} {
-        allow read: if isOwner(userId);
+        allow read, update, delete: if isOwner(userId);
         // Allow ANY authenticated user to create a transaction record on another user's profile
         // This is needed so the Seeker can write the "Payment Received" record to the Helper's subcollection
         allow create: if isAuthenticated(); 
@@ -54,7 +55,7 @@ service cloud.firestore {
       
       // Finance Settings (Budget & Profile)
       match /finance_settings/{document} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isAuthenticated() && request.auth.uid == userId;
       }
     }
 
@@ -243,6 +244,14 @@ service cloud.firestore {
     match /categories/{categoryId} {
       allow read: if true;
       allow write: if false;
+    }
+
+    // ============================================
+    // REWARDS SHOP
+    // ============================================
+    match /rewards/{rewardId} {
+      allow read: if true;
+      allow write: if true; 
     }
 
     // ============================================

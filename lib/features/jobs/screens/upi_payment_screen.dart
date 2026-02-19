@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:freelancer/core/services/payment_service.dart';
 import 'package:freelancer/features/ratings/screens/rate_helper_screen.dart';
 
@@ -166,298 +165,406 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
 
   Widget _buildPaymentScreen() {
     final simUpiId = '${widget.helperId.substring(0, 6)}@unnati';
-    final qrData =
-        'upi://pay?pa=$simUpiId&pn=${widget.helperName}&am=${widget.amount}&tn=Job-${widget.jobId.substring(0, 6)}&cu=INR';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: Colors.white,
+        leading: const BackButton(color: Colors.white),
         title: Text(
-          "Payment",
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+          "Secure Payment",
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            // UPI Logo & Title
-            Container(
-              padding: const EdgeInsets.all(16),
+      body: Stack(
+        children: [
+          // Ambient Background Gradients
+          Positioned(
+            top: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF334155)),
-              ),
-              child: Column(
-                children: [
-                  // UPI Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF10B981), Color(0xFF059669)],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.verified,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          "UPI Payment",
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Job Info
-                  Text(
-                    widget.jobTitle,
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Paying ${widget.helperName}",
-                    style: GoogleFonts.inter(
-                      color: Colors.grey[400],
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    simUpiId,
-                    style: GoogleFonts.jetBrainsMono(
-                      color: const Color(0xFF3B82F6),
-                      fontSize: 13,
-                    ),
+                shape: BoxShape.circle,
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                    blurRadius: 100,
+                    spreadRadius: 10,
                   ),
                 ],
               ),
             ),
+          ),
+          Positioned(
+            bottom: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                    blurRadius: 80,
+                    spreadRadius: 10,
+                  ),
+                ],
+              ),
+            ),
+          ),
 
-            const SizedBox(height: 24),
-
-            // Amount Display
-            AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _isProcessing ? 1.0 : _pulseAnimation.value,
-                  child: Container(
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  // Recipient Card
+                  Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: _isProcessing
-                            ? [const Color(0xFF1E293B), const Color(0xFF1E293B)]
-                            : [
-                                const Color(0xFF1E3A8A),
-                                const Color(0xFF3B82F6),
-                              ],
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF1E293B),
+                          Color(0xFF0F172A),
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 20,
-                          offset: const Offset(0, 8),
+                          offset: const Offset(0, 10),
                         ),
                       ],
                     ),
                     child: Column(
                       children: [
+                        // Avatar / Icon
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(
+                                  0xFF3B82F6,
+                                ).withValues(alpha: 0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              widget.helperName.isNotEmpty
+                                  ? widget.helperName[0].toUpperCase()
+                                  : "U",
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         Text(
-                          "Amount",
-                          style: GoogleFonts.inter(
-                            color: Colors.white70,
+                          "Paying to",
+                          style: GoogleFonts.outfit(
+                            color: Colors.grey[400],
                             fontSize: 14,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         Text(
-                          "₹${widget.amount.toStringAsFixed(0)}",
-                          style: GoogleFonts.plusJakartaSans(
+                          widget.helperName,
+                          style: GoogleFonts.outfit(
                             color: Colors.white,
-                            fontSize: 48,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF3B82F6,
+                            ).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color(
+                                0xFF3B82F6,
+                              ).withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.verified_user_outlined,
+                                size: 14,
+                                color: Color(0xFF3B82F6),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                simUpiId,
+                                style: GoogleFonts.jetBrainsMono(
+                                  color: const Color(0xFF3B82F6),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                );
-              },
-            ),
 
-            const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
-            // QR Code (UPI-style)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                children: [
-                  QrImageView(
-                    data: qrData,
-                    version: QrVersions.auto,
-                    size: 160.0,
-                    eyeStyle: const QrEyeStyle(
-                      eyeShape: QrEyeShape.square,
-                      color: Color(0xFF0F172A),
+                  // Amount Display with Glow
+                  Column(
+                    children: [
+                      Text(
+                        "Total Amount",
+                        style: GoogleFonts.outfit(
+                          color: Colors.grey[400],
+                          fontSize: 14,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      AnimatedBuilder(
+                        animation: _pulseAnimation,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _isProcessing ? 1.0 : _pulseAnimation.value,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 40,
+                                vertical: 20,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFF10B981,
+                                ).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF10B981,
+                                  ).withValues(alpha: 0.2),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF10B981,
+                                    ).withValues(alpha: 0.15),
+                                    blurRadius: 30,
+                                    spreadRadius: 0,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                "₹${widget.amount.toStringAsFixed(0)}",
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF10B981),
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -1,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Job Details (Simplified)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
                     ),
-                    dataModuleStyle: const QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.square,
-                      color: Color(0xFF0F172A),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Job",
+                          style: GoogleFonts.outfit(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            widget.jobTitle,
+                            textAlign: TextAlign.end,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Scan to pay via any UPI app",
-                    style: GoogleFonts.inter(
-                      color: Colors.grey[600],
-                      fontSize: 12,
+
+                  const SizedBox(height: 48),
+
+                  // Error Message
+                  if (_error != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Color(0xFFEF4444),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _error!,
+                              style: const TextStyle(
+                                color: Color(0xFFEF4444),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+
+                  // Swipe/Tap to Pay Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 64,
+                    child: ElevatedButton(
+                      onPressed: _isProcessing ? null : _processPayment,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        shadowColor: const Color(
+                          0xFF10B981,
+                        ).withValues(alpha: 0.4),
+                        elevation: 8,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: _isProcessing
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  "Processing...",
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.check_circle_outline,
+                                  size: 28,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  "Pay Securely",
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Footer Security
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.shield_outlined,
+                        color: Colors.grey[600],
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "Encrypted & Secure Payment",
+                        style: GoogleFonts.outfit(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 32),
-
-            // Error Message
-            if (_error != null)
-              Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.red,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _error!,
-                        style: const TextStyle(color: Colors.red, fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Pay Button
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isProcessing ? null : _processPayment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 8,
-                  shadowColor: const Color(0xFF10B981).withValues(alpha: 0.4),
-                ),
-                child: _isProcessing
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            "Processing...",
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.payment, size: 24),
-                          const SizedBox(width: 8),
-                          Text(
-                            "Pay ₹${widget.amount.toStringAsFixed(0)}",
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Security Note
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.lock, color: Colors.grey[600], size: 14),
-                const SizedBox(width: 4),
-                Text(
-                  "Secured by Unnati Pay",
-                  style: GoogleFonts.inter(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -467,6 +574,22 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
       backgroundColor: const Color(0xFF0F172A),
       body: Stack(
         children: [
+          // Background Glows
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.center,
+                  radius: 1.0,
+                  colors: [
+                    const Color(0xFF10B981).withValues(alpha: 0.1),
+                    const Color(0xFF0F172A),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           // Confetti
           ...List.generate(_confettiList.length, (index) {
             final c = _confettiList[index];
@@ -500,10 +623,10 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Green checkmark circle
+                  // Green checkmark
                   Container(
-                    width: 100,
-                    height: 100,
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
@@ -513,26 +636,26 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
-                          blurRadius: 30,
-                          spreadRadius: 5,
+                          color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                          blurRadius: 50,
+                          spreadRadius: 10,
                         ),
                       ],
                     ),
                     child: const Icon(
                       Icons.check_rounded,
                       color: Colors.white,
-                      size: 56,
+                      size: 64,
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 40),
 
                   Text(
                     "Payment Successful!",
-                    style: GoogleFonts.plusJakartaSans(
+                    style: GoogleFonts.outfit(
                       color: Colors.white,
-                      fontSize: 28,
+                      fontSize: 32,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -540,34 +663,40 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                   const SizedBox(height: 12),
 
                   Text(
-                    "₹${widget.amount.toStringAsFixed(0)} paid to ${widget.helperName}",
-                    style: GoogleFonts.inter(
+                    "₹${widget.amount.toStringAsFixed(0)} sent to ${widget.helperName}",
+                    style: GoogleFonts.outfit(
                       color: Colors.grey[400],
-                      fontSize: 16,
+                      fontSize: 18,
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 48),
 
                   // Transaction Details Card
                   Container(
+                    width: double.infinity,
                     margin: const EdgeInsets.symmetric(horizontal: 40),
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(16),
+                      color: const Color(0xFF1E293B).withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
                     child: Column(
                       children: [
                         _buildDetailRow("Status", "SUCCESS", isGreen: true),
-                        const Divider(color: Color(0xFF334155), height: 24),
+                        const Divider(color: Color(0xFF334155), height: 32),
                         _buildDetailRow("UPI Ref", _upiRefId ?? "N/A"),
-                        const Divider(color: Color(0xFF334155), height: 24),
-                        _buildDetailRow("Job", widget.jobTitle),
-                        const Divider(color: Color(0xFF334155), height: 24),
+                        const Divider(color: Color(0xFF334155), height: 32),
                         _buildDetailRow(
                           "Amount",
                           "₹${widget.amount.toStringAsFixed(0)}",
@@ -576,13 +705,15 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
+                  // Auto redirect hint
                   Text(
-                    "Returning to home...",
-                    style: GoogleFonts.inter(
+                    "Redirecting you shortly...",
+                    style: GoogleFonts.outfit(
                       color: Colors.grey[600],
-                      fontSize: 13,
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
                     ),
                   ),
                 ],
@@ -600,14 +731,14 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 13),
+          style: GoogleFonts.outfit(color: Colors.grey[500], fontSize: 14),
         ),
         Flexible(
           child: Text(
             value,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.outfit(
               color: isGreen ? const Color(0xFF10B981) : Colors.white,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
             overflow: TextOverflow.ellipsis,

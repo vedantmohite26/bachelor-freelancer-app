@@ -14,7 +14,10 @@ import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/core/services/chat_service.dart';
 import 'package:freelancer/features/chat/screens/chat_screen.dart';
 import 'package:freelancer/features/jobs/screens/upi_payment_screen.dart';
+import 'package:freelancer/features/jobs/screens/payment_received_screen.dart';
 import 'package:freelancer/core/widgets/cached_network_avatar.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ActiveJobScreen extends StatefulWidget {
   final bool isSeeker;
@@ -27,35 +30,16 @@ class ActiveJobScreen extends StatefulWidget {
 }
 
 class _ActiveJobScreenState extends State<ActiveJobScreen> {
-  Duration _duration = Duration.zero;
-  Timer? _timer;
+  // Configurable dependencies logic if needed
 
   @override
   void initState() {
     super.initState();
-    // Timer is managed by stream listener logic below
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     super.dispose();
-  }
-
-  void _startLocalTimer(DateTime start) {
-    if (_timer != null && _timer!.isActive) return;
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) return;
-      setState(() {
-        final now = DateTime.now();
-        if (now.isAfter(start)) {
-          _duration = now.difference(start);
-        } else {
-          _duration = Duration.zero;
-        }
-      });
-    });
   }
 
   @override
@@ -67,57 +51,59 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
       return const Scaffold(body: Center(child: Text("Please login")));
     }
 
+    // Use specific job stream if we have an ID, otherwise use general active jobs stream
+    final Stream<List<Map<String, dynamic>>> jobStream =
+        (widget.initialJobId != null)
+        ? jobService
+              .getJobStream(widget.initialJobId!)
+              .map((job) => job != null ? [job] : [])
+        : jobService.getActiveJobsForUser(userId, isSeeker: widget.isSeeker);
+
     return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: jobService.getActiveJobsForUser(
-        userId,
-        isSeeker: widget.isSeeker,
-      ),
+      stream: jobStream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            backgroundColor: Color(0xFF101622),
-            body: Center(child: CircularProgressIndicator()),
+        // If loading and no data yet
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         final jobs = snapshot.data ?? [];
+
         if (jobs.isEmpty) {
           return _buildNoActiveJob(context);
         }
 
-        // Use the first active job or filter by initialJobId match
-        final job = (widget.initialJobId != null)
-            ? jobs.firstWhere(
-                (j) => j['id'] == widget.initialJobId,
-                orElse: () => jobs.first,
-              )
-            : jobs.first;
+        // Use the first job in the stream (will be the specific one if ID was provided)
+        final job = jobs.first;
 
         final jobId = job['id'];
         final status = job['status'];
         final startedAtTimestamp = job['startedAt'] as Timestamp?;
-        final helperName = "Student Helper"; // Ideally fetch user profile
-        final helperAvatar = "https://randomuser.me/api/portraits/men/32.jpg";
+        final helperName = job['helperName'] ?? "Student Helper";
+        final helperAvatar =
+            job['helperImage'] ??
+            "https://randomuser.me/api/portraits/men/32.jpg";
 
-        // Logic to sync timer
-        if (status == 'in_progress' && startedAtTimestamp != null) {
-          _startLocalTimer(startedAtTimestamp.toDate());
-        } else if (status == 'assigned') {
-          _duration = Duration.zero;
+        // Auto-navigate to success screen if we're a helper and the job is completed
+        if (!widget.isSeeker && status == 'completed') {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _navigateToSuccess(job);
+          });
+          // Return a placeholder while navigating or keep showing the UI
+        }
 
-          // Auto-show QR if requested by Seeker
+        // Auto-show QR logic for Seeker
+        if (status == 'assigned') {
           final startRequested = job['startRequested'] == true;
-          debugPrint(
-            "ActiveJobScreen: status=assigned, startRequested=$startRequested, isSeeker=${widget.isSeeker}, hasAutoShown=$_hasAutoShownQR",
-          );
-
           if (!widget.isSeeker && startRequested && !_hasAutoShownQR) {
-            debugPrint("ActiveJobScreen: Triggering auto-show QR");
             _hasAutoShownQR = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 final double amount = (job['price'] as num?)?.toDouble() ?? 0.0;
-                debugPrint("ActiveJobScreen: Calling _showStartJobQR");
                 _showStartJobQR(context, jobId, amount);
               }
             });
@@ -131,32 +117,58 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
           status: status,
           helperName: helperName,
           helperAvatar: helperAvatar,
+          startedAt: startedAtTimestamp?.toDate(),
         );
       },
     );
   }
 
+  void _navigateToSuccess(Map<String, dynamic> data) {
+    if (_hasNavigatedToSuccess) return;
+
+    final amount = (data['price'] as num?)?.toDouble() ?? 0.0;
+    final coins = (data['coinsEarned'] as num?)?.toDouble() ?? 0.0;
+    final points = (data['pointsEarned'] as num?)?.toInt() ?? 0;
+    final title = data['title'] ?? "Job";
+
+    _hasNavigatedToSuccess = true;
+
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentReceivedScreen(
+            amount: amount,
+            coins: coins,
+            points: points,
+            jobTitle: title,
+          ),
+        ),
+      );
+    }
+  }
+
   Widget _buildNoActiveJob(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF101622),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        leading: const BackButton(color: Colors.white),
+        leading: BackButton(color: Theme.of(context).colorScheme.onSurface),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.check_circle_outline,
               size: 64,
-              color: Colors.grey,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 16),
             Text(
               "No Active Jobs",
               style: GoogleFonts.plusJakartaSans(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 20,
               ),
             ),
@@ -173,176 +185,207 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
     required String status,
     required String helperName,
     required String helperAvatar,
+    DateTime? startedAt,
   }) {
-    final darkBg = const Color(0xFF101622);
-    final cardBg = const Color(0xFF1A2232);
+    const accentColor = Color(0xFF3B82F6); // Blue 500
 
     return Scaffold(
-      backgroundColor: darkBg,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "Active Job",
+          status == 'in_progress' ? "Session Active" : "Job Details",
           style: GoogleFonts.plusJakartaSans(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
+            fontSize: 18,
           ),
         ),
         centerTitle: true,
       ),
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          // 1. Map Background
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: MediaQuery.of(context).size.height * 0.55,
-            child: ShaderMask(
-              shaderCallback: (rect) => LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, darkBg],
-                stops: const [0.7, 1.0],
-              ).createShader(rect),
-              blendMode: BlendMode.darken,
-              child: Image.network(
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuCfPC67zM3hMs4qAmcfFdtth5Ykw6D9vXlsa_lGFkFdMZngWrqFaDtRdRs7vmPh7uqe2_ecg1h_J8JuQRNj0J4ftQKZ3CuZjsGPU417u-BZZ4SqAmIgCqdboWDnVlxf7j6uejM1o8hZC3sQfMM9Nxd9NOFvtU5E19AeEvvqsm4GHtNJdkJUx756RohhEqvdOniAnedH2-JRNRVpuY7BHDrFKgaX7iu-gcilyvTrzVQ-nz8lUvXyMu8N5a97riQ1pp9zopT9uaJSEfs",
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+      body: Container(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: SafeArea(
+          child: Column(
+            children: [
+              const Spacer(flex: 1),
 
-          // 2. Helper Avatar
-          Positioned(
-            top: MediaQuery.of(context).size.height * 0.25,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: darkBg.withValues(alpha: 0.8),
-                      shape: BoxShape.circle,
+              // 1. Profile / Status Card
+              FutureBuilder<Map<String, dynamic>?>(
+                future: Provider.of<UserService>(context, listen: false)
+                    .getUserProfile(
+                      widget.isSeeker
+                          ? (job['assignedHelperId'] ?? '')
+                          : (job['posterId'] ?? ''),
                     ),
-                    child: CachedNetworkAvatar(
-                      imageUrl: helperAvatar,
-                      radius: 40,
-                      backgroundColor: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: cardBg,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      helperName,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                builder: (context, profileSnapshot) {
+                  final profile = profileSnapshot.data;
+                  final name =
+                      profile?['name'] ??
+                      (widget.isSeeker ? "Helper" : "Seeker");
+                  final avatar =
+                      profile?['profilePicture'] ??
+                      (widget.isSeeker ? helperAvatar : "");
+
+                  return GestureDetector(
+                    onTap: () => _showSessionDetails(context, job, profile),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
                       ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // 3. Bottom Panel
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.7,
-              ),
-              decoration: BoxDecoration(color: darkBg),
-              child: SafeArea(
-                top: false,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        status == 'assigned'
-                            ? (job['startRequested'] == true
-                                  ? "Start Requested!"
-                                  : "Helper assigned")
-                            : "Job in progress",
-                        style: GoogleFonts.plusJakartaSans(
-                          color:
-                              status == 'assigned' &&
-                                  job['startRequested'] == true
-                              ? Colors.greenAccent
-                              : Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outlineVariant,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        status == 'assigned'
-                            ? (job['startRequested'] == true
-                                  ? "Opening QR Code..."
-                                  : "Waiting for seeker to start.")
-                            : "Timer is tracking the session.",
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          color: Colors.grey[400],
-                          fontSize: 14,
-                          height: 1.5,
-                        ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: accentColor, width: 2),
+                            ),
+                            child: CachedNetworkAvatar(
+                              imageUrl: avatar,
+                              radius: 28,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHigh,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: status == 'in_progress'
+                                            ? Colors.green.withValues(
+                                                alpha: 0.2,
+                                              )
+                                            : Colors.blue.withValues(
+                                                alpha: 0.2,
+                                              ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        status == 'assigned'
+                                            ? "Waiting to Start"
+                                            : "Working Now",
+                                        style: TextStyle(
+                                          color: status == 'in_progress'
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.tertiary
+                                              : Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      Icons.info_outline,
+                                      size: 14,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.3),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 32),
+                    ),
+                  );
+                },
+              ),
 
-                      // Timer Row
-                      _buildTimerRow(
-                        status == 'assigned' ? Duration.zero : _duration,
+              const Spacer(flex: 2),
+
+              // 2. Main Timer Display
+              if (status == 'in_progress' && startedAt != null)
+                JobSessionTimer(startTime: startedAt)
+              else if (status == 'assigned')
+                Column(
+                  children: [
+                    Icon(
+                      Icons.hourglass_empty_rounded,
+                      size: 64,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Ready to Begin",
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 24,
                       ),
-
-                      const SizedBox(height: 32),
-
-                      // Start Button if assigned & is helper (but this is ActiveJobScreen usually shared)
-                      // For Seeker, they usually just watch.
-                      // For Helper, they start.
-                      // If Seeker checks this screen and status is 'assigned', they just see "Waiting".
-                      // The button below "End Task" is for finishing.
-                      _buildButtons(context, status, job),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+
+              const Spacer(flex: 2),
+
+              // 3. Action Buttons
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _buildButtons(context, status, job),
               ),
-            ),
+
+              const Spacer(flex: 1),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   // State variable to track if QR was already auto-shown
   bool _hasAutoShownQR = false;
+  bool _hasNavigatedToSuccess = false;
 
   @override
   void didUpdateWidget(ActiveJobScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Reset flag if job ID changes (though unlikely for this screen usage)
     if (oldWidget.initialJobId != widget.initialJobId) {
       _hasAutoShownQR = false;
     }
@@ -354,89 +397,81 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
     Map<String, dynamic> job,
   ) {
     final jobId = job['id'];
+
+    // Helper method for cleaner button creation
+    Widget buildBtn({
+      required IconData icon,
+      required String label,
+      required VoidCallback onTap,
+      bool isPrimary = false,
+      Color? color,
+    }) {
+      return Container(
+        width: double.infinity,
+        height: 56,
+        margin: const EdgeInsets.only(bottom: 16),
+        child: ElevatedButton(
+          onPressed: onTap,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isPrimary
+                ? (color ?? Theme.of(context).colorScheme.primary)
+                : Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.1),
+            foregroundColor: isPrimary
+                ? (isPrimary && color != null
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.onPrimary)
+                : Theme.of(context).colorScheme.onSurface,
+            elevation: isPrimary ? 4 : 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 20),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (status == 'assigned') {
       return Column(
         children: [
-          _buildActionButton(
-            icon: Icons.chat_bubble,
-            label: widget.isSeeker ? "Chat with Helper" : "Chat with Seeker",
-            isPrimary: false,
-            onTap: () async {
-              final authService = Provider.of<AuthService>(
-                context,
-                listen: false,
-              );
-              final chatService = Provider.of<ChatService>(
-                context,
-                listen: false,
-              );
-              final currentUserId = authService.user?.uid;
-
-              if (currentUserId == null) return;
-
-              final otherUserId = widget.isSeeker
-                  ? job['helperId']
-                  : job['seekerId'];
-              final otherUserName = widget.isSeeker
-                  ? "Student Helper"
-                  : "Job Provider";
-
-              try {
-                // Show loading
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Opening chat..."),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-
-                final chatId = await chatService.createChat(
-                  otherUserId,
-                  currentUserId,
-                  checkFriendship:
-                      false, // In a job context, they should be able to chat
-                );
-
-                if (context.mounted) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ChatScreen(
-                        chatId: chatId,
-                        otherUserName: otherUserName,
-                      ),
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Could not open chat: $e")),
-                  );
-                }
-              }
-            },
+          buildBtn(
+            icon: Icons.chat_bubble_outline,
+            label: "Chat with ${widget.isSeeker ? 'Helper' : 'Seeker'}",
+            onTap: () => _openChat(context, job),
           ),
-          const SizedBox(height: 16),
-          if (!widget.isSeeker) ...[
-            _buildActionButton(
+          if (!widget.isSeeker)
+            buildBtn(
               icon: Icons.qr_code,
               label: "Show Verification QR",
-              subtitle: "For Seeker to scan",
               isPrimary: true,
+              color: const Color(0xFF10B981), // Green
               onTap: () {
                 final double amount = (job['price'] as num?)?.toDouble() ?? 0.0;
                 _showStartJobQR(context, jobId, amount);
               },
-            ),
-          ] else ...[
-            _buildActionButton(
-              icon: Icons.play_arrow,
-              label: "Start Job",
-              subtitle: "Scan Helper's QR",
+            )
+          else
+            buildBtn(
+              icon: Icons.play_arrow_rounded,
+              label: "Start Job (Scan QR)",
               isPrimary: true,
+              color: const Color(0xFF3B82F6), // Blue
               onTap: () async {
-                // 1. Request Job Start (triggers Helper's QR)
                 try {
                   await Provider.of<JobService>(
                     context,
@@ -444,118 +479,68 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                   ).requestJobStart(jobId);
                 } catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Failed to request start: $e")),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text("Error: $e")));
                   }
-                  debugPrint("Error requesting start: $e");
-                  // Do not proceed to scanner if request failed, or maybe ask retry?
-                  // For now, let's stop to ensure they know it failed.
                   return;
                 }
-                // 2. Open Scanner
                 if (context.mounted) _navigateToScanner(context, jobId);
               },
             ),
-          ],
         ],
       );
     }
 
-    // In-progress: role-specific end-job buttons
     if (status == 'in_progress') {
       return Column(
         children: [
-          _buildActionButton(
-            icon: Icons.chat_bubble,
-            label: widget.isSeeker ? "Chat with Helper" : "Chat with Seeker",
-            isPrimary: false,
-            onTap: () async {
-              final authService = Provider.of<AuthService>(
-                context,
-                listen: false,
-              );
-              final chatService = Provider.of<ChatService>(
-                context,
-                listen: false,
-              );
-              final currentUserId = authService.user?.uid;
-              if (currentUserId == null) return;
-              final otherUserId = widget.isSeeker
-                  ? job['helperId']
-                  : job['seekerId'];
-              final otherUserName = widget.isSeeker
-                  ? "Student Helper"
-                  : "Job Provider";
-              try {
-                final chatId = await chatService.createChat(
-                  otherUserId,
-                  currentUserId,
-                  checkFriendship: false,
-                );
-                if (context.mounted) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ChatScreen(
-                        chatId: chatId,
-                        otherUserName: otherUserName,
-                      ),
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Could not open chat: $e")),
-                  );
-                }
-              }
-            },
+          buildBtn(
+            icon: Icons.chat_bubble_outline,
+            label: "Chat",
+            onTap: () => _openChat(context, job),
           ),
-          const SizedBox(height: 16),
-          if (!widget.isSeeker) ...[
-            // Helper: Show completion QR for seeker to scan
-            _buildActionButton(
-              icon: Icons.qr_code,
-              label: "Show Completion QR",
-              subtitle: "For Seeker to scan & pay",
+          if (!widget.isSeeker)
+            buildBtn(
+              icon: Icons.qr_code_2_rounded,
+              label: "Finish Job & Show QR",
               isPrimary: true,
+              color: const Color(0xFFFFD700), // Gold
               onTap: () {
                 final double amount = (job['price'] as num?)?.toDouble() ?? 0.0;
                 _showCompletionQR(context, jobId, amount);
               },
-            ),
-          ] else ...[
-            // Seeker: Scan helper's completion QR then pay
-            _buildActionButton(
-              icon: Icons.payment,
-              label: "End Job & Pay",
-              subtitle: "Scan Helper's QR to complete",
+            )
+          else
+            buildBtn(
+              icon: Icons.check_circle_outline,
+              label: "Complete & Pay",
               isPrimary: true,
+              color: const Color(0xFF10B981), // Green
               onTap: () => _navigateToCompletionScanner(context, job),
             ),
-          ],
         ],
       );
     }
 
-    // payment_pending: show processing state
     if (status == 'payment_pending') {
       return Column(
         children: [
-          _buildActionButton(
-            icon: Icons.hourglass_top,
-            label: "Payment Processing",
-            subtitle: "Completing job payment...",
-            isPrimary: true,
-            onTap: () {
-              if (widget.isSeeker) {
-                // Navigate to payment screen
-                _navigateToPayment(context, job);
-              }
-            },
-          ),
+          if (widget.isSeeker)
+            buildBtn(
+              icon: Icons.payment,
+              label: "Proceed to Payment",
+              isPrimary: true,
+              color: const Color(0xFF10B981),
+              onTap: () => _navigateToPayment(context, job),
+            )
+          else
+            Text(
+              "Waiting for payment...",
+              style: GoogleFonts.inter(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
         ],
       );
     }
@@ -563,43 +548,69 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
     return const SizedBox.shrink();
   }
 
+  Future<void> _openChat(BuildContext context, Map<String, dynamic> job) async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final chatService = Provider.of<ChatService>(context, listen: false);
+    final currentUserId = authService.user?.uid;
+    if (currentUserId == null) return;
+
+    final otherUserId = widget.isSeeker ? job['helperId'] : job['seekerId'];
+    final otherUserName = widget.isSeeker
+        ? (job['helperName'] ?? "Student Helper")
+        : "Job Provider";
+
+    try {
+      final chatId = await chatService.createChat(
+        otherUserId,
+        currentUserId,
+        checkFriendship: false,
+      );
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                ChatScreen(chatId: chatId, otherUserName: otherUserName),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    }
+  }
+
   void _showStartJobQR(BuildContext context, String jobId, double amount) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) => _QRCodeBottomSheet(jobId: jobId, amount: amount),
     );
   }
 
   Future<void> _navigateToScanner(BuildContext context, String jobId) async {
-    final result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => JobVerificationScannerScreen(
           jobId: jobId,
-          helperId: "helper",
+          helperId: "helper", // Needs to be passed ideally
           helperName: "Helper",
           mode: 'start',
         ),
       ),
     );
-
-    if (result == true) {
-      // StreamBuilder will update UI automatically
-    }
   }
 
-  /// Show completion QR for the helper (mirrors start QR)
   void _showCompletionQR(BuildContext context, String jobId, double amount) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return _QRCodeBottomSheet(
           jobId: jobId,
@@ -610,7 +621,6 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
     );
   }
 
-  /// Navigate seeker to the completion scanner, then to payment
   Future<void> _navigateToCompletionScanner(
     BuildContext context,
     Map<String, dynamic> job,
@@ -633,7 +643,6 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
     }
   }
 
-  /// Navigate seeker to UPI payment screen
   void _navigateToPayment(BuildContext context, Map<String, dynamic> job) {
     final authService = Provider.of<AuthService>(context, listen: false);
     final seekerId = authService.user?.uid ?? '';
@@ -653,150 +662,477 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
     );
   }
 
-  Widget _buildTimerRow(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = twoDigits(d.inHours);
-    final minutes = twoDigits(d.inMinutes.remainder(60));
-    final seconds = twoDigits(d.inSeconds.remainder(60));
+  void _showSessionDetails(
+    BuildContext context,
+    Map<String, dynamic> job,
+    Map<String, dynamic>? profile,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final seekerName = profile?['name'] ?? "User";
+        final seekerAvatar = profile?['profilePicture'] ?? "";
+        final bio = profile?['bio'] ?? "No bio available.";
+        final seekerPhone = profile?['phoneNumber'] ?? "Not provided";
+        final seekerEmail = profile?['email'] ?? "Not provided";
 
+        // Date & Time Formatting
+        String dateStr = "Date TBA";
+        if (job['date'] != null) {
+          try {
+            dateStr = DateFormat(
+              'EEE, d MMM',
+            ).format(DateTime.parse(job['date']));
+          } catch (_) {}
+        }
+        final timeStr = job['time'] ?? "Time TBA";
+
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).dividerColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Session Details",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: Icon(
+                              Icons.close,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      // Job Info Card
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    job['title'] ?? "Untitled Job",
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  "₹${job['price']}",
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: const Color(0xFF10B981),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            // Date & Time Row
+                            Row(
+                              children: [
+                                _detailItem(Icons.calendar_today, dateStr),
+                                const SizedBox(width: 16),
+                                _detailItem(Icons.access_time, timeStr),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              job['description'] ?? "No description.",
+                              style: GoogleFonts.inter(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                fontSize: 14,
+                                height: 1.5,
+                              ),
+                            ),
+                            const Divider(height: 32),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFF3B82F6,
+                                    ).withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.location_on,
+                                    color: Color(0xFF3B82F6),
+                                    size: 18,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        job['address'] ??
+                                            (job['latitude'] != null
+                                                ? "Location: ${job['latitude'].toStringAsFixed(4)}, ${job['longitude'].toStringAsFixed(4)}"
+                                                : "Location not specified"),
+                                        style: GoogleFonts.inter(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      if (job['latitude'] != null &&
+                                          job['longitude'] != null)
+                                        InkWell(
+                                          onTap: () async {
+                                            final lat = job['latitude'];
+                                            final lng = job['longitude'];
+                                            final uri = Uri.parse(
+                                              'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+                                            );
+                                            if (await canLaunchUrl(uri)) {
+                                              await launchUrl(
+                                                uri,
+                                                mode: LaunchMode
+                                                    .externalApplication,
+                                              );
+                                            }
+                                          },
+                                          child: Text(
+                                            "View on Map",
+                                            style: GoogleFonts.inter(
+                                              color: const Color(0xFF3B82F6),
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      // User Info
+                      Text(
+                        widget.isSeeker ? "Helper Info" : "Seeker Info",
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                CachedNetworkAvatar(
+                                  imageUrl: seekerAvatar,
+                                  radius: 30,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHigh,
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        seekerName,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        widget.isSeeker
+                                            ? "Assigned Helper"
+                                            : "Job Poster",
+                                        style: GoogleFonts.inter(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Divider(height: 32),
+                            // Contact Items
+                            _contactItem(Icons.phone_outlined, seekerPhone),
+                            const SizedBox(height: 12),
+                            _contactItem(Icons.email_outlined, seekerEmail),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        "Bio",
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          bio,
+                          style: GoogleFonts.inter(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _detailItem(IconData icon, String text) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _buildTimerItem(hours, "HOURS"),
-        _buildTimerSeparator(),
-        _buildTimerItem(minutes, "MINUTES"),
-        _buildTimerSeparator(),
-        _buildTimerItem(seconds, "SECONDS", isBlue: true),
+        Icon(
+          icon,
+          size: 14,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: GoogleFonts.inter(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildTimerItem(String value, String label, {bool isBlue = false}) {
-    return Column(
+  Widget _contactItem(IconData icon, String text) {
+    return Row(
       children: [
         Container(
-          width: 70,
-          height: 70,
-          alignment: Alignment.center,
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: isBlue ? const Color(0xFF1E3A8A) : const Color(0xFF1F2937),
-            borderRadius: BorderRadius.circular(24),
+            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+            shape: BoxShape.circle,
           ),
-          child: Text(
-            value,
-            style: GoogleFonts.jetBrainsMono(
-              color: isBlue ? const Color(0xFF3B82F6) : Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Icon(icon, size: 16, color: const Color(0xFF3B82F6)),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          text,
+          style: GoogleFonts.inter(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class JobSessionTimer extends StatefulWidget {
+  final DateTime startTime;
+
+  const JobSessionTimer({super.key, required this.startTime});
+
+  @override
+  State<JobSessionTimer> createState() => _JobSessionTimerState();
+}
+
+class _JobSessionTimerState extends State<JobSessionTimer> {
+  late Timer _timer;
+  Duration _duration = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _updateDuration(null); // Initial update
+    _timer = Timer.periodic(const Duration(seconds: 1), _updateDuration);
+  }
+
+  void _updateDuration(_) {
+    final now = DateTime.now();
+    if (mounted) {
+      setState(() {
+        _duration = now.difference(widget.startTime);
+        if (_duration.isNegative) _duration = Duration.zero;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = twoDigits(_duration.inHours);
+    final minutes = twoDigits(_duration.inMinutes.remainder(60));
+    final seconds = twoDigits(_duration.inSeconds.remainder(60));
+
+    // Modern Digital Clock Style
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            _buildDigit(hours),
+            _buildSeparator(),
+            _buildDigit(minutes),
+            _buildSeparator(),
+            _buildDigit(seconds, isHighlight: true),
+          ],
         ),
         const SizedBox(height: 8),
         Text(
-          label,
+          "SESSION DURATION",
           style: GoogleFonts.inter(
-            color: isBlue ? const Color(0xFF3B82F6) : Colors.grey[500],
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1,
+            color: Colors.white24,
+            fontSize: 12,
+            letterSpacing: 2,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTimerSeparator() {
-    return Container(
-      height: 70,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Text(
-        ":",
-        style: GoogleFonts.inter(
-          color: Colors.grey[600],
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
+  Widget _buildDigit(String value, {bool isHighlight = false}) {
+    return Text(
+      value,
+      style: GoogleFonts.jetBrainsMono(
+        fontSize: 56,
+        fontWeight: FontWeight.bold,
+        color: isHighlight
+            ? const Color(0xFF3B82F6)
+            : Colors.white, // Blue highlight for seconds
+        shadows: [
+          BoxShadow(
+            color: (isHighlight ? const Color(0xFF3B82F6) : Colors.white)
+                .withValues(alpha: 0.3),
+            blurRadius: 12,
+            spreadRadius: 2,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    String? subtitle,
-    int? count,
-    required bool isPrimary,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-        decoration: BoxDecoration(
-          color: isPrimary ? AppTheme.primaryBlue : const Color(0xFF1F2937),
-          borderRadius: BorderRadius.circular(30),
-          border: isPrimary ? null : Border.all(color: Colors.grey.shade800),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isPrimary) ...[
-              const Icon(Icons.qr_code, color: Colors.white),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (subtitle != null)
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 12,
-                      ),
-                    ),
-                ],
-              ),
-            ] else ...[
-              Icon(icon, color: Colors.blue),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (count != null) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    "$count",
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ],
+  Widget _buildSeparator() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Text(
+        ":",
+        style: GoogleFonts.jetBrainsMono(
+          fontSize: 56,
+          fontWeight: FontWeight.w300,
+          color: Colors.white24,
         ),
       ),
     );
@@ -1056,7 +1392,7 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                           ],
                         ),
                       ),
-                      Icon(
+                      const Icon(
                         Icons.verified_user,
                         color: AppTheme.growthGreen,
                         size: 24,

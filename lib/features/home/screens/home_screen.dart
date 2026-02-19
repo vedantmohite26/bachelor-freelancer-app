@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 import 'package:freelancer/core/services/user_service.dart';
+import 'package:freelancer/core/services/notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isSeeker;
@@ -26,30 +27,51 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late int _currentIndex;
 
-  // Cache pages to avoid recreating them on every build
-  late final List<Widget> _pages;
+  // Lazy-loaded tab builders — tabs are only built on first visit
+  late final List<Widget Function()> _tabBuilders;
+  // Cache of built tabs — null means not yet visited
+  final Map<int, Widget> _builtTabs = {};
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
 
-    // Pre-build pages once — they are const and never change
-    _pages = widget.isSeeker
-        ? const [
-            SeekerHomeTab(),
-            MyJobsScreen(),
-            FinanceDashboardScreen(),
-            ActivityScreen(),
-            MyProfileScreen(),
+    _tabBuilders = widget.isSeeker
+        ? [
+            () => const SeekerHomeTab(),
+            () => const MyJobsScreen(),
+            () => const FinanceDashboardScreen(),
+            () => const ActivityScreen(),
+            () => const MyProfileScreen(),
           ]
         : [
-            HelperDashboardTab(),
-            JobFeedScreen(),
-            FinanceDashboardScreen(),
-            ActivityScreen(),
-            MyProfileScreen(),
+            () => const HelperDashboardTab(),
+            () => const JobFeedScreen(),
+            () => const FinanceDashboardScreen(),
+            () => const ActivityScreen(),
+            () => const MyProfileScreen(),
           ];
+
+    // Pre-build only the initial tab
+    _builtTabs[_currentIndex] = _tabBuilders[_currentIndex]();
+
+    // Initialize global notification listener
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      if (authService.user != null) {
+        Provider.of<NotificationService>(
+          context,
+          listen: false,
+        ).listenForNotifications(authService.user!.uid);
+      }
+    });
+  }
+
+  /// Get or build a tab lazily
+  Widget _getTab(int index) {
+    _builtTabs[index] ??= _tabBuilders[index]();
+    return _builtTabs[index]!;
   }
 
   /// Handle back button press
@@ -75,13 +97,19 @@ class _HomeScreenState extends State<HomeScreen> {
         _handlePopInvoked(didPop);
       },
       child: Scaffold(
-        // Wrap IndexedStack in RepaintBoundary to isolate repaints
-        // from the nav bar — tab switches only repaint the body
+        // Lazy IndexedStack: only render visited tabs
         body: RepaintBoundary(
-          child: IndexedStack(index: _currentIndex, children: _pages),
+          child: IndexedStack(
+            index: _currentIndex,
+            children: List.generate(
+              _tabBuilders.length,
+              (i) => (i == _currentIndex || _builtTabs.containsKey(i))
+                  ? _getTab(i)
+                  : const SizedBox.shrink(),
+            ),
+          ),
         ),
-        // Only the nav bar listens to profile stream (for avatar),
-        // not the entire page tree
+        // Only the nav bar listens to profile stream (for avatar)
         bottomNavigationBar: StreamBuilder<Map<String, dynamic>?>(
           stream: userService.getUserProfileStream(userId),
           builder: (context, snapshot) {
@@ -118,12 +146,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       label: 'Posted Jobs',
                     ),
                     const NavigationDestination(
-                      icon: Icon(Icons.smart_toy_outlined),
+                      icon: Icon(Icons.account_balance_wallet_outlined),
                       selectedIcon: Icon(
-                        Icons.smart_toy,
+                        Icons.account_balance_wallet,
                         color: AppTheme.primaryBlue,
                       ),
-                      label: 'AI',
+                      label: 'Finance',
                     ),
                     const NavigationDestination(
                       icon: Icon(Icons.notifications_outlined),
@@ -157,12 +185,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       label: 'Find Jobs',
                     ),
                     const NavigationDestination(
-                      icon: Icon(Icons.smart_toy_outlined),
+                      icon: Icon(Icons.account_balance_wallet_outlined),
                       selectedIcon: Icon(
-                        Icons.smart_toy,
+                        Icons.account_balance_wallet,
                         color: AppTheme.primaryBlue,
                       ),
-                      label: 'AI',
+                      label: 'Finance',
                     ),
                     const NavigationDestination(
                       icon: Icon(Icons.notifications_outlined),
@@ -181,8 +209,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
             return NavigationBar(
               selectedIndex: _currentIndex,
-              onDestinationSelected: (index) =>
-                  setState(() => _currentIndex = index),
+              onDestinationSelected: (index) {
+                setState(() => _currentIndex = index);
+              },
               backgroundColor: Theme.of(context).colorScheme.surface,
               surfaceTintColor: Colors.transparent,
               elevation: 0,

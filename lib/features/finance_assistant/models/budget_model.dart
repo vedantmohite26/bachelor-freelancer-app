@@ -1,15 +1,18 @@
 class Budget {
   final String userId;
   final double monthlyLimit;
-  final Map<String, double>
-  categoryLimits; // e.g., {'Food': 5000, 'Rent': 10000}
-  final double savingsTargetPercent; // 0-100
+  final Map<String, double> categoryLimits;
+  final double savingsTargetPercent;
+  final double monthlyIncome;
+  final double recurringExpenses;
 
   Budget({
     required this.userId,
     required this.monthlyLimit,
     required this.categoryLimits,
     required this.savingsTargetPercent,
+    this.monthlyIncome = 0.0,
+    this.recurringExpenses = 0.0,
   });
 
   Map<String, dynamic> toMap() {
@@ -18,6 +21,8 @@ class Budget {
       'monthlyLimit': monthlyLimit,
       'categoryLimits': categoryLimits,
       'savingsTargetPercent': savingsTargetPercent,
+      'monthlyIncome': monthlyIncome,
+      'recurringExpenses': recurringExpenses,
     };
   }
 
@@ -27,6 +32,8 @@ class Budget {
       monthlyLimit: (map['monthlyLimit'] ?? 0.0).toDouble(),
       categoryLimits: Map<String, double>.from(map['categoryLimits'] ?? {}),
       savingsTargetPercent: (map['savingsTargetPercent'] ?? 0.0).toDouble(),
+      monthlyIncome: (map['monthlyIncome'] ?? 0.0).toDouble(),
+      recurringExpenses: (map['recurringExpenses'] ?? 0.0).toDouble(),
     );
   }
 }

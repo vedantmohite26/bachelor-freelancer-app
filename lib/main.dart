@@ -11,6 +11,7 @@ import 'package:freelancer/core/services/rating_service.dart';
 import 'package:freelancer/core/services/leaderboard_service.dart';
 import 'package:freelancer/core/services/location_service.dart';
 import 'package:freelancer/core/services/notification_service.dart';
+import 'package:freelancer/core/services/local_notification_service.dart';
 import 'package:freelancer/core/services/wallet_service.dart';
 import 'package:freelancer/core/services/community_service.dart';
 import 'package:freelancer/core/services/chat_service.dart';
@@ -28,9 +29,13 @@ import 'package:freelancer/features/home/screens/home_screen.dart';
 import 'package:freelancer/features/jobs/screens/create_task_screen.dart';
 import 'package:freelancer/features/auth/screens/welcome_screen.dart';
 import 'package:freelancer/core/widgets/premium_app_loader.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Local Notifications
+  await LocalNotificationService.initialize();
 
   // Enable Edge-to-Edge UI
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -49,6 +54,9 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // Disable runtime font fetching — use bundled fonts only (faster startup)
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   runApp(const MyApp());
 }
@@ -84,8 +92,22 @@ class MyApp extends StatelessWidget {
             title: 'Unnati Freelancer',
             debugShowCheckedModeBanner: false,
             // Pass dynamic schemes to AppTheme
-            theme: AppTheme.lightTheme(lightDynamic),
-            darkTheme: AppTheme.darkTheme(darkDynamic),
+            theme: AppTheme.lightTheme(lightDynamic).copyWith(
+              pageTransitionsTheme: const PageTransitionsTheme(
+                builders: {
+                  TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+                },
+              ),
+            ),
+            darkTheme: AppTheme.darkTheme(darkDynamic).copyWith(
+              pageTransitionsTheme: const PageTransitionsTheme(
+                builders: {
+                  TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                  TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+                },
+              ),
+            ),
             themeMode: ThemeMode.system,
             // Start with loading screen
             // Named routes for efficient navigation

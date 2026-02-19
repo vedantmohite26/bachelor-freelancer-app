@@ -3,3 +3,4 @@ uvicorn
 requests
 python-dotenv
 huggingface_hub
+firebase-admin

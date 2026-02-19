@@ -8,10 +8,12 @@ class WalletService extends ChangeNotifier {
   double _balance = 0.0;
   int _coins = 0;
   List<Map<String, dynamic>> _transactions = [];
+  Map<String, dynamic> _activePowerUps = {};
 
   double get balance => _balance;
   int get coins => _coins;
   List<Map<String, dynamic>> get transactions => _transactions;
+  Map<String, dynamic> get activePowerUps => _activePowerUps;
 
   // Stream listening to user wallet changes
   void listenToWallet(String userId) {
@@ -20,6 +22,7 @@ class WalletService extends ChangeNotifier {
         final data = snapshot.data();
         _balance = (data?['walletBalance'] as num? ?? 0.0).toDouble();
         _coins = (data?['coins'] as num? ?? 0).toInt();
+        _activePowerUps = data?['activePowerUps'] ?? {};
         notifyListeners();
       }
     });
@@ -52,6 +55,8 @@ class WalletService extends ChangeNotifier {
     required double amount, // Positive for earnings, negative for spending
     required bool isCoin, // True if coin transaction
     String? type, // 'job_payment', 'withdrawal', 'shop_purchase', 'bonus'
+    String category = 'General',
+    bool isAppGenerated = false,
   }) async {
     final batch = _db.batch();
     final userRef = _db.collection('users').doc(userId);
@@ -70,7 +75,12 @@ class WalletService extends ChangeNotifier {
       'amount': amount,
       'isCoin': isCoin,
       'type': type ?? 'general',
+      'category': category,
+      'isAppGenerated': isAppGenerated,
       'timestamp': FieldValue.serverTimestamp(),
+      'date':
+          FieldValue.serverTimestamp(), // Added for Finance Assistant compatibility
+      'userId': userId,
     });
 
     await batch.commit();
@@ -86,6 +96,8 @@ class WalletService extends ChangeNotifier {
       amount: -amount,
       isCoin: false,
       type: 'withdrawal',
+      category: 'Freelance',
+      isAppGenerated: true,
     );
     return true;
   }
@@ -100,7 +112,22 @@ class WalletService extends ChangeNotifier {
       amount: -cost.toDouble(),
       isCoin: true,
       type: 'shop_purchase',
+      category: 'Freelance',
+      isAppGenerated: true,
     );
     return true;
+  }
+
+  // Activate Power-Up
+  Future<void> activatePowerUp(
+    String userId,
+    String powerUpType,
+    Duration duration,
+  ) async {
+    final expiresAt = DateTime.now().add(duration);
+
+    await _db.collection('users').doc(userId).update({
+      'activePowerUps.$powerUpType': Timestamp.fromDate(expiresAt),
+    });
   }
 }

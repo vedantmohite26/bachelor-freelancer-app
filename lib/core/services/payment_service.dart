@@ -1,12 +1,12 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:freelancer/features/finance_assistant/services/finance_service.dart';
-import 'package:freelancer/features/finance_assistant/models/transaction_model.dart';
-import 'package:uuid/uuid.dart';
+
+import 'package:freelancer/core/services/notification_service.dart';
 
 class PaymentService extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final NotificationService _notificationService = NotificationService();
 
   /// Generate a simulated UPI reference ID
   String _generateUpiRefId() {
@@ -56,7 +56,7 @@ class PaymentService extends ChangeNotifier {
       'completedAt': FieldValue.serverTimestamp(),
     });
 
-    // Update job status → completed
+    // 5. Update job status → completed (Rewards will be added in a separate update below)
     final jobRef = _db.collection('jobs').doc(jobId);
     batch.update(jobRef, {
       'status': 'completed',
@@ -68,82 +68,87 @@ class PaymentService extends ChangeNotifier {
       'completionTokenExpiresAt': FieldValue.delete(),
     });
 
-    // Credit helper wallet + stats
+    // ----------------------------------
+
+    // --- REWARD LOGIC ---
+    int pointsEarned = 0;
+    double coinsEarned = 0;
+
+    try {
+      // Fetch Job Details for Type
+      final jobDoc = await _db.collection('jobs').doc(jobId).get();
+      final jobData = jobDoc.data() ?? {};
+      final jobType = jobData['jobType'] as String? ?? 'fixed';
+
+      if (jobType == 'hourly') {
+        // Hourly: 5 Coins/hr, 15 Points/hr
+        // Rate is jobData['price']
+        final hourlyRate = (jobData['price'] as num?)?.toDouble() ?? 10.0;
+        final hoursWorked = amount / (hourlyRate > 0 ? hourlyRate : 1);
+
+        coinsEarned = hoursWorked * 5;
+        pointsEarned = (hoursWorked * 15).round();
+      } else {
+        // Fixed: 20 Coins, 50 Points
+        coinsEarned = 20;
+        pointsEarned = 50;
+      }
+    } catch (e) {
+      debugPrint("Error calculating rewards: $e");
+      // Fallback
+      coinsEarned = 20;
+      pointsEarned = 50;
+    }
+    // --------------------
+
+    // Credit helper wallet + stats + rewards
     final helperRef = _db.collection('users').doc(helperId);
     batch.update(helperRef, {
       'walletBalance': FieldValue.increment(amount),
       'totalEarnings': FieldValue.increment(amount),
       'todaysEarnings': FieldValue.increment(amount),
       'gigsCompleted': FieldValue.increment(1),
-      'points': FieldValue.increment(50), // 50 XP for completion
+      'points': FieldValue.increment(pointsEarned),
+      'coins': FieldValue.increment(coinsEarned),
     });
 
-    // Helper transaction record
-    final helperTxnRef = helperRef.collection('transactions').doc();
-    batch.set(helperTxnRef, {
-      'title': 'Payment: $jobTitle',
-      'amount': amount,
-      'isCoin': false,
-      'type': 'job_payment',
-      'upiRefId': upiRefId,
-      'relatedJobId': jobId,
-      'paymentId': paymentRef.id,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+    // ----------------------------------
 
     // Debit seeker wallet
     final seekerRef = _db.collection('users').doc(seekerId);
     batch.update(seekerRef, {'walletBalance': FieldValue.increment(-amount)});
 
-    // Seeker transaction record
-    final seekerTxnRef = seekerRef.collection('transactions').doc();
-    batch.set(seekerTxnRef, {
-      'title': 'Paid: $jobTitle',
-      'amount': -amount,
-      'isCoin': false,
-      'type': 'job_payment',
-      'upiRefId': upiRefId,
-      'relatedJobId': jobId,
-      'paymentId': paymentRef.id,
-      'timestamp': FieldValue.serverTimestamp(),
+    // ----------------------------------
+
+    // Save reward summary to Job for the helper screen
+    batch.update(jobRef, {
+      'coinsEarned': coinsEarned,
+      'pointsEarned': pointsEarned,
     });
 
     await batch.commit();
 
-    // --- AUTOMATED FINANCE TRACKING ---
-    try {
-      final financeService = FinanceService(); // Instantiate directly for now
-
-      // 1. Log Expense for Seeker
-      final seekerTransaction = FinanceTransaction(
-        id: const Uuid().v4(),
-        userId: seekerId,
-        amount: amount,
-        type: TransactionType.expense,
-        category: 'Freelance',
-        date: DateTime.now(),
-        description: 'Payment for $jobTitle',
-      );
-      await financeService.addTransaction(seekerTransaction);
-
-      // 2. Log Income for Helper
-      final helperTransaction = FinanceTransaction(
-        id: const Uuid().v4(),
-        userId: helperId,
-        amount: amount,
-        type: TransactionType.income,
-        category: 'Freelance',
-        date: DateTime.now(),
-        description: 'Earnings from $jobTitle',
-      );
-      await financeService.addTransaction(helperTransaction);
-    } catch (e) {
-      debugPrint('Error logging finance transaction: $e');
-      // Don't fail the payment if tracking fails
-    }
     // ----------------------------------
 
     debugPrint('Payment SUCCESS: $upiRefId for job $jobId (₹$amount)');
+
+    // Notify Seeker (Debited)
+    await _notificationService.createNotification(
+      userId: seekerId,
+      title: 'Payment Sent',
+      subtitle: '₹$amount paid for "$jobTitle"',
+      type: 'payment',
+      relatedId: paymentRef.id,
+    );
+
+    // Notify Helper (Credited)
+    await _notificationService.createNotification(
+      userId: helperId,
+      title: 'Payment Received! 💰',
+      subtitle: 'You received ₹$amount for "$jobTitle"',
+      type: 'payment',
+      relatedId: paymentRef.id,
+    );
 
     return {
       'paymentId': paymentRef.id,
@@ -195,5 +200,51 @@ class PaymentService extends ChangeNotifier {
               .map((doc) => {...doc.data(), 'id': doc.id})
               .toList(),
         );
+  }
+
+  /// Get ALL payments for a user — both as seeker (expenses) and helper (earnings)
+  /// Each payment is tagged with 'isIncoming' (true = earned, false = spent)
+  Stream<List<Map<String, dynamic>>> getAllUserPaymentsStream(String userId) {
+    final earnedStream = _db
+        .collection('payments')
+        .where('helperId', isEqualTo: userId)
+        .where('status', isEqualTo: 'success')
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots()
+        .map(
+          (s) => s.docs
+              .map((d) => {...d.data(), 'id': d.id, 'isIncoming': true})
+              .toList(),
+        );
+
+    final spentStream = _db
+        .collection('payments')
+        .where('seekerId', isEqualTo: userId)
+        .where('status', isEqualTo: 'success')
+        .orderBy('createdAt', descending: true)
+        .limit(50)
+        .snapshots()
+        .map(
+          (s) => s.docs
+              .map((d) => {...d.data(), 'id': d.id, 'isIncoming': false})
+              .toList(),
+        );
+
+    // Merge both streams
+    return earnedStream.asyncExpand((earned) {
+      return spentStream.map((spent) {
+        final all = [...earned, ...spent];
+        // Sort by createdAt descending
+        all.sort((a, b) {
+          final aTime =
+              (a['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
+          final bTime =
+              (b['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
+          return bTime.compareTo(aTime);
+        });
+        return all;
+      });
+    });
   }
 }

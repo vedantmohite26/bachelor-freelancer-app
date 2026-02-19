@@ -8,9 +8,8 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:freelancer/core/widgets/premium_app_loader.dart';
 
-/// Performance-optimized loading screen designed for all devices
-/// Works efficiently from low-end (30fps) to high-end (120fps+) devices
-/// Adaptive frame rate and efficient memory usage
+/// Performance-optimized loading screen with progress bar illusion.
+/// The bar advances faster than real init to create perceived speed.
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
 
@@ -18,28 +17,50 @@ class LoadingScreen extends StatefulWidget {
   State<LoadingScreen> createState() => _LoadingScreenState();
 }
 
-class _LoadingScreenState extends State<LoadingScreen> {
+class _LoadingScreenState extends State<LoadingScreen>
+    with SingleTickerProviderStateMixin {
   String _statusMessage = 'Initializing...';
   bool _hasError = false;
+  double _progress = 0.0;
+  late AnimationController _progressController;
 
   @override
   void initState() {
     super.initState();
+    _progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
     _initializeApp();
   }
 
-  /// Initialize app with proper error handling
+  @override
+  void dispose() {
+    _progressController.dispose();
+    super.dispose();
+  }
+
+  /// Smoothly animate progress to a target value
+  void _setProgress(double target) {
+    if (!mounted) return;
+    setState(() => _progress = target);
+  }
+
+  /// Initialize app with progress bar illusion
   Future<void> _initializeApp() async {
     try {
+      // Stage 1: Instant progress burst (illusion of speed)
+      _setProgress(0.3);
       setState(() => _statusMessage = 'Connecting to Firebase...');
 
       // Initialize Firebase
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+      _setProgress(0.55);
 
       // Activate App Check
-      // We wrap this in a try-catch so it doesn't block app startup in debug mode if verification fails
+      setState(() => _statusMessage = 'Securing connection...');
       try {
         await FirebaseAppCheck.instance.activate(
           androidProvider: kDebugMode
@@ -51,20 +72,24 @@ class _LoadingScreenState extends State<LoadingScreen> {
         );
       } catch (e) {
         debugPrint('App Check warning (non-fatal): $e');
-        // Continue loading even if App Check fails locally
       }
+      _setProgress(0.8);
 
-      // Enable offline persistence for better UX and cost savings
-      // Optimized for all devices - works efficiently even on low-end devices
+      // Configure Firestore with 50MB cache limit (was unlimited)
       FirebaseFirestore.instance.settings = const Settings(
         persistenceEnabled: true,
-        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+        cacheSizeBytes: 50 * 1024 * 1024, // 50MB cap
       );
 
       setState(() => _statusMessage = 'Loading your workspace...');
+      _setProgress(0.95);
 
-      // Small delay to ensure smooth transition (adaptive to device)
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Brief delay for smooth visual transition
+      await Future.delayed(const Duration(milliseconds: 300));
+      _setProgress(1.0);
+
+      // Small extra pause so user sees 100%
+      await Future.delayed(const Duration(milliseconds: 200));
 
       // Navigate to main app if mounted
       if (mounted) {
@@ -74,7 +99,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
       if (mounted) {
         setState(() {
           _hasError = true;
-          // Provide more specific error messages
           if (e.toString().contains('Internet') ||
               e.toString().contains('Host')) {
             _statusMessage =
@@ -115,7 +139,48 @@ class _LoadingScreenState extends State<LoadingScreen> {
       );
     }
 
-    return PremiumAppLoader(statusMessage: _statusMessage);
+    return Stack(
+      children: [
+        PremiumAppLoader(statusMessage: _statusMessage),
+        // Progress bar overlay at bottom
+        Positioned(
+          left: 40,
+          right: 40,
+          bottom: 80,
+          child: Column(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: _progress),
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) {
+                    return LinearProgressIndicator(
+                      value: value,
+                      minHeight: 4,
+                      backgroundColor: colorScheme.onSurface.withValues(
+                        alpha: 0.1,
+                      ),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        colorScheme.primary,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _statusMessage,
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildRetryButton(ThemeData theme) {
@@ -125,6 +190,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
         setState(() {
           _hasError = false;
           _statusMessage = 'Retrying...';
+          _progress = 0.0;
         });
         _initializeApp();
       },

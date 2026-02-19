@@ -1,166 +1,140 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 
 class RewardsService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Fetch all rewards from Firestore
-  Future<List<Map<String, dynamic>>> getRewards() async {
-    try {
-      final snapshot = await _db
-          .collection('rewards')
-          .where('isActive', isEqualTo: true)
-          .orderBy('order')
-          .get();
-
-      if (snapshot.docs.isEmpty) {
-        return _defaultRewards;
-      }
-
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        return {
-          'id': doc.id,
-          'title': data['title'] ?? 'Reward',
-          'subtitle': data['subtitle'] ?? '',
-          'cost': data['cost'] ?? 0,
-          'icon': _getIconFromName(data['icon'] ?? 'card_giftcard'),
-          'color': _getColorFromHex(data['color'] ?? '#3B82F6'),
-          'isFeatured': data['isFeatured'] ?? false,
-        };
-      }).toList();
-    } catch (e) {
-      debugPrint('Error fetching rewards: $e');
-      return _defaultRewards;
-    }
-  }
-
-  /// Stream rewards for real-time updates
-  Stream<List<Map<String, dynamic>>> getRewardsStream() {
-    return _db
+  // Fetch rewards by category
+  Stream<List<Map<String, dynamic>>> getRewards(String category) {
+    return _firestore
         .collection('rewards')
-        .where('isActive', isEqualTo: true)
-        .orderBy('order')
+        .where('category', isEqualTo: category)
+        .orderBy('cost')
         .snapshots()
-        .map((snapshot) {
-          if (snapshot.docs.isEmpty) return _defaultRewards;
-
-          return snapshot.docs.map((doc) {
-            final data = doc.data();
-            return {
-              'id': doc.id,
-              'title': data['title'] ?? 'Reward',
-              'subtitle': data['subtitle'] ?? '',
-              'cost': data['cost'] ?? 0,
-              'icon': _getIconFromName(data['icon'] ?? 'card_giftcard'),
-              'color': _getColorFromHex(data['color'] ?? '#3B82F6'),
-              'isFeatured': data['isFeatured'] ?? false,
-            };
-          }).toList();
-        });
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => {...doc.data(), 'id': doc.id})
+              .toList(),
+        );
   }
 
-  /// Seed default rewards to Firestore (admin use)
+  // Seed Initial Data (For Demo/Setup)
   Future<void> seedRewards() async {
-    final existing = await _db.collection('rewards').limit(1).get();
-    if (existing.docs.isNotEmpty) return;
+    final collection = _firestore.collection('rewards');
 
-    final rewards = [
+    // 1. Clear existing rewards to prevent duplicates
+    final snapshot = await collection.get();
+    final deleteBatch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      deleteBatch.delete(doc.reference);
+    }
+    await deleteBatch.commit();
+
+    // 2. Add new rewards
+    final createBatch = _firestore.batch();
+
+    // ... Redeem Codes
+    final redeemCodes = [
       {
-        'title': 'Starbucks ₹5 Gift Card',
-        'subtitle': 'Get your morning coffee fix.',
-        'cost': 1200,
-        'icon': 'coffee',
-        'color': '#795548',
-        'order': 1,
-        'isActive': true,
-        'isFeatured': false,
+        'title': 'Google Play ₹10',
+        'subtitle': 'Digital Code',
+        'cost': 1000,
+        'category': 'redeem_code',
+        'icon': 'play_arrow', // Mapped in UI
+        'color': 0xFF4CAF50, // Green
       },
       {
-        'title': 'Spotify Premium Month',
-        'subtitle': 'Ad-free music listening.',
-        'cost': 2500,
+        'title': 'Amazon ₹50',
+        'subtitle': 'Gift Card',
+        'cost': 4500,
+        'category': 'redeem_code',
+        'icon': 'shopping_cart',
+        'color': 0xFFFF9800, // Orange
+      },
+      {
+        'title': 'Flipkart ₹500',
+        'subtitle': 'Shopping Voucher',
+        'cost': 45000,
+        'category': 'redeem_code',
+        'icon': 'shopping_bag',
+        'color': 0xFF2874F0, // Flipkart Blue
+      },
+      {
+        'title': 'Myntra ₹1000',
+        'subtitle': 'Fashion Card',
+        'cost': 90000,
+        'category': 'redeem_code',
+        'icon': 'checkroom',
+        'color': 0xFFE91E63, // Myntra Pink
+      },
+      {
+        'title': 'Uber ₹250',
+        'subtitle': 'Ride Voucher',
+        'cost': 22000,
+        'category': 'redeem_code',
+        'icon': 'directions_car',
+        'color': 0xFF000000, // Uber Black
+      },
+      {
+        'title': 'BookMyShow ₹500',
+        'subtitle': 'Movie Voucher',
+        'cost': 45000,
+        'category': 'redeem_code',
+        'icon': 'movie',
+        'color': 0xFFF44336, // Red
+      },
+      {
+        'title': 'Spotify 1 Month',
+        'subtitle': 'Premium Sub',
+        'cost': 12000,
+        'category': 'redeem_code',
         'icon': 'music_note',
-        'color': '#1DB954',
-        'order': 2,
-        'isActive': true,
-        'isFeatured': false,
+        'color': 0xFF1DB954, // Spotify Green
       },
       {
-        'title': 'Discord Nitro Basic',
-        'subtitle': 'Enhance your chat experience.',
-        'cost': 800,
-        'icon': 'chat_bubble',
-        'color': '#7289DA',
-        'order': 3,
-        'isActive': true,
-        'isFeatured': false,
-      },
-      {
-        'title': '₹10 Google Play Code',
-        'subtitle': 'Use for apps or games.',
-        'cost': 2000,
-        'icon': 'card_giftcard',
-        'color': '#34A853',
-        'order': 0,
-        'isActive': true,
-        'isFeatured': true,
+        'title': 'Zomato ₹100',
+        'subtitle': 'Food Voucher',
+        'cost': 9000,
+        'category': 'redeem_code',
+        'icon': 'restaurant',
+        'color': 0xFFE23744, // Zomato Red
       },
     ];
 
-    for (var reward in rewards) {
-      await _db.collection('rewards').add(reward);
+    // 2. Power-ups
+    final powerUps = [
+      {
+        'title': 'Coins Boost (24h)',
+        'subtitle': '2x Coins Outcome',
+        'cost': 300,
+        'category': 'power_up',
+        'icon': 'monetization_on',
+        'color': 0xFF2196F3, // Blue
+      },
+
+      {
+        'title': 'XP Boost (24h)',
+        'subtitle': '2x Points Outcome',
+        'cost': 500,
+        'category': 'power_up',
+        'icon': 'bolt',
+        'color': 0xFFFFEB3B, // Yellow
+      },
+      {
+        'title': 'Highlight Profile',
+        'subtitle': 'Stand out to Seekers',
+        'cost': 2000,
+        'category': 'power_up',
+        'icon': 'verified',
+        'color': 0xFF9C27B0, // Purple
+      },
+    ];
+
+    // Add all to batch
+    for (var item in [...redeemCodes, ...powerUps]) {
+      final docRef = collection.doc(); // Auto-ID
+      createBatch.set(docRef, item);
     }
-  }
 
-  // Helper: Convert icon name to IconData
-  IconData _getIconFromName(String name) {
-    const iconMap = {
-      'coffee': Icons.coffee,
-      'music_note': Icons.music_note,
-      'chat_bubble': Icons.chat_bubble,
-      'card_giftcard': Icons.card_giftcard,
-      'shopping_cart': Icons.shopping_cart,
-    };
-    return iconMap[name] ?? Icons.card_giftcard;
+    await createBatch.commit();
   }
-
-  // Helper: Convert hex color to Color
-  Color _getColorFromHex(String hex) {
-    final buffer = StringBuffer();
-    if (hex.length == 6 || hex.length == 7) buffer.write('ff');
-    buffer.write(hex.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
-  }
-
-  // Default fallback rewards
-  List<Map<String, dynamic>> get _defaultRewards => [
-    {
-      'id': 'starbucks',
-      'title': 'Starbucks ₹5 Gift Card',
-      'subtitle': 'Get your morning coffee fix.',
-      'cost': 1200,
-      'icon': Icons.coffee,
-      'color': Colors.brown,
-      'isFeatured': false,
-    },
-    {
-      'id': 'spotify',
-      'title': 'Spotify Premium Month',
-      'subtitle': 'Ad-free music listening.',
-      'cost': 2500,
-      'icon': Icons.music_note,
-      'color': Colors.green,
-      'isFeatured': false,
-    },
-    {
-      'id': 'discord',
-      'title': 'Discord Nitro Basic',
-      'subtitle': 'Enhance your chat experience.',
-      'cost': 800,
-      'icon': Icons.chat_bubble,
-      'color': Colors.purpleAccent,
-      'isFeatured': false,
-    },
-  ];
 }

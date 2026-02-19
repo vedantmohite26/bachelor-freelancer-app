@@ -45,32 +45,36 @@ class _LevelUpScreenState extends State<LevelUpScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.black.withValues(alpha: 0.8),
+      backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.95),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Trophy / Badge Icon with Animation
-            ScaleTransition(
-              scale: _scaleAnimation,
-              child: Container(
-                padding: const EdgeInsets.all(40),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppTheme.coinYellow,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.coinYellow.withValues(alpha: 0.5),
-                      blurRadius: 50,
-                      spreadRadius: 20,
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.stars_rounded,
-                  size: 100,
-                  color: Colors.white,
+            RepaintBoundary(
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Container(
+                  padding: const EdgeInsets.all(40),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.coinYellow,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.coinYellow.withValues(alpha: 0.5),
+                        blurRadius: 50,
+                        spreadRadius: 20,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.stars_rounded,
+                    size: 100,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -79,8 +83,8 @@ class _LevelUpScreenState extends State<LevelUpScreen>
             // Text
             Text(
               "LEVEL UP!",
-              style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                color: Colors.white,
+              style: theme.textTheme.displayMedium?.copyWith(
+                color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 2,
               ),
@@ -88,7 +92,10 @@ class _LevelUpScreenState extends State<LevelUpScreen>
             const SizedBox(height: 16),
             Text(
               "You are now Level ${widget.newLevel}",
-              style: const TextStyle(color: Colors.white, fontSize: 24),
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontSize: 24,
+              ),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -101,12 +108,11 @@ class _LevelUpScreenState extends State<LevelUpScreen>
             ),
             const SizedBox(height: 64),
 
-            // Continue Button
             ElevatedButton(
               onPressed: widget.onContinue,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 48,
                   vertical: 16,

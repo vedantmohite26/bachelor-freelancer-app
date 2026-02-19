@@ -17,17 +17,38 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   void initState() {
     super.initState();
+    // Listen for auth changes to init wallet
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    // Check if already logged in
+    if (authService.user != null) {
+      _initWallet(authService.user!.uid);
+    }
+
+    // Add listener for future updates
+    authService.addListener(_authListener);
+  }
+
+  void _authListener() {
     final user = Provider.of<AuthService>(context, listen: false).user;
     if (user != null) {
-      Provider.of<WalletService>(
-        context,
-        listen: false,
-      ).listenToWallet(user.uid);
-      Provider.of<WalletService>(
-        context,
-        listen: false,
-      ).fetchTransactions(user.uid);
+      _initWallet(user.uid);
     }
+  }
+
+  void _initWallet(String userId) {
+    Provider.of<WalletService>(context, listen: false).listenToWallet(userId);
+    Provider.of<WalletService>(
+      context,
+      listen: false,
+    ).fetchTransactions(userId);
+  }
+
+  @override
+  void dispose() {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    authService.removeListener(_authListener);
+    super.dispose();
   }
 
   @override
@@ -76,7 +97,13 @@ class _WalletScreenState extends State<WalletScreen> {
                         color: AppTheme.growthGreen,
                         icon: Icons.attach_money,
                         buttonText: "Withdraw",
-                        onTap: () {},
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Withdrawal feature coming soon!'),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(width: 16),
                       _BalanceCard(

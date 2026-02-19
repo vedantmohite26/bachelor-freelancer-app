@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
@@ -70,6 +71,12 @@ class AppTheme {
           ),
         ),
       ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        systemOverlayStyle:
+            SystemUiOverlayStyle.dark, // Dark icons for light theme
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: inputBackground,
@@ -113,6 +120,12 @@ class AppTheme {
       scaffoldBackgroundColor:
           scheme.surface, // Use dynamic surface or fallback
       colorScheme: scheme,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        systemOverlayStyle:
+            SystemUiOverlayStyle.light, // Light icons for dark theme
+      ),
       textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme)
           .copyWith(
             displayLarge: GoogleFonts.inter(

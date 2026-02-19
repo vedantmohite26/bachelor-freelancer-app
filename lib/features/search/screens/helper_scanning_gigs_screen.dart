@@ -38,8 +38,8 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
   @override
   Widget build(BuildContext context) {
     // Colors
-    final primaryColor = const Color(0xFF135bec);
-    final backgroundDark = const Color(0xFF101622);
+    const primaryColor = Color(0xFF135bec);
+    const backgroundDark = Color(0xFF101622);
 
     return Scaffold(
       backgroundColor: backgroundDark,

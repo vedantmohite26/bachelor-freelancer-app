@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/core/services/job_service.dart';
 import 'dart:async';
+import 'package:freelancer/core/widgets/shimmer_widgets.dart';
 
 class JobFeedScreen extends StatefulWidget {
   const JobFeedScreen({super.key});
@@ -227,7 +228,7 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
               ).getJobsStream(currentUserId: currentUserId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const ShimmerListScreen();
                 }
                 if (snapshot.hasError) {
                   return Center(

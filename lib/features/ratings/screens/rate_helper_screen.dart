@@ -90,19 +90,25 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
+          icon: Icon(Icons.close, color: colorScheme.onSurface),
           onPressed: () =>
               Navigator.of(context).popUntil((route) => route.isFirst),
         ),
-        title: const Text(
+        title: Text(
           "Rate Your Helper",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
@@ -119,16 +125,16 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.grey[50],
+                      color: colorScheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade200),
+                      border: Border.all(color: colorScheme.outlineVariant),
                     ),
                     child: Row(
                       children: [
                         CachedNetworkAvatar(
                           radius: 32,
-                          backgroundColor: Colors.grey.shade200,
-                          fallbackIconColor: Colors.grey.shade400,
+                          backgroundColor: colorScheme.surfaceContainerHigh,
+                          fallbackIconColor: colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -137,17 +143,18 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                             children: [
                               Text(
                                 widget.helperName,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
+                              Text(
                                 "Helper",
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.grey,
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -160,12 +167,13 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                   const SizedBox(height: 32),
 
                   // Overall Rating
-                  const Center(
+                  Center(
                     child: Text(
                       "How was your experience?",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -196,16 +204,23 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                       _overallRating > 0
                           ? _getRatingText(_overallRating)
                           : "Tap to rate",
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 40),
 
                   // Detailed Ratings
-                  const Text(
+                  Text(
                     "Rate Specific Areas",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
 
                   const SizedBox(height: 20),
@@ -239,9 +254,13 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                   const SizedBox(height: 32),
 
                   // Feedback
-                  const Text(
+                  Text(
                     "Additional Feedback (Optional)",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
 
                   const SizedBox(height: 12),
@@ -250,17 +269,23 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                     controller: _feedbackController,
                     maxLines: 5,
                     maxLength: 500,
+                    style: TextStyle(color: colorScheme.onSurface),
                     decoration: InputDecoration(
                       hintText: "Share more about your experience...",
+                      hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
                       filled: true,
-                      fillColor: Colors.grey[50],
+                      fillColor: colorScheme.surfaceContainerLow,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
+                        borderSide: BorderSide(
+                          color: colorScheme.outlineVariant,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
+                        borderSide: BorderSide(
+                          color: colorScheme.outlineVariant,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -297,9 +322,13 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                   const SizedBox(height: 32),
 
                   // Add Photo
-                  const Text(
+                  Text(
                     "Add Photo Proof (Optional)",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
 
                   const SizedBox(height: 12),
@@ -310,10 +339,10 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                     child: Container(
                       height: 120,
                       decoration: BoxDecoration(
-                        color: Colors.grey[50],
+                        color: colorScheme.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.grey.shade300,
+                          color: colorScheme.outlineVariant,
                           style: BorderStyle.solid,
                         ),
                       ),
@@ -323,12 +352,14 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                           Icon(
                             Icons.add_photo_alternate,
                             size: 40,
-                            color: Colors.grey.shade400,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             "Tap to add photo",
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                         ],
                       ),
@@ -347,7 +378,7 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.1),
@@ -355,6 +386,9 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                     offset: const Offset(0, -5),
                   ),
                 ],
+                border: Border(
+                  top: BorderSide(color: colorScheme.outlineVariant),
+                ),
               ),
               child: SizedBox(
                 width: double.infinity,
@@ -366,15 +400,17 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryBlue,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledBackgroundColor: colorScheme.onSurface.withValues(
+                      alpha: 0.12,
+                    ),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Text(
                         "Submit Review",
                         style: TextStyle(
@@ -428,6 +464,8 @@ class _RatingSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -437,7 +475,11 @@ class _RatingSlider extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
             ),
             const Spacer(),
             Text(
@@ -454,7 +496,7 @@ class _RatingSlider extends StatelessWidget {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: AppTheme.primaryBlue,
-            inactiveTrackColor: Colors.grey.shade200,
+            inactiveTrackColor: colorScheme.surfaceContainerHighest,
             thumbColor: AppTheme.primaryBlue,
             overlayColor: AppTheme.primaryBlue.withValues(alpha: 0.2),
             trackHeight: 8,
@@ -481,12 +523,14 @@ class _QuickTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: isSelected
             ? AppTheme.primaryBlue.withValues(alpha: 0.1)
-            : Colors.grey.shade100,
+            : colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isSelected ? AppTheme.primaryBlue : Colors.transparent,
@@ -498,7 +542,7 @@ class _QuickTag extends StatelessWidget {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade700,
+          color: isSelected ? AppTheme.primaryBlue : colorScheme.onSurface,
         ),
       ),
     );

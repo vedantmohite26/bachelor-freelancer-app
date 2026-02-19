@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freelancer/features/jobs/screens/hired_success_screen.dart';
 import 'package:freelancer/features/chat/screens/chat_screen.dart';
 import 'package:freelancer/core/services/chat_service.dart';
@@ -450,170 +451,154 @@ class _ApplicationCard extends StatelessWidget {
     return FutureBuilder<Map<String, dynamic>?>(
       future: userService.getUserProfile(helperId),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          );
-        }
-
         final helper = snapshot.data;
-        if (helper == null) {
-          return const SizedBox.shrink();
+        if (helper == null &&
+            snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
         }
 
-        final name = helper['name'] ?? 'Unknown';
-        final rating = (helper['rating'] ?? 0.0).toDouble();
-        final reviewCount = helper['reviewCount'] ?? 0;
-        final gigsCompleted = helper['gigsCompleted'] ?? 0;
+        final name = helper?['name'] ?? 'Unknown Helper';
+        final imageUrl = helper?['profileImage'] ?? '';
+        final rating = (helper?['rating'] ?? 0.0).toDouble();
+        final reviewCount = helper?['reviewCount'] ?? 0;
         final skills =
-            (helper['skills'] as List?)?.map((s) => s.toString()).toList() ??
+            (helper?['skills'] as List?)?.map((s) => s.toString()).toList() ??
             [];
 
         final colorScheme = Theme.of(context).colorScheme;
 
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: colorScheme.outlineVariant),
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  CachedNetworkAvatar(
-                    radius: 28,
-                    backgroundColor: colorScheme.surfaceContainerLow,
-                    fallbackIconColor: colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              name,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.verified,
-                              size: 16,
-                              color: colorScheme.primary,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.star,
-                              size: 14,
-                              color: Color(0xFFFBBF24),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${rating.toStringAsFixed(1)} ($reviewCount)',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                            const SizedBox(width: 12),
-                            const Icon(
-                              Icons.check_circle,
-                              size: 14,
-                              color: Color(0xFF10B981),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '$gigsCompleted gigs',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: onViewProfile,
-                    child: const Text('View'),
-                  ),
-                ],
+        return GestureDetector(
+          onTap: onViewProfile,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _isProfileHighlighted(helper ?? {})
+                    ? const Color(0xFFFFD700)
+                    : colorScheme.outlineVariant,
+                width: _isProfileHighlighted(helper ?? {}) ? 2.0 : 1.0,
               ),
-              if (skills.isNotEmpty) ...[
+              boxShadow: _isProfileHighlighted(helper ?? {})
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CachedNetworkAvatar(
+                      imageUrl: imageUrl.isNotEmpty ? imageUrl : null,
+                      radius: 24,
+                      backgroundColor: colorScheme.surfaceContainerLow,
+                      fallbackIconColor: colorScheme.primary,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (skills.isNotEmpty)
+                            Text(
+                              skills.take(2).join(" • "),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.star,
+                                size: 14,
+                                color: Colors.amber,
+                              ),
+                              Text(
+                                " $rating ($reviewCount reviews)",
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 12),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: skills.take(3).map((skill) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        skill,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.w500,
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: onReject,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colorScheme.error,
+                          side: BorderSide(color: colorScheme.error),
+                          minimumSize: const Size(double.infinity, 56),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
+                        child: const Text('Reject'),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => onAccept(
+                          name,
+                          helper?['profileImage'] ?? '',
+                          helper?['email'] ?? '',
+                          helper?['phoneNumber'] ?? '',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 56),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('Accept'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: onReject,
-                      // Style handled globally in AppTheme
-                      child: const Text('Reject'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => onAccept(
-                        name,
-                        helper['profileImage'] ?? '',
-                        helper['email'] ?? '',
-                        helper['phoneNumber'] ?? '',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(
-                          double.infinity,
-                          56,
-                        ), // Ensure equal height
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text('Accept'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         );
       },
     );
+  }
+
+  bool _isProfileHighlighted(Map<String, dynamic> helper) {
+    final activePowerUps = helper['activePowerUps'] as Map<String, dynamic>?;
+    if (activePowerUps == null) return false;
+
+    if (activePowerUps.containsKey('Highlight Profile')) {
+      final expiresAt = (activePowerUps['Highlight Profile'] as Timestamp)
+          .toDate();
+      return DateTime.now().isBefore(expiresAt);
+    }
+    return false;
   }
 }
 

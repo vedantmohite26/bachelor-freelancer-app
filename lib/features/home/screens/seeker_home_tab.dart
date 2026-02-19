@@ -7,6 +7,7 @@ import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 import 'package:freelancer/features/profile/screens/helper_profile_screen.dart';
 import 'package:freelancer/features/chat/screens/chat_list_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:freelancer/core/widgets/shimmer_widgets.dart';
 
 class SeekerHomeTab extends StatefulWidget {
   const SeekerHomeTab({super.key});
@@ -15,7 +16,11 @@ class SeekerHomeTab extends StatefulWidget {
   State<SeekerHomeTab> createState() => _SeekerHomeTabState();
 }
 
-class _SeekerHomeTabState extends State<SeekerHomeTab> {
+class _SeekerHomeTabState extends State<SeekerHomeTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   String _currentLocation = "Fetching location...";
 
   @override
@@ -52,6 +57,7 @@ class _SeekerHomeTabState extends State<SeekerHomeTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final userService = Provider.of<UserService>(context, listen: false);
 
     return Scaffold(
@@ -195,11 +201,12 @@ class _SeekerHomeTabState extends State<SeekerHomeTab> {
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const SliverToBoxAdapter(
-                        child: Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(40),
-                            child: CircularProgressIndicator(),
-                          ),
+                        child: Column(
+                          children: [
+                            ShimmerCard(),
+                            ShimmerCard(),
+                            ShimmerCard(),
+                          ],
                         ),
                       );
                     }
@@ -395,10 +402,10 @@ class _SeekerHomeTabState extends State<SeekerHomeTab> {
               ),
             ),
             const SizedBox(height: 20),
-            _FilterOption(title: 'Sort By', value: 'Nearest First'),
-            _FilterOption(title: 'Availability', value: 'Available Now'),
-            _FilterOption(title: 'Rating', value: 'All Ratings'),
-            _FilterOption(title: 'Experience', value: 'Any'),
+            const _FilterOption(title: 'Sort By', value: 'Nearest First'),
+            const _FilterOption(title: 'Availability', value: 'Available Now'),
+            const _FilterOption(title: 'Rating', value: 'All Ratings'),
+            const _FilterOption(title: 'Experience', value: 'Any'),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -570,7 +577,7 @@ class _HelperCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.location_on,
                     size: 14,
                     color: AppTheme.primaryBlue,

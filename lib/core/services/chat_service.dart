@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+
+import 'package:freelancer/core/services/notification_service.dart';
 
 class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final NotificationService _notificationService = NotificationService();
 
   // Get stream of chats for a user
   Stream<List<Map<String, dynamic>>> getUserChats(String userId) {
@@ -77,6 +81,32 @@ class ChatService {
     });
 
     await batch.commit();
+
+    // 3. Notify recipient
+    try {
+      final chatDoc = await chatRef.get();
+      if (chatDoc.exists) {
+        final participants = List<String>.from(
+          chatDoc.data()?['participants'] ?? [],
+        );
+        final recipientId = participants.firstWhere(
+          (id) => id != senderId,
+          orElse: () => '',
+        );
+
+        if (recipientId.isNotEmpty) {
+          await _notificationService.createNotification(
+            userId: recipientId,
+            title: 'New Message',
+            subtitle: content,
+            type: 'message',
+            relatedId: chatId,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Error sending chat notification: $e");
+    }
   }
 
   // Create or get existing chat between two users (only if friends)

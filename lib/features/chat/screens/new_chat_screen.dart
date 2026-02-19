@@ -163,7 +163,7 @@ class _FriendListItem extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chat_bubble_outline, color: AppTheme.primaryBlue),
+            const Icon(Icons.chat_bubble_outline, color: AppTheme.primaryBlue),
           ],
         ),
       ),

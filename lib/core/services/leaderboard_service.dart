@@ -69,4 +69,41 @@ class LeaderboardService {
 
     return badges;
   }
+
+  // Generate 10 Demo Helpers (For Testing)
+  Future<void> generateDemoHelpers() async {
+    final batch = _firestore.batch();
+
+    final demoUsers = [
+      {'name': 'Arjun Singh', 'points': 2450, 'gigs': 52, 'rating': 4.9},
+      {'name': 'Priya Patel', 'points': 2100, 'gigs': 45, 'rating': 4.8},
+      {'name': 'Rahul Sharma', 'points': 1850, 'gigs': 38, 'rating': 4.7},
+      {'name': 'Sneha Gupta', 'points': 1600, 'gigs': 30, 'rating': 4.6},
+      {'name': 'Vikram Malhotra', 'points': 1450, 'gigs': 28, 'rating': 4.5},
+      {'name': 'Anjali Desai', 'points': 1200, 'gigs': 22, 'rating': 4.8},
+      {'name': 'Rohan Kumar', 'points': 950, 'gigs': 18, 'rating': 4.4},
+      {'name': 'Kavita Reddy', 'points': 800, 'gigs': 15, 'rating': 4.3},
+      {'name': 'Amit Verma', 'points': 650, 'gigs': 12, 'rating': 4.2},
+      {'name': 'Neha Joshi', 'points': 500, 'gigs': 8, 'rating': 4.5},
+    ];
+
+    for (var i = 0; i < demoUsers.length; i++) {
+      final user = demoUsers[i];
+      final docRef = _firestore.collection('users').doc('demo_helper_$i');
+
+      batch.set(docRef, {
+        'name': user['name'],
+        'email': 'demo$i@unnati.app',
+        'role': 'helper',
+        'points': user['points'],
+        'gigsCompleted': user['gigs'],
+        'rating': user['rating'],
+        'walletBalance': 0,
+        'createdAt': FieldValue.serverTimestamp(),
+        'isDemo': true, // Flag to easily identify/remove later
+      });
+    }
+
+    await batch.commit();
+  }
 }

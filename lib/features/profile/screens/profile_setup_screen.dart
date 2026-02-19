@@ -60,13 +60,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         color: Colors.grey[400],
                       ),
                     ),
-                    Positioned(
+                    const Positioned(
                       bottom: 0,
                       right: 0,
                       child: CircleAvatar(
                         backgroundColor: AppTheme.primaryBlue,
                         radius: 18,
-                        child: const Icon(
+                        child: Icon(
                           Icons.camera_alt,
                           size: 18,
                           color: Colors.white,

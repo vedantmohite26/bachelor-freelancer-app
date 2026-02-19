@@ -84,9 +84,9 @@ class SearchHelperScreen extends StatelessWidget {
             const SizedBox(height: 40),
 
             // Progress Bar
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 Text(
                   "Searching...",
                   style: TextStyle(fontWeight: FontWeight.bold),

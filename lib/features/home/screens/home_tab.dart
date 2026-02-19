@@ -190,14 +190,14 @@ class HomeTab extends StatelessWidget {
               const SizedBox(height: 32),
 
               // Nearby Helpers
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     "Nearby Helpers",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  const Icon(Icons.filter_list, size: 20),
+                  Icon(Icons.filter_list, size: 20),
                 ],
               ),
               const SizedBox(height: 16),

@@ -228,6 +228,16 @@ class JobCard extends StatelessWidget {
                       context,
                       listen: false,
                     );
+                    final user = authService.user;
+
+                    if (user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please login to apply")),
+                      );
+                      return false;
+                    }
+
+                    // Capture providers before going async
                     final jobService = Provider.of<JobService>(
                       context,
                       listen: false,
@@ -241,122 +251,121 @@ class JobCard extends StatelessWidget {
                       context,
                       listen: false,
                     );
-                    final user = authService.user;
+                    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-                    if (user == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please login to apply")),
-                      );
-                      return false;
-                    }
+                    // Fire-and-forget: run apply logic asynchronously
+                    // so the Dismissible snaps back instantly.
+                    // The parent's Firestore stream will flip isApplied → true.
+                    () async {
+                      try {
+                        await jobService.applyForJob(jobData['id'], user.uid);
 
-                    try {
-                      await jobService.applyForJob(jobData['id'], user.uid);
-
-                      // Notify the seeker
-                      final helperProfile = await userService.getUserProfile(
-                        user.uid,
-                      );
-                      final helperName = helperProfile?['name'] ?? 'A helper';
-                      final posterId = jobData['posterId'] as String?;
-                      if (posterId != null) {
-                        await notificationService.createNotification(
-                          userId: posterId,
-                          title: 'New Application',
-                          subtitle:
-                              '$helperName applied for "${jobData['title']}"',
-                          type: 'job',
-                          relatedId: jobData['id'],
+                        // Notify the seeker (non-blocking)
+                        final helperProfile = await userService.getUserProfile(
+                          user.uid,
                         );
-                      }
+                        final helperName = helperProfile?['name'] ?? 'A helper';
+                        final posterId = jobData['posterId'] as String?;
+                        if (posterId != null) {
+                          notificationService.createNotification(
+                            userId: posterId,
+                            title: 'New Application',
+                            subtitle:
+                                '$helperName applied for "${jobData['title']}"',
+                            type: 'job',
+                            relatedId: jobData['id'],
+                          );
+                        }
 
-                      // Show success popup
-                      if (context.mounted) {
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(28),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 72,
-                                    height: 72,
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.growthGreen.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.check_circle,
-                                      color: AppTheme.growthGreen,
-                                      size: 40,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    "Application Sent!",
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    "Your application for \"${jobData['title']}\" has been submitted. The seeker will review it shortly.",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Theme.of(ctx).colorScheme.onSurface
-                                          .withValues(alpha: 0.7),
-                                      fontSize: 14,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: () => Navigator.pop(ctx),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppTheme.primaryBlue,
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 14,
+                        // Show success popup
+                        if (context.mounted) {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(28),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 72,
+                                      height: 72,
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.growthGreen.withValues(
+                                          alpha: 0.15,
                                         ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.check_circle,
+                                        color: AppTheme.growthGreen,
+                                        size: 40,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Text(
+                                      "Application Sent!",
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      "Your application for \"${jobData['title']}\" has been submitted. The seeker will review it shortly.",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Theme.of(ctx)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.7),
+                                        fontSize: 14,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: () => Navigator.pop(ctx),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppTheme.primaryBlue,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 14,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          "Great!",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
                                           ),
                                         ),
                                       ),
-                                      child: const Text(
-                                        "Great!",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                          );
+                        }
+                      } catch (e) {
+                        scaffoldMessenger.showSnackBar(
                           SnackBar(content: Text("Error: ${e.toString()}")),
                         );
                       }
-                    }
-                    return false; // Don't dismiss the widget
+                    }();
+
+                    return false; // Return immediately — don't freeze the swipe
                   },
                   background: Container(
                     decoration: const BoxDecoration(

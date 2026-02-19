@@ -66,9 +66,9 @@ class ProfileViewScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Text(
                   "Computer Science Major • 4.8",
                   style: TextStyle(color: Colors.grey),

@@ -12,312 +12,333 @@ class LeaderboardScreen extends StatefulWidget {
   State<LeaderboardScreen> createState() => _LeaderboardScreenState();
 }
 
-class _LeaderboardScreenState extends State<LeaderboardScreen> {
+class _LeaderboardScreenState extends State<LeaderboardScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  late Stream<List<Map<String, dynamic>>> _leaderboardStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+
+    // FIX: Initialize stream once to prevent redundant subscriptions on every rebuild
+    _leaderboardStream = Provider.of<LeaderboardService>(
+      context,
+      listen: false,
+    ).getLeaderboard(limit: 50);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: colorScheme.surface,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           "Leaderboard",
           style: TextStyle(
-            color: colorScheme.onSurface,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
-      ),
-      body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: Provider.of<LeaderboardService>(
-          context,
-          listen: false,
-        ).getLeaderboard(limit: 20),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final leaderboard = snapshot.data ?? [];
-          final authService = Provider.of<AuthService>(context, listen: false);
-          final currentUserId = authService.user?.uid ?? '';
-
-          // Find current user rank
-          final currentUserIndex = leaderboard.indexWhere(
-            (user) => user['id'] == currentUserId,
-          );
-          final currentUserRank = currentUserIndex >= 0
-              ? currentUserIndex + 1
-              : 0;
-          final currentUserData = currentUserIndex >= 0
-              ? leaderboard[currentUserIndex]
-              : null;
-
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                // Your Rank Card
-                if (currentUserData != null)
-                  Container(
-                    margin: const EdgeInsets.all(20),
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppTheme.primaryBlue, Color(0xFF2563EB)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Your Rank",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Text(
-                              "#",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              "$currentUserRank",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 56,
-                                fontWeight: FontWeight.bold,
-                                height: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Column(
-                              children: [
-                                Text(
-                                  "${currentUserData['points']}",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  "Points",
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: Colors.white24,
-                            ),
-                            Column(
-                              children: [
-                                const Icon(
-                                  Icons.emoji_events,
-                                  color: Color(0xFFFBBF24),
-                                  size: 32,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "${(currentUserData['badges'] as List?)?.length ?? 0} Badges",
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                // Top 3
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text(
-                    "Top Performers",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-
-                if (leaderboard.length >= 3)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // #2
-                      _PodiumCard(
-                        rank: 2,
-                        name: leaderboard[1]['name'] ?? 'User',
-                        points: "${leaderboard[1]['points']}",
-                        avatar: null,
-                        height: 140,
-                        color: const Color(0xFFC0C0C0),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // #1
-                      _PodiumCard(
-                        rank: 1,
-                        name: leaderboard[0]['name'] ?? 'User',
-                        points: "${leaderboard[0]['points']}",
-                        avatar: null,
-                        height: 180,
-                        color: const Color(0xFFFBBF24),
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // #3
-                      _PodiumCard(
-                        rank: 3,
-                        name: leaderboard[2]['name'] ?? 'User',
-                        points: "${leaderboard[2]['points']}",
-                        avatar: null,
-                        height: 120,
-                        color: const Color(0xFFCD7F32),
-                      ),
-                    ],
-                  ),
-
-                const SizedBox(height: 32),
-
-                // Rest of Rankings
-                Container(
-                  color: colorScheme.surfaceContainerLowest,
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: leaderboard.length > 3
-                        ? leaderboard.length - 3
-                        : 0,
-                    padding: const EdgeInsets.all(20),
-                    itemBuilder: (context, index) {
-                      final userIndex = index + 3;
-                      final user = leaderboard[userIndex];
-                      return _RankingCard(
-                        rank: userIndex + 1,
-                        name: user['name'] ?? 'User',
-                        points: "${user['points']}",
-                        isCurrentUser: user['id'] == currentUserId,
-                      );
-                    },
-                  ),
-                ),
-              ],
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          // Debug Button to add Demo Helpers
+          IconButton(
+            icon: Icon(
+              Icons.bug_report,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
-          );
-        },
+            onPressed: () async {
+              await Provider.of<LeaderboardService>(
+                context,
+                listen: false,
+              ).generateDemoHelpers();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Added 10 Demo Helpers!")),
+                );
+              }
+            },
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppTheme.primaryBlue,
+          labelColor: theme.colorScheme.primary,
+          unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+          tabs: const [
+            Tab(text: "Global"),
+            Tab(text: "Friends"),
+            Tab(text: "This Week"),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildGlobalLeaderboard(), // Top Helpers
+          _buildPlaceholder("Friends Leaderboard coming soon!"),
+          _buildPlaceholder("Weekly challenges coming soon!"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGlobalLeaderboard() {
+    final theme = Theme.of(context);
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: _leaderboardStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final leaderboard = snapshot.data ?? [];
+        if (leaderboard.isEmpty) {
+          return _buildPlaceholder("No helpers found yet.");
+        }
+
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              // Podium (Top 3)
+              if (leaderboard.isNotEmpty) _buildPodium(leaderboard),
+
+              const SizedBox(height: 20),
+
+              // List (Rank 4+)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
+                decoration: BoxDecoration(
+                  // Rounded top corners
+                  color: theme.colorScheme.surfaceContainerHigh,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(30),
+                  ),
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: leaderboard.length > 3
+                      ? leaderboard.length - 3
+                      : 0,
+                  itemBuilder: (context, index) {
+                    final user = leaderboard[index + 3];
+                    return RepaintBoundary(
+                      child: _RankingCard(
+                        rank: index + 4,
+                        name: user['name'] ?? 'User',
+                        points: "${user['points']} pts",
+                        isCurrentUser:
+                            user['id'] ==
+                            Provider.of<AuthService>(
+                              context,
+                              listen: false,
+                            ).user?.uid,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPodium(List<Map<String, dynamic>> users) {
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // 2nd Place (Left)
+            if (users.length > 1)
+              Expanded(
+                child: _PodiumItem(
+                  rank: 2,
+                  user: users[1],
+                  color: const Color(0xFFC0C0C0), // Silver
+                  height: 140,
+                ),
+              ),
+
+            // 1st Place (Center - Biggest)
+            if (users.isNotEmpty)
+              Expanded(
+                flex: 1, // Slightly wider
+                child: _PodiumItem(
+                  rank: 1,
+                  user: users[0],
+                  color: const Color(0xFFFFD700), // Gold
+                  height: 180,
+                  isFirst: true,
+                ),
+              ),
+
+            // 3rd Place (Right)
+            if (users.length > 2)
+              Expanded(
+                child: _PodiumItem(
+                  rank: 3,
+                  user: users[2],
+                  color: const Color(0xFFCD7F32), // Bronze
+                  height: 120,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(String message) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Text(
+        message,
+        style: TextStyle(
+          color: theme.colorScheme.onSurfaceVariant,
+          fontSize: 16,
+        ),
       ),
     );
   }
 }
 
-class _PodiumCard extends StatelessWidget {
+class _PodiumItem extends StatelessWidget {
   final int rank;
-  final String name;
-  final String points;
-  final String? avatar;
-  final double height;
+  final Map<String, dynamic> user;
   final Color color;
+  final double height;
+  final bool isFirst;
 
-  const _PodiumCard({
+  const _PodiumItem({
     required this.rank,
-    required this.name,
-    required this.points,
-    this.avatar,
-    required this.height,
+    required this.user,
     required this.color,
+    required this.height,
+    this.isFirst = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        // Avatar with badge
+        // Avatar with Badge
         Stack(
+          alignment: Alignment.topCenter,
           clipBehavior: Clip.none,
           children: [
-            CachedNetworkAvatar(
-              radius: rank == 1 ? 40 : 32,
-              backgroundColor: Colors.grey.shade200,
-              fallbackText: name,
+            Container(
+              padding: EdgeInsets.all(isFirst ? 4 : 2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: color, width: 2),
+                boxShadow: isFirst
+                    ? [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.5),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                      ]
+                    : [],
+              ),
+              child: CachedNetworkAvatar(
+                radius: isFirst ? 40 : 30,
+                fallbackText: user['name'] ?? 'U',
+                backgroundColor: Colors.grey[800],
+              ),
             ),
             Positioned(
-              top: -8,
-              left: 0,
-              right: 0,
+              bottom: -10,
               child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-                child: Icon(
-                  Icons.emoji_events,
-                  color: Colors.white,
-                  size: rank == 1 ? 20 : 16,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  "$rank",
+                  style: TextStyle(
+                    color: color.computeLuminance() > 0.5
+                        ? Colors.black
+                        : Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ),
           ],
         ),
-
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
 
         Text(
-          name,
+          user['name'] ?? 'User',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: rank == 1 ? 16 : 14,
+            color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.bold,
           ),
         ),
-
-        const SizedBox(height: 4),
-
         Text(
-          "$points pts",
-          style: TextStyle(fontSize: rank == 1 ? 14 : 12, color: Colors.grey),
+          "${user['points']} pts",
+          style: TextStyle(
+            color: color,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        const SizedBox(height: 8),
 
-        const SizedBox(height: 12),
-
-        // Podium
+        // Podium Block
         Container(
-          width: 80,
           height: height,
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.2),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            border: Border.all(color: color, width: 2),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            border: Border.all(color: color.withValues(alpha: 0.5)),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                color.withValues(
+                  alpha: theme.brightness == Brightness.dark ? 0.3 : 0.45,
+                ),
+                color.withValues(
+                  alpha: theme.brightness == Brightness.dark ? 0.05 : 0.15,
+                ),
+              ],
+            ),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -325,9 +346,9 @@ class _PodiumCard extends StatelessWidget {
               Text(
                 "#$rank",
                 style: TextStyle(
-                  fontSize: rank == 1 ? 32 : 24,
-                  fontWeight: FontWeight.bold,
                   color: color,
+                  fontSize: isFirst ? 32 : 24,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
@@ -353,93 +374,51 @@ class _RankingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isCurrentUser
-            ? AppTheme.primaryBlue.withValues(alpha: 0.1)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isCurrentUser ? AppTheme.primaryBlue : Colors.grey.shade200,
-          width: isCurrentUser ? 2 : 1,
-        ),
+            ? AppTheme.primaryBlue.withValues(alpha: 0.2)
+            : theme.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+        border: isCurrentUser ? Border.all(color: AppTheme.primaryBlue) : null,
       ),
       child: Row(
         children: [
-          // Rank
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: isCurrentUser
-                  ? AppTheme.primaryBlue
-                  : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(
-              child: Text(
-                "#$rank",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isCurrentUser ? Colors.white : Colors.black,
-                ),
-              ),
+          Text(
+            "#$rank",
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
-
           const SizedBox(width: 16),
-
-          // Avatar
           CachedNetworkAvatar(
-            radius: 24,
-            backgroundColor: Colors.grey.shade200,
+            radius: 20,
             fallbackText: name,
+            backgroundColor: Colors.grey[700],
           ),
-
           const SizedBox(width: 12),
-
-          // Name
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "$points pts",
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-              ],
+            child: Text(
+              name,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
             ),
           ),
-
-          if (isCurrentUser)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryBlue,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                "YOU",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-          else
-            const Icon(Icons.chevron_right, color: Colors.grey),
+          Text(
+            points,
+            style: const TextStyle(
+              color: AppTheme.growthGreen,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import 'package:freelancer/core/services/job_service.dart';
 import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/features/jobs/screens/job_applications_screen.dart';
 import 'package:freelancer/features/jobs/screens/create_task_screen.dart';
+import 'package:freelancer/core/widgets/shimmer_widgets.dart';
 
 class MyJobsScreen extends StatefulWidget {
   const MyJobsScreen({super.key});
@@ -76,7 +77,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
               stream: jobService.getUserPostedJobs(userId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const ShimmerListScreen();
                 }
 
                 if (snapshot.hasError) {

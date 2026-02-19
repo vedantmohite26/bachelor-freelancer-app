@@ -26,13 +26,27 @@ class FinanceService {
         .collection('users')
         .doc(userId)
         .collection('transactions')
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            return FinanceTransaction.fromMap(doc.id, doc.data());
-          }).toList();
+          final txs = <FinanceTransaction>[];
+          for (final doc in snapshot.docs) {
+            final data = doc.data();
+            // Filter out internal coin transactions from the financial dashboard
+            if (data['isCoin'] == true) continue;
+
+            try {
+              txs.add(FinanceTransaction.fromMap(doc.id, data));
+            } catch (_) {
+              // Skip malformed documents (e.g. legacy transactions with missing fields)
+            }
+          }
+          txs.sort((a, b) => b.date.compareTo(a.date));
+          return txs;
         });
+  }
+
+  Stream<List<FinanceTransaction>> getTransactionsStream(String userId) {
+    return getTransactions(userId);
   }
 
   Future<void> deleteTransaction(String userId, String transactionId) async {
@@ -63,6 +77,38 @@ class FinanceService {
         .doc('budget')
         .snapshots()
         .map((doc) => doc.exists ? Budget.fromMap(doc.data()!) : null);
+  }
+
+  Future<void> clearAllFinancialData(String userId) async {
+    // 1. Delete transactions in batches of 500 (Firestore limit)
+    final collection = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('transactions');
+
+    // Get first batch
+    var snapshot = await collection.limit(500).get();
+
+    while (snapshot.docs.isNotEmpty) {
+      final batch = _firestore.batch();
+      for (var doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Commit batch
+      await batch.commit();
+
+      // Get next batch
+      snapshot = await collection.limit(500).get();
+    }
+
+    // 2. Delete budget settings
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('finance_settings')
+        .doc('budget')
+        .delete();
   }
 
   // --- AI & Analysis ---
@@ -189,7 +235,7 @@ class FinanceService {
 
         final thisMonthIncome = currentMonthMx
             .where((tx) => tx.type == TransactionType.income)
-            .fold(0.0, (sum, tx) => sum + tx.amount);
+            .fold(0.0, (prev, tx) => prev + tx.amount);
 
         if (thisMonthIncome == 0) {
           return "I can help you plan! To give a good recommendation, I need to know your income for this month. Please add an income transaction first.";
@@ -336,7 +382,9 @@ class FinanceService {
   Future<String> getAIAdvice(
     List<FinanceTransaction> transactions, {
     Budget? budget,
-    String? userMessage, // New optional parameter
+    String? userMessage,
+    List<Map<String, String>>? history,
+    String? appData, // New parameter for general app context
   }) async {
     try {
       // 1. Prepare Expenses String
@@ -354,7 +402,7 @@ class FinanceService {
                 tx.date.month == DateTime.now().month &&
                 tx.isRecurring,
           )
-          .fold(0.0, (sum, tx) => sum + tx.amount);
+          .fold(0.0, (prev, tx) => prev + tx.amount);
 
       final budgetInfo = budget != null
           ? "Monthly Budget (Variable): ${budget.monthlyLimit}\nRecurring Expenses (Fixed): $recurringExpenses"
@@ -369,7 +417,6 @@ class FinanceService {
 
       // 2. Call Backend API
       // Use 10.0.2.2 for Android Emulator, localhost for iOS/Web
-      // TODO: Replace with your Render URL for production (e.g., https://your-app.onrender.com/finance-ai)
       final url = Uri.parse(
         'https://bachelor-freelancer-app.onrender.com/finance-ai',
       );
@@ -384,6 +431,8 @@ class FinanceService {
                   userMessage ??
                   "Give me financial advice based on my spending.",
               'expenses': fullData,
+              'history': history ?? [],
+              'app_data': appData ?? "", // Send app data to backend
             }),
           )
           .timeout(const Duration(seconds: 60));

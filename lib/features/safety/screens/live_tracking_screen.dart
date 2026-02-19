@@ -159,7 +159,11 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.location_off, size: 48, color: Colors.grey),
+                      const Icon(
+                        Icons.location_off,
+                        size: 48,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         _statusMessage!,

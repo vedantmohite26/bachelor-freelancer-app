@@ -98,7 +98,8 @@ class FinanceService {
     ];
   }
 
-  String generateLocalAdvice(
+  // Bolt ⚡: Changed return type to String? to allow signaling "unhandled" intents
+  String? generateLocalAdvice(
     List<FinanceTransaction> transactions, {
     Budget? budget,
     String? userMessage,
@@ -189,7 +190,7 @@ class FinanceService {
 
         final thisMonthIncome = currentMonthMx
             .where((tx) => tx.type == TransactionType.income)
-            .fold(0.0, (sum, tx) => sum + tx.amount);
+            .fold(0.0, (total, tx) => total + tx.amount);
 
         if (thisMonthIncome == 0) {
           return "I can help you plan! To give a good recommendation, I need to know your income for this month. Please add an income transaction first.";
@@ -267,10 +268,9 @@ class FinanceService {
           'how am i',
           'doing',
         ].any((w) => lowerMsg.contains(w))) {
-          // FALLBACK handled earlier? No, flow continues.
-          // If we are here, it means it wasn't a greeting, wasn't a help command, has no number.
-          // It might be "status". If NOT status, return help.
-          return "I'm a specialist in finance, so I might not know about that! 😅\n\nBut I can help you with:\n• Checking affordability ('Can I spend 500?')\n• Budget Advice ('Plan my budget')\n• Motivation ('Give me a quote')\n\nTry asking me one of those!";
+          // Bolt ⚡: Return null if the intent isn't recognized locally.
+          // This allows the caller to proceed to the AI for a better response.
+          return null;
         }
       }
     }
@@ -338,6 +338,16 @@ class FinanceService {
     Budget? budget,
     String? userMessage, // New optional parameter
   }) async {
+    // Bolt ⚡: Local-first strategy. Handle common intents instantly without network call.
+    final localResponse = generateLocalAdvice(
+      transactions,
+      budget: budget,
+      userMessage: userMessage,
+    );
+    if (localResponse != null) {
+      return localResponse;
+    }
+
     try {
       // 1. Prepare Expenses String
       final expensesSummary = transactions
@@ -354,15 +364,16 @@ class FinanceService {
                 tx.date.month == DateTime.now().month &&
                 tx.isRecurring,
           )
-          .fold(0.0, (sum, tx) => sum + tx.amount);
+          .fold(0.0, (total, tx) => total + tx.amount);
 
       final budgetInfo = budget != null
           ? "Monthly Budget (Variable): ${budget.monthlyLimit}\nRecurring Expenses (Fixed): $recurringExpenses"
           : "No Budget Set";
 
       final dateTime = DateTime.now();
+      // Bolt ⚡: Truncating timestamp to hour precision to maximize backend cache hit rate.
       final dateString =
-          "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}";
+          "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:00";
 
       final fullData =
           "System Date/Time: $dateString\nUser Data:\n$budgetInfo\nRecent Transactions:\n$expensesSummary";
@@ -411,11 +422,12 @@ class FinanceService {
       debugPrint("AI Connection Failed: $e");
     }
 
-    // 3. Fallback to Local Logic
+    // 3. Fallback to Local Logic or a default "don't know" message
     return generateLocalAdvice(
-      transactions,
-      budget: budget,
-      userMessage: userMessage,
-    );
+          transactions,
+          budget: budget,
+          userMessage: userMessage,
+        ) ??
+        "I'm a specialist in finance, so I might not know about that! 😅\n\nBut I can help you with:\n• Checking affordability ('Can I spend 500?')\n• Budget Advice ('Plan my budget')\n• Motivation ('Give me a quote')\n\nTry asking me one of those!";
   }
 }

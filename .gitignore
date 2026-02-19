@@ -48,6 +48,7 @@ app.*.map.json
 .env
 **/ .env
 **/*.env
+android/app/src/main/res/values/secrets.xml
 
 # Python
 __pycache__/

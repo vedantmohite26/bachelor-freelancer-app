@@ -61,7 +61,7 @@
         <meta-data android:name="flutterEmbedding" android:value="2"/>
 
         <!-- Google Maps API Key -->
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyALPqsaDTJYLzWsTyeKRszpOxosz3mqSgs"/>
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/google_maps_key"/>
 
         <!-- Notification icon (for Firebase Cloud Messaging) -->
         <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_launcher"/>

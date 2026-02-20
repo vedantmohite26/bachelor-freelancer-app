@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from huggingface_hub import InferenceClient
+from huggingface_hub import AsyncInferenceClient
 import os
 from dotenv import load_dotenv
+from collections import OrderedDict
 
 load_dotenv()
 
@@ -12,7 +13,29 @@ app = FastAPI()
 HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+client = AsyncInferenceClient(model=MODEL_ID, token=HF_API_KEY)
+
+# Simple LRU Cache for AI responses
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+
+    def get(self, key: str):
+        if key not in self.cache:
+            return None
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def put(self, key: str, value: str):
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            self.cache.popitem(last=False)
+
+# Initialize cache with 100 capacity
+response_cache = LRUCache(capacity=100)
 
 class FinanceRequest(BaseModel):
     message: str
@@ -25,10 +48,17 @@ def home():
     return {"status": "online", "message": "Financial Assistant Backend is Running"}
 
 @app.post("/finance-ai")
-def finance_ai(request: FinanceRequest):
+async def finance_ai(request: FinanceRequest):
     print(f"Received request: {request.message}")
     print(f"App Data: {request.app_data}")  # Debug print
     
+    # Check cache first to avoid unnecessary AI calls
+    cache_key = f"{request.message}|{request.expenses}|{request.app_data}|{str(request.history)}"
+    cached_response = response_cache.get(cache_key)
+    if cached_response:
+        print("Returning cached response")
+        return cached_response
+
     # Format history for context
     history_context = ""
     if request.history:
@@ -46,12 +76,15 @@ def finance_ai(request: FinanceRequest):
     ]
 
     try:
-        response = client.chat_completion(
+        response = await client.chat_completion(
             messages,
             max_tokens=512,
             stream=False
         )
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+        # Store in cache
+        response_cache.put(cache_key, content)
+        return content
     except Exception as e:
         return {"error": f"Error: {str(e)}"}
 

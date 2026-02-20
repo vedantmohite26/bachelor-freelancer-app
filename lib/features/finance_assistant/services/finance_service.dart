@@ -5,6 +5,7 @@ import 'package:freelancer/features/finance_assistant/models/budget_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class FinanceService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -409,8 +410,8 @@ class FinanceService {
           : "No Budget Set";
 
       final dateTime = DateTime.now();
-      final dateString =
-          "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}";
+      // Truncate to hour precision to maximize backend cache hits
+      final dateString = DateFormat('yyyy-MM-dd HH:00').format(dateTime);
 
       final fullData =
           "System Date/Time: $dateString\nUser Data:\n$budgetInfo\nRecent Transactions:\n$expensesSummary";

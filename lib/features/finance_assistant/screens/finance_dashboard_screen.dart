@@ -400,7 +400,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
               tx.date.year == now.year &&
               !tx.isRecurring,
         )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+        .fold(0.0, (total, tx) => total + tx.amount);
 
     final spentToday = transactions
         .where(
@@ -411,7 +411,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
               tx.date.day == now.day &&
               !tx.isRecurring,
         )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+        .fold(0.0, (total, tx) => total + tx.amount);
 
     // 4. Remaining Spendable
     final remainingSpendable = maxSpendable - spentThisMonth;
@@ -770,7 +770,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
               tx.date.year == now.year &&
               !tx.isRecurring,
         )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+        .fold(0.0, (total, tx) => total + tx.amount);
 
     final totalIncome =
         budget?.monthlyIncome ?? (recurringExpenses + monthlyLimit);
@@ -957,7 +957,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
                 tx.date.year == date.year &&
                 !tx.isRecurring,
           )
-          .fold(0.0, (sum, tx) => sum + tx.amount);
+          .fold(0.0, (total, tx) => total + tx.amount);
     });
 
     return Column(
@@ -1061,7 +1061,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
               tx.date.month == now.month &&
               tx.date.year == now.year,
         )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+        .fold(0.0, (total, tx) => total + tx.amount);
 
     // Total spent this month (non-recurring)
     final spent = transactions
@@ -1072,7 +1072,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
               tx.date.year == now.year &&
               !tx.isRecurring,
         )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+        .fold(0.0, (total, tx) => total + tx.amount);
 
     final availableBudget = (monthlyLimit + income) - spent;
 

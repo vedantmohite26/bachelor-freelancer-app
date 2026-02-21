@@ -272,7 +272,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               tx.date.year == now.year &&
               !tx.isRecurring,
         )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+        .fold(0.0, (total, tx) => total + tx.amount);
 
     final spentToday = transactions
         .where(
@@ -283,7 +283,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               tx.date.day == now.day &&
               !tx.isRecurring,
         )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+        .fold(0.0, (total, tx) => total + tx.amount);
 
     final remainingSpendable = maxSpendable - spentThisMonth;
     final dailySpendLimit = remainingDays > 0

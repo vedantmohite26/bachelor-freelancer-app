@@ -235,7 +235,7 @@ class FinanceService {
 
         final thisMonthIncome = currentMonthMx
             .where((tx) => tx.type == TransactionType.income)
-            .fold(0.0, (prev, tx) => prev + tx.amount);
+            .fold(0.0, (total, tx) => total + tx.amount);
 
         if (thisMonthIncome == 0) {
           return "I can help you plan! To give a good recommendation, I need to know your income for this month. Please add an income transaction first.";
@@ -402,15 +402,16 @@ class FinanceService {
                 tx.date.month == DateTime.now().month &&
                 tx.isRecurring,
           )
-          .fold(0.0, (prev, tx) => prev + tx.amount);
+          .fold(0.0, (total, tx) => total + tx.amount);
 
       final budgetInfo = budget != null
           ? "Monthly Budget (Variable): ${budget.monthlyLimit}\nRecurring Expenses (Fixed): $recurringExpenses"
           : "No Budget Set";
 
       final dateTime = DateTime.now();
+      // Truncate to hour precision to improve backend cache hit rate
       final dateString =
-          "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}";
+          "${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:00";
 
       final fullData =
           "System Date/Time: $dateString\nUser Data:\n$budgetInfo\nRecent Transactions:\n$expensesSummary";

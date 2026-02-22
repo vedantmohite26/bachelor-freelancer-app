@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from huggingface_hub import InferenceClient
+from huggingface_hub import AsyncInferenceClient
 import os
 from dotenv import load_dotenv
+from collections import OrderedDict
+import hashlib
 
 load_dotenv()
 
@@ -12,7 +14,7 @@ app = FastAPI()
 HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+client = AsyncInferenceClient(model=MODEL_ID, token=HF_API_KEY)
 
 class FinanceRequest(BaseModel):
     message: str
@@ -20,14 +22,45 @@ class FinanceRequest(BaseModel):
     history: list[dict] = []
     app_data: str = ""  # New field for general app data
 
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+
+    def get(self, key: str):
+        if key not in self.cache:
+            return None
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def put(self, key: str, value: str):
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            self.cache.popitem(last=False)
+
+# In-memory LRU cache to reduce AI latency and costs
+response_cache = LRUCache(capacity=100)
+
 @app.get("/")
 def home():
     return {"status": "online", "message": "Financial Assistant Backend is Running"}
 
 @app.post("/finance-ai")
-def finance_ai(request: FinanceRequest):
+async def finance_ai(request: FinanceRequest):
+    # Create a unique cache key based on the request content
+    # History is converted to string for hashing
+    payload = f"{request.message}|{request.expenses}|{request.app_data}|{str(request.history)}"
+    cache_key = hashlib.md5(payload.encode()).hexdigest()
+
+    # Check cache first (Performance Optimization)
+    cached_response = response_cache.get(cache_key)
+    if cached_response:
+        print(f"Cache hit for: {request.message}")
+        return cached_response
+
     print(f"Received request: {request.message}")
-    print(f"App Data: {request.app_data}")  # Debug print
     
     # Format history for context
     history_context = ""
@@ -46,13 +79,25 @@ def finance_ai(request: FinanceRequest):
     ]
 
     try:
-        response = client.chat_completion(
+        # Async call to HF API for better concurrency
+        response = await client.chat_completion(
             messages,
             max_tokens=512,
             stream=False
         )
-        return response.choices[0].message.content
+        ai_response = response.choices[0].message.content
+
+        # Store in cache
+        response_cache.put(cache_key, ai_response)
+
+        return ai_response
     except Exception as e:
+        # Fallback for missing API key or connection issues
+        if not HF_API_KEY:
+            mock_response = "I'm currently in offline mode, but remember: always prioritize your needs over wants! 💰"
+            # Cache the mock response too to avoid repeated failed API calls in dev
+            response_cache.put(cache_key, mock_response)
+            return mock_response
         return {"error": f"Error: {str(e)}"}
 
 if __name__ == "__main__":

@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from huggingface_hub import InferenceClient
+from huggingface_hub import AsyncInferenceClient
 import os
+import hashlib
+import json
+from collections import OrderedDict
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,7 +15,7 @@ app = FastAPI()
 HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+client = AsyncInferenceClient(model=MODEL_ID, token=HF_API_KEY)
 
 class FinanceRequest(BaseModel):
     message: str
@@ -20,16 +23,44 @@ class FinanceRequest(BaseModel):
     history: list[dict] = []
     app_data: str = ""  # New field for general app data
 
+# LRU Cache Implementation
+CACHE_CAPACITY = 100
+response_cache = OrderedDict()
+
+def get_cache_key(request: FinanceRequest) -> str:
+    """Generates a unique MD5 hash for the request payload."""
+    payload = {
+        "message": request.message,
+        "expenses": request.expenses,
+        "history": request.history,
+        "app_data": request.app_data
+    }
+    payload_str = json.dumps(payload, sort_keys=True)
+    return hashlib.md5(payload_str.encode()).hexdigest()
+
 @app.get("/")
 def home():
     return {"status": "online", "message": "Financial Assistant Backend is Running"}
 
 @app.post("/finance-ai")
-def finance_ai(request: FinanceRequest):
+async def finance_ai(request: FinanceRequest):
+    # 1. Cache Lookup
+    cache_key = get_cache_key(request)
+    if cache_key in response_cache:
+        # Move to end (MRU)
+        response_cache.move_to_end(cache_key)
+        return response_cache[cache_key]
+
     print(f"Received request: {request.message}")
-    print(f"App Data: {request.app_data}")  # Debug print
     
-    # Format history for context
+    # 2. Mock Fallback for Local Development
+    if not HF_API_KEY:
+        mock_response = "I'm currently in offline mode, but I'd usually tell you to save your money! ₹"
+        if "coffee" in request.message.lower():
+            mock_response = "₹300 for coffee? That's a no from your big sibling. Drink water! 💧"
+        return mock_response
+
+    # 3. Format history for context
     history_context = ""
     if request.history:
         history_context = "\n\nChat History:\n" + "\n".join([f"{msg['role']}: {msg['content']}" for msg in request.history[-5:]])
@@ -46,12 +77,19 @@ def finance_ai(request: FinanceRequest):
     ]
 
     try:
-        response = client.chat_completion(
+        response = await client.chat_completion(
             messages,
             max_tokens=512,
             stream=False
         )
-        return response.choices[0].message.content
+        advice = response.choices[0].message.content
+
+        # 4. Store in Cache
+        response_cache[cache_key] = advice
+        if len(response_cache) > CACHE_CAPACITY:
+            response_cache.popitem(last=False)  # Remove oldest (LRU)
+
+        return advice
     except Exception as e:
         return {"error": f"Error: {str(e)}"}
 

@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from huggingface_hub import InferenceClient
+from huggingface_hub import AsyncInferenceClient
 import os
 from dotenv import load_dotenv
+from collections import OrderedDict
+import hashlib
+import json
 
 load_dotenv()
 
@@ -12,7 +15,11 @@ app = FastAPI()
 HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+client = AsyncInferenceClient(model=MODEL_ID, token=HF_API_KEY)
+
+# In-memory LRU Cache for AI responses
+CACHE_SIZE = 100
+response_cache = OrderedDict()
 
 class FinanceRequest(BaseModel):
     message: str
@@ -20,15 +27,26 @@ class FinanceRequest(BaseModel):
     history: list[dict] = []
     app_data: str = ""  # New field for general app data
 
+def get_cache_key(request: FinanceRequest) -> str:
+    """Generates a unique MD5 hash for the request payload to use as a cache key."""
+    payload_str = f"{request.message}|{request.expenses}|{json.dumps(request.history, sort_keys=True)}|{request.app_data}"
+    return hashlib.md5(payload_str.encode()).hexdigest()
+
 @app.get("/")
 def home():
     return {"status": "online", "message": "Financial Assistant Backend is Running"}
 
 @app.post("/finance-ai")
-def finance_ai(request: FinanceRequest):
+async def finance_ai(request: FinanceRequest):
     print(f"Received request: {request.message}")
-    print(f"App Data: {request.app_data}")  # Debug print
     
+    # 1. Cache Lookup
+    cache_key = get_cache_key(request)
+    if cache_key in response_cache:
+        print("Cache Hit! ⚡")
+        response_cache.move_to_end(cache_key)
+        return response_cache[cache_key]
+
     # Format history for context
     history_context = ""
     if request.history:
@@ -46,12 +64,25 @@ def finance_ai(request: FinanceRequest):
     ]
 
     try:
-        response = client.chat_completion(
-            messages,
-            max_tokens=512,
-            stream=False
-        )
-        return response.choices[0].message.content
+        # 2. Async API Call
+        if not HF_API_KEY:
+            # Mock response for local development if no API key is provided
+            print("No HF_API_KEY found, returning mock response...")
+            result = f"Mock response for: {request.message}. (Please set HF_API_KEY for real AI advice)"
+        else:
+            response = await client.chat_completion(
+                messages,
+                max_tokens=512,
+                stream=False
+            )
+            result = response.choices[0].message.content
+
+        # 3. Store in Cache
+        response_cache[cache_key] = result
+        if len(response_cache) > CACHE_SIZE:
+            response_cache.popitem(last=False)
+
+        return result
     except Exception as e:
         return {"error": f"Error: {str(e)}"}
 

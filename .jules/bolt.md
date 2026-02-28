@@ -1,0 +1,3 @@
+## 2025-05-23 - AI Response Caching and Async Inference
+**Learning:** Including a precise timestamp in the request payload to an AI backend makes caching nearly impossible because the payload changes every minute. Truncating the timestamp to the nearest hour significantly increases the cache hit rate for repetitive user queries while still providing the AI with sufficient temporal context for financial advice.
+**Action:** Always consider the volatility of data included in cache keys. Normalize or bucket timestamps and other frequently changing but non-critical context data to maximize the effectiveness of the caching layer.

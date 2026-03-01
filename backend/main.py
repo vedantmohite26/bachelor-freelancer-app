@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from huggingface_hub import InferenceClient
+from huggingface_hub import AsyncInferenceClient
 import os
+import hashlib
+import json
+from collections import OrderedDict
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,7 +15,28 @@ app = FastAPI()
 HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+client = AsyncInferenceClient(model=MODEL_ID, token=HF_API_KEY)
+
+# Performance: In-memory LRU cache to store AI responses and reduce latency/costs
+class LRUCache:
+    def __init__(self, capacity: int = 100):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+
+    def get(self, key):
+        if key not in self.cache:
+            return None
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def put(self, key, value):
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            self.cache.popitem(last=False)
+
+response_cache = LRUCache(capacity=100)
 
 class FinanceRequest(BaseModel):
     message: str
@@ -25,10 +49,30 @@ def home():
     return {"status": "online", "message": "Financial Assistant Backend is Running"}
 
 @app.post("/finance-ai")
-def finance_ai(request: FinanceRequest):
+async def finance_ai(request: FinanceRequest):
+    # Generate a cache key based on the request content
+    cache_data = {
+        "message": request.message,
+        "expenses": request.expenses,
+        "history": request.history,
+        "app_data": request.app_data
+    }
+    cache_key = hashlib.md5(json.dumps(cache_data, sort_keys=True).encode()).hexdigest()
+
+    # Check cache first
+    cached_response = response_cache.get(cache_key)
+    if cached_response:
+        print(f"Cache hit for request: {request.message[:20]}...")
+        return cached_response
+
     print(f"Received request: {request.message}")
-    print(f"App Data: {request.app_data}")  # Debug print
     
+    # Mock response fallback for local development if API key is missing
+    if not HF_API_KEY:
+        mock_response = "I'm your Indian big brother. I see you're trying to spend without an API key. Save your money! ₹0 is the best price. ⛔"
+        response_cache.put(cache_key, mock_response)
+        return mock_response
+
     # Format history for context
     history_context = ""
     if request.history:
@@ -46,15 +90,20 @@ def finance_ai(request: FinanceRequest):
     ]
 
     try:
-        response = client.chat_completion(
+        response = await client.chat_completion(
             messages,
             max_tokens=512,
             stream=False
         )
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+        # Store in cache
+        response_cache.put(cache_key, content)
+        return content
     except Exception as e:
         return {"error": f"Error: {str(e)}"}
 
 if __name__ == "__main__":
     import uvicorn
+    # Clear port before starting
+    os.system("kill $(lsof -t -i :8000) 2>/dev/null || true")
     uvicorn.run(app, host="0.0.0.0", port=8000)

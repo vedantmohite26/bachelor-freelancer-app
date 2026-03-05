@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from huggingface_hub import InferenceClient
+from huggingface_hub import AsyncInferenceClient
 import os
 from dotenv import load_dotenv
+import hashlib
+import json
+from collections import OrderedDict
 
 load_dotenv()
 
@@ -12,7 +15,24 @@ app = FastAPI()
 HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+# Use AsyncInferenceClient for non-blocking I/O
+client = AsyncInferenceClient(model=MODEL_ID, token=HF_API_KEY)
+
+# LRU Cache implementation for AI responses
+# Capacity: 100 entries
+AI_CACHE = OrderedDict()
+CACHE_CAPACITY = 100
+
+def get_cache_key(request: 'FinanceRequest') -> str:
+    """Generate a unique MD5 hash for the request to use as a cache key."""
+    payload = {
+        "message": request.message,
+        "expenses": request.expenses,
+        "history": request.history,
+        "app_data": request.app_data
+    }
+    payload_str = json.dumps(payload, sort_keys=True)
+    return hashlib.md5(payload_str.encode()).hexdigest()
 
 class FinanceRequest(BaseModel):
     message: str
@@ -25,10 +45,17 @@ def home():
     return {"status": "online", "message": "Financial Assistant Backend is Running"}
 
 @app.post("/finance-ai")
-def finance_ai(request: FinanceRequest):
+async def finance_ai(request: FinanceRequest):
     print(f"Received request: {request.message}")
-    print(f"App Data: {request.app_data}")  # Debug print
     
+    # Check cache first
+    cache_key = get_cache_key(request)
+    if cache_key in AI_CACHE:
+        print("Cache Hit! Returning cached response.")
+        # Move to end (LRU)
+        AI_CACHE.move_to_end(cache_key)
+        return AI_CACHE[cache_key]
+
     # Format history for context
     history_context = ""
     if request.history:
@@ -46,12 +73,29 @@ def finance_ai(request: FinanceRequest):
     ]
 
     try:
-        response = client.chat_completion(
+        # Check for mock scenario (no API key)
+        if not HF_API_KEY or HF_API_KEY == "dummy":
+            # For testing/local dev without key
+            mock_response = "I'm your big brother. I see your request, but I need a real API key to give you proper advice. For now, just save your money! 💰"
+            # Cache the mock response too for consistent performance testing
+            AI_CACHE[cache_key] = mock_response
+            if len(AI_CACHE) > CACHE_CAPACITY:
+                AI_CACHE.popitem(last=False)
+            return mock_response
+
+        response = await client.chat_completion(
             messages,
             max_tokens=512,
             stream=False
         )
-        return response.choices[0].message.content
+        ai_content = response.choices[0].message.content
+
+        # Store in cache
+        AI_CACHE[cache_key] = ai_content
+        if len(AI_CACHE) > CACHE_CAPACITY:
+            AI_CACHE.popitem(last=False)
+
+        return ai_content
     except Exception as e:
         return {"error": f"Error: {str(e)}"}
 

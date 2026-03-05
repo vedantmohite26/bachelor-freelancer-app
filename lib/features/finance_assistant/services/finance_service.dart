@@ -409,8 +409,10 @@ class FinanceService {
           : "No Budget Set";
 
       final dateTime = DateTime.now();
+      // Normalize timestamp to hour-precision to increase backend cache hit rate
+      // Format: YYYY-MM-DD HH:00
       final dateString =
-          "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}";
+          "${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:00";
 
       final fullData =
           "System Date/Time: $dateString\nUser Data:\n$budgetInfo\nRecent Transactions:\n$expensesSummary";

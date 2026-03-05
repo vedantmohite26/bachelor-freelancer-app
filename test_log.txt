@@ -1,0 +1,33 @@
+
+--- Scenario: Poor Student (₹500) ---
+Q: Can I buy a ₹10 pen for exam?
+AI: "I'm your big brother. I see your request, but I need a real API key to give you proper advice. For now, just save your money! 💰"
+⚠️  MANUAL CHECK NEEDED (Expected YES)
+
+--- Scenario: Poor Student (₹500) ---
+Q: Can I buy a ₹300 coffee?
+AI: "I'm your big brother. I see your request, but I need a real API key to give you proper advice. For now, just save your money! 💰"
+✅ PASS
+
+--- Scenario: Rich Freelancer (₹50000) ---
+Q: Can I buy a ₹300 coffee?
+AI: "I'm your big brother. I see your request, but I need a real API key to give you proper advice. For now, just save your money! 💰"
+✅ PASS
+
+--- Scenario: Broke (₹50) ---
+Q: Can I buy ₹40 food?
+AI: "I'm your big brother. I see your request, but I need a real API key to give you proper advice. For now, just save your money! 💰"
+⚠️  MANUAL CHECK NEEDED (Expected YES)
+
+--- Scenario: Broke (₹50) ---
+Q: Can I go to cinema (₹200)?
+AI: "I'm your big brother. I see your request, but I need a real API key to give you proper advice. For now, just save your money! 💰"
+✅ PASS
+
+--- Testing Learning Capability ---
+Initial Q: Can I buy a ₹200 comic book?
+
+--- Scenario: Learning User (₹1000) ---
+Q: Can I buy a ₹200 comic book?
+AI: "I'm your big brother. I see your request, but I need a real API key to give you proper advice. For now, just save your money! 💰"
+✅ PASS

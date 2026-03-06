@@ -409,8 +409,12 @@ class FinanceService {
           : "No Budget Set";
 
       final dateTime = DateTime.now();
-      final dateString =
-          "${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}";
+      // Bolt Optimization: Truncate to hour precision and pad strings to maximize backend cache hit rate
+      final year = dateTime.year;
+      final month = dateTime.month.toString().padLeft(2, '0');
+      final day = dateTime.day.toString().padLeft(2, '0');
+      final hour = dateTime.hour.toString().padLeft(2, '0');
+      final dateString = "$year-$month-$day $hour:00";
 
       final fullData =
           "System Date/Time: $dateString\nUser Data:\n$budgetInfo\nRecent Transactions:\n$expensesSummary";

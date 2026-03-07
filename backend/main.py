@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from huggingface_hub import InferenceClient
+from huggingface_hub import AsyncInferenceClient
 import os
+import hashlib
+import json
+from collections import OrderedDict
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,24 +15,68 @@ app = FastAPI()
 HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+client = AsyncInferenceClient(model=MODEL_ID, token=HF_API_KEY)
+
+# Simple In-Memory LRU Cache
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+
+    def get(self, key: str):
+        if key not in self.cache:
+            return None
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def put(self, key: str, value: str):
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            self.cache.popitem(last=False)
+
+ai_cache = LRUCache(capacity=100)
 
 class FinanceRequest(BaseModel):
     message: str
     expenses: str
     history: list[dict] = []
-    app_data: str = ""  # New field for general app data
+    app_data: str = ""
+
+def generate_cache_key(request: FinanceRequest) -> str:
+    """Generate a stable MD5 hash for the request payload."""
+    payload = {
+        "message": request.message,
+        "expenses": request.expenses,
+        "history": request.history,
+        "app_data": request.app_data
+    }
+    payload_str = json.dumps(payload, sort_keys=True)
+    return hashlib.md5(payload_str.encode()).hexdigest()
 
 @app.get("/")
 def home():
     return {"status": "online", "message": "Financial Assistant Backend is Running"}
 
 @app.post("/finance-ai")
-def finance_ai(request: FinanceRequest):
+async def finance_ai(request: FinanceRequest):
+    # 1. Check Cache
+    cache_key = generate_cache_key(request)
+    cached_response = ai_cache.get(cache_key)
+    if cached_response:
+        print(f"Cache Hit for: {request.message[:30]}...")
+        return cached_response
+
     print(f"Received request: {request.message}")
-    print(f"App Data: {request.app_data}")  # Debug print
     
-    # Format history for context
+    # 2. Handle missing API key with mock response (for development)
+    if not HF_API_KEY:
+        mock_response = "I'm currently in offline mode, but remember: save more than you spend! 💰"
+        ai_cache.put(cache_key, mock_response)
+        return mock_response
+
+    # 3. Format history for context
     history_context = ""
     if request.history:
         history_context = "\n\nChat History:\n" + "\n".join([f"{msg['role']}: {msg['content']}" for msg in request.history[-5:]])
@@ -46,12 +93,16 @@ def finance_ai(request: FinanceRequest):
     ]
 
     try:
-        response = client.chat_completion(
+        response = await client.chat_completion(
             messages,
             max_tokens=512,
             stream=False
         )
-        return response.choices[0].message.content
+        ans = response.choices[0].message.content
+
+        # 4. Save to Cache
+        ai_cache.put(cache_key, ans)
+        return ans
     except Exception as e:
         return {"error": f"Error: {str(e)}"}
 

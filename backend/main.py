@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from huggingface_hub import InferenceClient
+from huggingface_hub import AsyncInferenceClient
 import os
+import hashlib
+import json
+from collections import OrderedDict
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,23 +15,51 @@ app = FastAPI()
 HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+client = AsyncInferenceClient(model=MODEL_ID, token=HF_API_KEY)
+
+# Simple LRU Cache
+CACHE_CAPACITY = 100
+response_cache = OrderedDict()
+
+def get_cache_key(request_dict: dict) -> str:
+    # Create a stable string representation for hashing
+    # Sort history and other nested structures if necessary, but here simple json.dumps(sort_keys=True) works
+    encoded_str = json.dumps(request_dict, sort_keys=True).encode('utf-8')
+    return hashlib.md5(encoded_str).hexdigest()
 
 class FinanceRequest(BaseModel):
     message: str
     expenses: str
     history: list[dict] = []
-    app_data: str = ""  # New field for general app data
+    app_data: str = ""
 
 @app.get("/")
-def home():
+async def home():
     return {"status": "online", "message": "Financial Assistant Backend is Running"}
 
 @app.post("/finance-ai")
-def finance_ai(request: FinanceRequest):
+async def finance_ai(request: FinanceRequest):
+    request_dict = request.model_dump()
+    cache_key = get_cache_key(request_dict)
+
+    # Check cache
+    if cache_key in response_cache:
+        print(f"Cache hit for: {request.message}")
+        # Move to end to maintain LRU
+        response_cache.move_to_end(cache_key)
+        return response_cache[cache_key]
+
     print(f"Received request: {request.message}")
-    print(f"App Data: {request.app_data}")  # Debug print
     
+    # Mock response logic if API key is missing for development/testing
+    if not HF_API_KEY:
+        mock_response = f"Mock response for: {request.message} (₹500). I'm your AI sibling, and I say NO to unnecessary spending! 😤"
+        # Store in cache even for mock to test caching layer
+        response_cache[cache_key] = mock_response
+        if len(response_cache) > CACHE_CAPACITY:
+            response_cache.popitem(last=False)
+        return mock_response
+
     # Format history for context
     history_context = ""
     if request.history:
@@ -46,12 +77,19 @@ def finance_ai(request: FinanceRequest):
     ]
 
     try:
-        response = client.chat_completion(
+        response = await client.chat_completion(
             messages,
             max_tokens=512,
             stream=False
         )
-        return response.choices[0].message.content
+        ai_content = response.choices[0].message.content
+
+        # Store in cache
+        response_cache[cache_key] = ai_content
+        if len(response_cache) > CACHE_CAPACITY:
+            response_cache.popitem(last=False)
+
+        return ai_content
     except Exception as e:
         return {"error": f"Error: {str(e)}"}
 

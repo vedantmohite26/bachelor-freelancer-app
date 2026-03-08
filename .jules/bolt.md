@@ -1,0 +1,3 @@
+## 2025-05-15 - AI Backend Caching and Async I/O
+**Learning:** In-memory LRU caching of AI responses significantly reduces latency for repeated user queries. Truncating dynamic context (like system timestamps) to a coarser granularity (e.g., hour precision) increases cache hit rates without losing relevant temporal context for the AI.
+**Action:** When implementing AI features with high API costs or latency, always consider a caching layer and evaluate if dynamic context strings can be stabilized to improve hit rates. Use `AsyncInferenceClient` in FastAPI to prevent blocking the event loop during network-bound AI inference.

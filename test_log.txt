@@ -1,0 +1,33 @@
+
+--- Scenario: Poor Student (₹500) ---
+Q: Can I buy a ₹10 pen for exam?
+AI: "Mock response for: Can I buy a ₹10 pen for exam? (₹500). I'm your AI sibling, and I say NO to unnecessary spending! 😤"
+✅ PASS
+
+--- Scenario: Poor Student (₹500) ---
+Q: Can I buy a ₹300 coffee?
+AI: "Mock response for: Can I buy a ₹300 coffee? (₹500). I'm your AI sibling, and I say NO to unnecessary spending! 😤"
+✅ PASS
+
+--- Scenario: Rich Freelancer (₹50000) ---
+Q: Can I buy a ₹300 coffee?
+AI: "Mock response for: Can I buy a ₹300 coffee? (₹500). I'm your AI sibling, and I say NO to unnecessary spending! 😤"
+✅ PASS
+
+--- Scenario: Broke (₹50) ---
+Q: Can I buy ₹40 food?
+AI: "Mock response for: Can I buy ₹40 food? (₹500). I'm your AI sibling, and I say NO to unnecessary spending! 😤"
+✅ PASS
+
+--- Scenario: Broke (₹50) ---
+Q: Can I go to cinema (₹200)?
+AI: "Mock response for: Can I go to cinema (₹200)? (₹500). I'm your AI sibling, and I say NO to unnecessary spending! 😤"
+✅ PASS
+
+--- Testing Learning Capability ---
+Initial Q: Can I buy a ₹200 comic book?
+
+--- Scenario: Learning User (₹1000) ---
+Q: Can I buy a ₹200 comic book?
+AI: "Mock response for: Can I buy a ₹200 comic book? (₹500). I'm your AI sibling, and I say NO to unnecessary spending! 😤"
+✅ PASS

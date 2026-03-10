@@ -1,0 +1,33 @@
+
+--- Scenario: Poor Student (₹500) ---
+Q: Can I buy a ₹10 pen for exam?
+AI: "MOCK RESPONSE (No HF_API_KEY): You asked about 'Can I buy a ₹10 pen for exam?'. Stay on budget!"
+✅ PASS
+
+--- Scenario: Poor Student (₹500) ---
+Q: Can I buy a ₹300 coffee?
+AI: "MOCK RESPONSE (No HF_API_KEY): You asked about 'Can I buy a ₹300 coffee?'. Stay on budget!"
+✅ PASS
+
+--- Scenario: Rich Freelancer (₹50000) ---
+Q: Can I buy a ₹300 coffee?
+AI: "MOCK RESPONSE (No HF_API_KEY): You asked about 'Can I buy a ₹300 coffee?'. Stay on budget!"
+✅ PASS
+
+--- Scenario: Broke (₹50) ---
+Q: Can I buy ₹40 food?
+AI: "MOCK RESPONSE (No HF_API_KEY): You asked about 'Can I buy ₹40 food?'. Stay on budget!"
+✅ PASS
+
+--- Scenario: Broke (₹50) ---
+Q: Can I go to cinema (₹200)?
+AI: "MOCK RESPONSE (No HF_API_KEY): You asked about 'Can I go to cinema (₹200)?'. Stay on budget!"
+✅ PASS
+
+--- Testing Learning Capability ---
+Initial Q: Can I buy a ₹200 comic book?
+
+--- Scenario: Learning User (₹1000) ---
+Q: Can I buy a ₹200 comic book?
+AI: "MOCK RESPONSE (No HF_API_KEY): You asked about 'Can I buy a ₹200 comic book?'. Stay on budget!"
+✅ PASS

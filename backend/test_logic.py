@@ -7,8 +7,8 @@ import sys
 # Force UTF-8 for stdout
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-# URL = "https://bachelor-freelancer-app.onrender.com/finance-ai"
-URL = "http://127.0.0.1:8004/finance-ai"
+# URL = "http://127.0.0.1:8000/finance-ai"
+URL = "http://127.0.0.1:8000/finance-ai"
 
 def log(msg):
     print(msg)

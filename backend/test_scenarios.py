@@ -7,9 +7,9 @@ import io
 # Force UTF-8 for stdout
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-# URL = "http://127.0.0.1:8000/finance-ai" # Local (if running)
+URL = "http://127.0.0.1:8000/finance-ai" # Local (if running)
 # URL = "http://127.0.0.1:8001/finance-ai" # Local Custom Port
-URL = "https://bachelor-freelancer-app.onrender.com/finance-ai" # Production
+# URL = "https://bachelor-freelancer-app.onrender.com/finance-ai" # Production
 
 def test_question(category, question, budget_info=None, app_data=None):
     print(f"\n--- Testing {category} ---")

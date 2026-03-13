@@ -1,0 +1,3 @@
+## 2026-03-13 - AI Backend Caching and Async Support
+**Learning:** AI response latency is a major bottleneck in financial assistants. Implementing an in-memory LRU cache and switching to asynchronous I/O significantly improves concurrent throughput and user experience for repeated queries. Truncating timestamps in the request payload (e.g., to the hour) further increases the cache hit rate without compromising the relevance of financial advice.
+**Action:** Always consider payload normalization (like time-rounding) when implementing caching for LLM-based features. Use `AsyncInferenceClient` for all Hugging Face inference tasks in FastAPI to avoid blocking the event loop.

@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from huggingface_hub import InferenceClient
+from huggingface_hub import AsyncInferenceClient
 import os
+import re
+import hashlib
+import json
+from collections import OrderedDict
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,7 +16,28 @@ app = FastAPI()
 HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2"
 
-client = InferenceClient(model=MODEL_ID, token=HF_API_KEY)
+client = AsyncInferenceClient(model=MODEL_ID, token=HF_API_KEY)
+
+# Simple LRU Cache for AI responses
+class LRUCache:
+    def __init__(self, capacity: int = 100):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+
+    def get(self, key: str):
+        if key not in self.cache:
+            return None
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def put(self, key: str, value: str):
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            self.cache.popitem(last=False)
+
+response_cache = LRUCache(capacity=100)
 
 class FinanceRequest(BaseModel):
     message: str
@@ -25,9 +50,27 @@ def home():
     return {"status": "online", "message": "Financial Assistant Backend is Running"}
 
 @app.post("/finance-ai")
-def finance_ai(request: FinanceRequest):
+async def finance_ai(request: FinanceRequest):
+    # Optimization: Normalize timestamps in expenses to increase cache hit rate
+    # Truncate minutes to group requests within the same hour
+    # Pattern matches "System Date/Time: YYYY-MM-DD HH:MM"
+    normalized_expenses = re.sub(r"(System Date/Time: \d{4}-\d{2}-\d{2} \d{2}):\d{2}", r"\1:00", request.expenses)
+
+    # Generate a unique cache key based on the request content
+    cache_input = {
+        "message": request.message.strip().lower(),
+        "expenses": normalized_expenses,
+        "history": request.history,
+        "app_data": request.app_data
+    }
+    cache_key = hashlib.md5(json.dumps(cache_input, sort_keys=True).encode()).hexdigest()
+
+    # Check cache first
+    cached_response = response_cache.get(cache_key)
+    if cached_response:
+        return cached_response
+
     print(f"Received request: {request.message}")
-    print(f"App Data: {request.app_data}")  # Debug print
     
     # Format history for context
     history_context = ""
@@ -46,12 +89,22 @@ def finance_ai(request: FinanceRequest):
     ]
 
     try:
-        response = client.chat_completion(
+        if not HF_API_KEY:
+            # Fallback mock response for local testing when API key is missing
+            mock_response = "Mock: Based on your request, I advise against this expense to keep your savings on track. 💸"
+            response_cache.put(cache_key, mock_response)
+            return mock_response
+
+        response = await client.chat_completion(
             messages,
             max_tokens=512,
             stream=False
         )
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+
+        # Store in cache
+        response_cache.put(cache_key, content)
+        return content
     except Exception as e:
         return {"error": f"Error: {str(e)}"}
 

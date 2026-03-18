@@ -1,0 +1,3 @@
+## 2023-10-27 - Backend AI Response Caching
+**Learning:** AI model inference is the primary bottleneck in the financial assistant (latency > 2s). Implementing an in-memory LRU cache at the backend significantly improves performance for repeated or similar queries. Normalizing high-entropy fields (like minutes in timestamps) in the request payload before hashing into a cache key is critical for maximizing cache hit rates for frequent user interactions.
+**Action:** Always implement a caching layer for expensive AI operations and normalize request payloads to coarser precision when possible to increase cache reuse.

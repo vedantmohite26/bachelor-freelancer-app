@@ -1,0 +1,4 @@
+## 2024-05-20 - [AI Response Caching & Timestamp Normalization]
+**Learning:** LLM responses are high-latency and expensive. Caching them significantly improves the user experience. However, request payloads often contain high-entropy fields like timestamps ("System Date/Time: 2024-05-20 14:30:45") that change with every request, resulting in a 0% cache hit rate for otherwise identical queries.
+
+**Action:** Implement an in-memory LRU cache and normalize high-entropy fields in the cache key. Specifically, using regex to truncate timestamps to the hour precision (e.g., YYYY-MM-DD HH) allows for cache hits within the same hour for the same user query and financial context, while still providing the full timestamp to the LLM for accurate reasoning if it's a cache miss. In this codebase, this improved latency from ~510ms (mock/cold) to ~8ms (cache hit).

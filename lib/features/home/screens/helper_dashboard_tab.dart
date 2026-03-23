@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/auth_service.dart';
@@ -60,11 +61,11 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
               // Vibrant Header with Gradient
               SliverToBoxAdapter(
                 child: Container(
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    top: 60, // Safe area top
-                    bottom: 30,
+                  padding: EdgeInsets.only(
+                    left: 20.w,
+                    right: 20.w,
+                    top: 60.h, // Safe area top
+                    bottom: 30.h,
                   ),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
@@ -94,20 +95,20 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 "Dashboard",
                                 style: TextStyle(
-                                  fontSize: 28,
+                                  fontSize: 28.sp,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4.h),
                               Row(
                                 children: [
                                   Container(
-                                    width: 8,
-                                    height: 8,
+                                    width: 8.w,
+                                    height: 8.h,
                                     decoration: BoxDecoration(
                                       color: isOnline
                                           ? const Color(0xFF10B981) // Green
@@ -115,13 +116,13 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                                       shape: BoxShape.circle,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: 8.w),
                                   Text(
                                     isOnline
                                         ? "You're Online"
                                         : "You're Offline",
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 14.sp,
                                       color: isOnline
                                           ? const Color(0xFF10B981)
                                           : Colors.white70,
@@ -140,25 +141,25 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                               shape: BoxShape.circle,
                             ),
                             child: IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.chat_bubble_outline,
                                 color: Colors.white,
-                                size: 24,
+                                size: 24.sp,
                               ),
                               onPressed: () => _navigateToMessages(context),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             child: IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.emoji_events,
-                                color: Color(0xFFF59E0B),
-                                size: 28,
+                                color: const Color(0xFFF59E0B),
+                                size: 28.sp,
                               ),
                               onPressed: () => _showGamificationMenu(context),
                             ),
@@ -170,20 +171,20 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                 ),
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              SliverToBoxAdapter(child: SizedBox(height: 20.h)),
 
               // Key Stats
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Column(
                     children: [
                       // Earnings (Real Money)
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: EdgeInsets.all(20.w),
                         decoration: BoxDecoration(
                           color: colorScheme.surface,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.w),
                           border: Border.all(color: colorScheme.outlineVariant),
                           boxShadow: [
                             BoxShadow(
@@ -198,20 +199,20 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: EdgeInsets.all(12.w),
                               decoration: BoxDecoration(
                                 color: const Color(
                                   0xFF10B981,
                                 ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(12.w),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.payments,
-                                color: Color(0xFF10B981),
-                                size: 28,
+                                color: const Color(0xFF10B981),
+                                size: 28.sp,
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            SizedBox(width: 16.w),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -219,17 +220,17 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                                   "Total Earnings",
                                   style: TextStyle(
                                     color: colorScheme.onSurfaceVariant,
-                                    fontSize: 14,
+                                    fontSize: 14.sp,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4.h),
                                 Text(
                                   "₹${todaysEarnings.toStringAsFixed(2)}",
-                                  style: const TextStyle(
-                                    fontSize: 28,
+                                  style: TextStyle(
+                                    fontSize: 28.sp,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF10B981),
+                                    color: const Color(0xFF10B981),
                                   ),
                                 ),
                               ],
@@ -237,7 +238,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       // Coins and Tasks
                       Row(
                         children: [
@@ -250,7 +251,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                               value: "$coins",
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: 16.w),
                           // Tasks Completed
                           Expanded(
                             child: GestureDetector(
@@ -278,18 +279,18 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                 ),
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              SliverToBoxAdapter(child: SizedBox(height: 24.h)),
 
               // Active Applications Header
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Row(
                     children: [
                       Text(
                         "Active Applications",
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                           color: colorScheme.onSurface,
                         ),
@@ -301,7 +302,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                 ),
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 12)),
+              SliverToBoxAdapter(child: SizedBox(height: 12.h)),
 
               // Applications List
               StreamBuilder<List<Map<String, dynamic>>>(
@@ -316,19 +317,19 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                   final applications = snapshot.data ?? [];
 
                   if (applications.isEmpty) {
-                    return const SliverToBoxAdapter(
+                    return SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.all(30),
+                        padding: EdgeInsets.all(30.w),
                         child: Center(
                           child: Column(
                             children: [
                               Icon(
                                 Icons.inbox_outlined,
-                                size: 40,
+                                size: 40.sp,
                                 color: Colors.grey,
                               ),
-                              SizedBox(height: 8),
-                              Text(
+                              SizedBox(height: 8.h),
+                              const Text(
                                 'No active applications',
                                 style: TextStyle(color: Colors.grey),
                               ),
@@ -343,9 +344,9 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final application = applications[index];
                       return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 6,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20.w,
+                          vertical: 6.h,
                         ),
                         child: _ApplicationCard(
                           title: "Application #${index + 1}",
@@ -359,16 +360,16 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                 },
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              SliverToBoxAdapter(child: SizedBox(height: 24.h)),
 
               // Upcoming Gigs Header
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Text(
                     "Upcoming Gigs",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: colorScheme.onSurface,
                     ),
@@ -376,7 +377,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                 ),
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 12)),
+              SliverToBoxAdapter(child: SizedBox(height: 12.h)),
 
               // Upcoming Gigs List
               StreamBuilder<List<Map<String, dynamic>>>(
@@ -385,19 +386,19 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                   final gigs = snapshot.data ?? [];
 
                   if (gigs.isEmpty) {
-                    return const SliverToBoxAdapter(
+                    return SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.all(30),
+                        padding: EdgeInsets.all(30.w),
                         child: Center(
                           child: Column(
                             children: [
                               Icon(
                                 Icons.calendar_today_outlined,
-                                size: 40,
+                                size: 40.sp,
                                 color: Colors.grey,
                               ),
-                              SizedBox(height: 8),
-                              Text(
+                              SizedBox(height: 8.h),
+                              const Text(
                                 'No upcoming gigs',
                                 style: TextStyle(color: Colors.grey),
                               ),
@@ -412,9 +413,9 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final gig = gigs[index];
                       return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 6,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20.w,
+                          vertical: 6.h,
                         ),
                         child: InkWell(
                           onTap: () {
@@ -442,7 +443,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                 },
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              SliverToBoxAdapter(child: SizedBox(height: 100.h)),
             ],
           );
         },
@@ -464,7 +465,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
       builder: (context) {
         final colorScheme = Theme.of(context).colorScheme;
         return Container(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -476,25 +477,25 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.emoji_events,
-                      color: Color(0xFFF59E0B),
-                      size: 28,
+                      color: const Color(0xFFF59E0B),
+                      size: 28.sp,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         "Gamification Hub",
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
                           color: colorScheme.onSurface,
                         ),
@@ -503,21 +504,24 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                         "Earn rewards and climb the ranks",
                         style: TextStyle(
                           color: colorScheme.onSurfaceVariant,
-                          fontSize: 13,
+                          fontSize: 13.sp,
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               _buildGamificationCard(
                 context,
                 title: "Helper Leaderboard",
                 subtitle: "Check your rank and stats",
                 icon: Icons.emoji_events,
                 color: Colors.amber,
-                gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
+                gradientColors: [
+                  const Color(0xFFF59E0B),
+                  const Color(0xFFD97706),
+                ],
                 onTap: () {
                   Navigator.pop(context); // Close bottom sheet
                   Navigator.push(
@@ -528,14 +532,17 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                   );
                 },
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               _buildGamificationCard(
                 context,
                 title: "Rewards Shop",
                 subtitle: "Redeem your hard-earned coins",
                 icon: Icons.shopping_bag,
                 color: Colors.purple,
-                gradientColors: const [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                gradientColors: [
+                  const Color(0xFF8B5CF6),
+                  const Color(0xFF7C3AED),
+                ],
                 onTap: () {
                   Navigator.pop(context); // Close bottom sheet
                   Navigator.push(
@@ -544,7 +551,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                   );
                 },
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
             ],
           ),
         );
@@ -568,7 +575,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
         boxShadow: [
           BoxShadow(
             color: gradientColors.last.withValues(alpha: 0.4),
@@ -581,47 +588,47 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.w),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, color: Colors.white, size: 28),
+                  child: Icon(icon, color: Colors.white, size: 28.sp),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         subtitle,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 14,
+                          fontSize: 14.sp,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios,
                   color: Colors.white70,
-                  size: 16,
+                  size: 16.sp,
                 ),
               ],
             ),
@@ -639,10 +646,10 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
         boxShadow: [
           BoxShadow(
             color: colorScheme.shadow.withValues(alpha: 0.05),
@@ -656,27 +663,27 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.w),
             ),
-            child: Icon(icon, color: iconColor, size: 24),
+            child: Icon(icon, color: iconColor, size: 24.sp),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             label,
             style: TextStyle(
               color: colorScheme.onSurfaceVariant,
-              fontSize: 13,
+              fontSize: 13.sp,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             value,
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 22.sp,
               fontWeight: FontWeight.bold,
               color: colorScheme.onSurface,
             ),
@@ -693,7 +700,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
       builder: (context) {
         final colorScheme = Theme.of(context).colorScheme;
         return Container(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -705,25 +712,25 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.security,
-                      color: Color(0xFFEF4444),
-                      size: 28,
+                      color: const Color(0xFFEF4444),
+                      size: 28.sp,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         "Safety Shield",
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
                           color: colorScheme.onSurface,
                         ),
@@ -732,14 +739,14 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                         "Quick access to emergency tools",
                         style: TextStyle(
                           color: colorScheme.onSurfaceVariant,
-                          fontSize: 13,
+                          fontSize: 13.sp,
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               Row(
                 children: [
                   Expanded(
@@ -766,7 +773,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: _SafetyOptionButton(
                       icon: Icons.help_center,
@@ -785,16 +792,16 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
                     side: BorderSide(color: colorScheme.outlineVariant),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.w),
                     ),
                   ),
                   child: Text(
@@ -828,24 +835,24 @@ class _SafetyOptionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.w),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: EdgeInsets.symmetric(vertical: 20.h),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.w),
           border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
+            Icon(icon, color: color, size: 32.sp),
+            SizedBox(height: 8.h),
             Text(
               label,
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 16.sp,
               ),
             ),
           ],
@@ -872,27 +879,27 @@ class _ApplicationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.w),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.w),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.work_outline,
               color: AppTheme.primaryBlue,
-              size: 24,
+              size: 24.sp,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -900,16 +907,16 @@ class _ApplicationCard extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                     color: colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   category,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
@@ -920,25 +927,25 @@ class _ApplicationCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFBBF24).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(6.w),
                 ),
                 child: Text(
                   status.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 12,
+                  style: TextStyle(
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFFBBF24),
+                    color: const Color(0xFFFBBF24),
                   ),
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 timeAgo,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -994,10 +1001,10 @@ class _UpcomingGigCard extends StatelessWidget {
     final statusColor = _getStatusColor(context);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.w),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
@@ -1006,15 +1013,15 @@ class _UpcomingGigCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(6.w),
                 ),
                 child: Text(
                   _getStatusText(),
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.bold,
                     color: statusColor,
                   ),
@@ -1023,54 +1030,54 @@ class _UpcomingGigCard extends StatelessWidget {
               const Spacer(),
               Text(
                 "₹${price.toStringAsFixed(0)}",
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.primaryBlue,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppTheme.primaryBlue, width: 2),
+                  borderRadius: BorderRadius.circular(10.w),
+                  border: Border.all(color: AppTheme.primaryBlue, width: 2.w),
                 ),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       "TODAY",
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 10.sp,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primaryBlue,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       time.split(':')[0],
-                      style: const TextStyle(
-                        fontSize: 18,
+                      style: TextStyle(
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primaryBlue,
                       ),
                     ),
-                    const Text(
+                    Text(
                       "PM",
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 10.sp,
                         color: AppTheme.primaryBlue,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1078,16 +1085,16 @@ class _UpcomingGigCard extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                         color: colorScheme.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       category,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: colorScheme.onSurfaceVariant,
                       ),
                     ),

@@ -13,8 +13,18 @@ class LocalNotificationService {
     // requesting permission on Android 13+ is handled separately via permission_handler or the plugin's method
     // but we set up the config here.
 
+    const DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
+
     const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+        );
 
     debugPrint("DEBUG: Initializing LocalNotificationService");
     await _notificationsPlugin.initialize(
@@ -39,8 +49,8 @@ class LocalNotificationService {
   // Create High Importance Channel for Android
   static Future<void> _createNotificationChannel() async {
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'high_importance_channel', // id
-      'High Importance Notifications', // title
+      'earnify_notifications_max', // id
+      'Earnify High Importance', // title
       description:
           'This channel is used for important notifications.', // description
       importance: Importance.max,
@@ -64,8 +74,8 @@ class LocalNotificationService {
   }) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-          'high_importance_channel',
-          'High Importance Notifications',
+          'earnify_notifications_max',
+          'Earnify High Importance',
           channelDescription:
               'This channel is used for important notifications.',
           importance: Importance.max,
@@ -75,8 +85,16 @@ class LocalNotificationService {
           enableVibration: true,
         );
 
+    const DarwinNotificationDetails iosPlatformChannelSpecifics =
+        DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        );
+
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
+      iOS: iosPlatformChannelSpecifics,
     );
 
     debugPrint("DEBUG: Showing notification: $title");

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/job_service.dart';
@@ -167,35 +168,35 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           context: context,
           builder: (ctx) => Dialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(24.w),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(28),
+              padding: EdgeInsets.all(28.w),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 72,
-                    height: 72,
+                    width: 72.w,
+                    height: 72.h,
                     decoration: BoxDecoration(
                       color: AppTheme.growthGreen.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.check_circle,
                       color: AppTheme.growthGreen,
-                      size: 40,
+                      size: 40.sp,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   Text(
                     "Application Sent!",
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 22,
+                      fontSize: 22.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     "Your application for \"${widget.job['title']}\" has been submitted. The seeker will review it shortly.",
                     textAlign: TextAlign.center,
@@ -203,11 +204,11 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                       color: Theme.of(
                         ctx,
                       ).colorScheme.onSurface.withValues(alpha: 0.7),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -215,16 +216,16 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryBlue,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.w),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         "Great!",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 16.sp,
                         ),
                       ),
                     ),
@@ -263,7 +264,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(24.0.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -279,29 +280,29 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                 Text(
                   "₹${widget.job['price']}",
                   style: GoogleFonts.inter(
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.growthGreen,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             // Payment Type & Distance Row
             Row(
               children: [
                 // Payment Type Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 6.h,
                   ),
                   decoration: BoxDecoration(
                     color: widget.job['priceType'] == 'hourly'
                         ? Colors.orange.withValues(alpha: 0.2)
                         : Colors.blue.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20.w),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -310,12 +311,12 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                         widget.job['priceType'] == 'hourly'
                             ? Icons.access_time
                             : Icons.payments,
-                        size: 16,
+                        size: 16.sp,
                         color: widget.job['priceType'] == 'hourly'
                             ? Colors.orange
                             : Colors.blue,
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4.w),
                       Text(
                         widget.job['priceType'] == 'hourly'
                             ? 'Hourly'
@@ -325,33 +326,33 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                               ? Colors.orange
                               : Colors.blue,
                           fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                          fontSize: 13.sp,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 // Distance Badge
                 if (_distanceKm != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 6.h,
                     ),
                     decoration: BoxDecoration(
                       color: colorScheme.tertiaryContainer,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20.w),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.near_me,
-                          size: 16,
+                          size: 16.sp,
                           color: colorScheme.onTertiaryContainer,
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Text(
                           _distanceKm! < 1
                               ? '${(_distanceKm! * 1000).toStringAsFixed(0)} m away'
@@ -359,7 +360,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                           style: TextStyle(
                             color: colorScheme.onTertiaryContainer,
                             fontWeight: FontWeight.w600,
-                            fontSize: 13,
+                            fontSize: 13.sp,
                           ),
                         ),
                       ],
@@ -367,39 +368,39 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Job Title
             Text(
               widget.job['title'] ?? 'No Title',
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 24,
+                fontSize: 24.sp,
                 fontWeight: FontWeight.bold,
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // Date and Time
             Row(
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
                       color: colorScheme.surfaceContainerHighest.withValues(
                         alpha: 0.5,
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.w),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.calendar_today,
-                          size: 18,
+                          size: 18.sp,
                           color: colorScheme.primary,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Text(
                           widget.job['date'] != null
                               ? DateFormat(
@@ -415,24 +416,24 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
                       color: colorScheme.surfaceContainerHighest.withValues(
                         alpha: 0.5,
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.w),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.access_time,
-                          size: 18,
+                          size: 18.sp,
                           color: colorScheme.primary,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Text(
                           widget.job['time'] ?? 'Time TBA',
                           style: TextStyle(
@@ -446,7 +447,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Location
             InkWell(
@@ -468,24 +469,24 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   }
                 }
               },
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.w),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: EdgeInsets.symmetric(vertical: 8.0.h),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: EdgeInsets.all(10.w),
                       decoration: BoxDecoration(
                         color: colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.w),
                       ),
                       child: Icon(
                         Icons.location_on,
                         color: colorScheme.onPrimaryContainer,
-                        size: 24,
+                        size: 24.sp,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -493,28 +494,28 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                           Text(
                             "Location",
                             style: GoogleFonts.inter(
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               color: colorScheme.onSurface.withValues(
                                 alpha: 0.6,
                               ),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2.h),
                           Text(
                             widget.job['address'] ?? 'Location not specified',
                             style: TextStyle(
                               color: colorScheme.onSurface,
                               fontWeight: FontWeight.w600,
-                              fontSize: 15,
+                              fontSize: 15.sp,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2.h),
                           Text(
                             "Tap to view on map",
                             style: TextStyle(
                               color: colorScheme.primary,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -523,21 +524,21 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                     ),
                     Icon(
                       Icons.arrow_forward_ios,
-                      size: 16,
+                      size: 16.sp,
                       color: colorScheme.onSurface.withValues(alpha: 0.4),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Seeker Info Card
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.w),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -545,12 +546,12 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   Text(
                     "Posted By",
                     style: GoogleFonts.inter(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                       color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Row(
                     children: [
                       CircleAvatar(
@@ -560,14 +561,14 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                           seekerName.isNotEmpty
                               ? seekerName[0].toUpperCase()
                               : '?',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 20,
+                            fontSize: 20.sp,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -575,27 +576,27 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                             Text(
                               seekerName,
                               style: GoogleFonts.inter(
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                                 color: colorScheme.onSurface,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4.h),
                             Row(
                               children: [
                                 Icon(
                                   Icons.phone,
-                                  size: 14,
+                                  size: 14.sp,
                                   color: colorScheme.primary,
                                 ),
-                                const SizedBox(width: 4),
+                                SizedBox(width: 4.w),
                                 Text(
                                   seekerPhone,
                                   style: TextStyle(
                                     color: colorScheme.onSurface.withValues(
                                       alpha: 0.7,
                                     ),
-                                    fontSize: 14,
+                                    fontSize: 14.sp,
                                   ),
                                 ),
                               ],
@@ -608,27 +609,27 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Description Section
             Text(
               "Description",
               style: GoogleFonts.inter(
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               widget.job['description'] ?? 'No description provided.',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp,
                 height: 1.5,
                 color: colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Map Location (if coordinates available)
             if (widget.job['latitude'] != null &&
@@ -639,16 +640,16 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   Text(
                     "Location",
                     style: GoogleFonts.inter(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.w),
                     child: SizedBox(
-                      height: 200,
+                      height: 200.h,
                       child: GoogleMap(
                         initialCameraPosition: CameraPosition(
                           target: LatLng(
@@ -677,7 +678,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                   ),
                 ],
               ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             // Apply Button
             _buildApplyButton(colorScheme),
@@ -695,24 +696,24 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     if (_hasApplied) {
       return Container(
         width: double.infinity,
-        height: 56,
+        height: 56.h,
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.w),
           border: Border.all(color: AppTheme.growthGreen),
         ),
-        child: const Center(
+        child: Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle, color: AppTheme.growthGreen),
-              SizedBox(width: 8),
+              const Icon(Icons.check_circle, color: AppTheme.growthGreen),
+              SizedBox(width: 8.w),
               Text(
                 "Applied",
                 style: TextStyle(
                   color: AppTheme.growthGreen,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                 ),
               ),
             ],
@@ -736,20 +737,20 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       background: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF22C55E), // Green
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.w),
         ),
         alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.only(left: 24),
-        child: const Row(
+        padding: EdgeInsets.only(left: 24.w),
+        child: Row(
           children: [
-            Icon(Icons.check_circle_outline, color: Colors.white, size: 28),
-            SizedBox(width: 12),
+            Icon(Icons.check_circle_outline, color: Colors.white, size: 28.sp),
+            SizedBox(width: 12.w),
             Text(
               "Applied!",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+                fontSize: 18.sp,
               ),
             ),
           ],
@@ -757,10 +758,10 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       ),
       child: Container(
         width: double.infinity,
-        height: 56,
+        height: 56.h,
         decoration: BoxDecoration(
           color: AppTheme.primaryBlue,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.w),
           boxShadow: [
             BoxShadow(
               color: AppTheme.primaryBlue.withValues(alpha: 0.3),
@@ -769,7 +770,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
             ),
           ],
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
@@ -777,14 +778,14 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 16.sp,
               ),
             ),
-            SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Icon(
               Icons.keyboard_double_arrow_right,
               color: Colors.white,
-              size: 24,
+              size: 24.sp,
             ),
           ],
         ),

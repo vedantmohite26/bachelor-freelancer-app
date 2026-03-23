@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -119,10 +120,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
           children: [
             Text("Tracking ${widget.targetUserName}"),
             if (_statusMessage == null)
-              const Text(
+              Text(
                 "Live Location",
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   color: Colors.green,
                   fontWeight: FontWeight.bold,
                 ),
@@ -150,31 +151,31 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               color: Colors.black.withValues(alpha: 0.6),
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.all(24),
-                  margin: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(24.w),
+                  margin: EdgeInsets.all(24.w),
                   decoration: BoxDecoration(
                     color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.w),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.location_off,
-                        size: 48,
+                        size: 48.sp,
                         color: Colors.grey,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Text(
                         _statusMessage!,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           color: colorScheme.onSurface,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
@@ -195,13 +196,13 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               left: 20,
               right: 20,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 12.h,
                 ),
                 decoration: BoxDecoration(
                   color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(30.w),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.1),
@@ -213,14 +214,14 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 child: Row(
                   children: [
                     Container(
-                      width: 12,
-                      height: 12,
+                      width: 12.w,
+                      height: 12.h,
                       decoration: const BoxDecoration(
                         color: Colors.green,
                         shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Text(
                         "Sharing location live...",

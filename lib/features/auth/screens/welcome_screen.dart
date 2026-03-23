@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -36,9 +37,9 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     child: IntrinsicHeight(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24.0,
-                          vertical: 16.0,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 24.0.w,
+                          vertical: 16.0.h,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -47,7 +48,7 @@ class WelcomeScreen extends StatelessWidget {
                             // Logo/Icon Section
                             Center(
                               child: Container(
-                                padding: const EdgeInsets.all(24),
+                                padding: EdgeInsets.all(24.w),
                                 decoration: BoxDecoration(
                                   color: colorScheme.primary.withValues(
                                     alpha: 0.1,
@@ -56,25 +57,25 @@ class WelcomeScreen extends StatelessWidget {
                                 ),
                                 child: Icon(
                                   Icons.flash_on_rounded,
-                                  size: 64,
+                                  size: 64.sp,
                                   color: colorScheme.primary,
                                 ),
                               ),
                             ),
 
-                            const SizedBox(height: 32),
+                            SizedBox(height: 32.h),
 
                             // Headline
                             Text(
                               "Find the perfect\nhelp for your task",
                               textAlign: TextAlign.center,
                               style: textTheme.displayLarge?.copyWith(
-                                fontSize: 32,
+                                fontSize: 32.sp,
                                 height: 1.2,
                               ),
                             ),
 
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
 
                             // Subtitle
                             Text(
@@ -94,23 +95,23 @@ class WelcomeScreen extends StatelessWidget {
                                 Navigator.pushNamed(context, '/login');
                               },
                               style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 16.h,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(16.w),
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 "Login",
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
 
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
 
                             // Sign Up Button
                             OutlinedButton(
@@ -121,25 +122,25 @@ class WelcomeScreen extends StatelessWidget {
                                 foregroundColor: colorScheme.primary,
                                 side: BorderSide(
                                   color: colorScheme.primary,
-                                  width: 2,
+                                  width: 2.w,
                                 ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 16.h,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(16.w),
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 "Sign Up",
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
 
-                            const SizedBox(height: 32),
+                            SizedBox(height: 32.h),
                           ],
                         ),
                       ),

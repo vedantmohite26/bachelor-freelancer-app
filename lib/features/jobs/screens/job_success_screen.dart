@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/features/maps/screens/map_screen.dart';
 
@@ -104,16 +105,17 @@ class _JobSuccessScreenState extends State<JobSuccessScreen>
         ),
         centerTitle: true,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(24.0.w),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              SizedBox(height: 20.h),
               // Animated Success Icon with Confetti
               SizedBox(
-                height: 350,
-                width: 350,
+                height: 250.h,
+                width: 250.w,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
@@ -122,7 +124,7 @@ class _JobSuccessScreenState extends State<JobSuccessScreen>
                       animation: _confettiController,
                       builder: (context, child) {
                         return CustomPaint(
-                          size: const Size(350, 350),
+                          size: const Size(250, 250),
                           painter: ConfettiPainter(
                             confetti: _confetti,
                             progress: _confettiController.value,
@@ -136,8 +138,8 @@ class _JobSuccessScreenState extends State<JobSuccessScreen>
                       animation: _glowAnimation,
                       builder: (context, child) {
                         return Container(
-                          height: 200,
-                          width: 200,
+                          height: 160.h,
+                          width: 160.w,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: RadialGradient(
@@ -161,8 +163,8 @@ class _JobSuccessScreenState extends State<JobSuccessScreen>
                     ScaleTransition(
                       scale: _checkScaleAnimation,
                       child: Container(
-                        height: 140,
-                        width: 140,
+                        height: 110.h,
+                        width: 110.w,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: const LinearGradient(
@@ -180,46 +182,46 @@ class _JobSuccessScreenState extends State<JobSuccessScreen>
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.check,
                           color: Colors.white,
-                          size: 80,
+                          size: 60.sp,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // Bottom Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(32),
+                padding: EdgeInsets.all(32.w),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1F1F2E),
-                  borderRadius: BorderRadius.circular(32),
+                  borderRadius: BorderRadius.circular(32.w),
                 ),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       "Job Posted Successfully!",
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 22,
+                        fontSize: 22.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     const Text(
                       "Your request has been broadcasted.\nHelpers near you will be notified shortly.",
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.grey, height: 1.5),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
                     SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 56.h,
                       child: ElevatedButton(
                         onPressed: () {
                           // Navigate to Map Screen to see nearby helpers/jobs
@@ -236,22 +238,22 @@ class _JobSuccessScreenState extends State<JobSuccessScreen>
                           backgroundColor: AppTheme.primaryBlue,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
+                            borderRadius: BorderRadius.circular(28.w),
                           ),
                           elevation: 8,
                           shadowColor: AppTheme.primaryBlue.withValues(
                             alpha: 0.4,
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.map_outlined),
-                            SizedBox(width: 8),
+                            const Icon(Icons.map_outlined),
+                            SizedBox(width: 8.w),
                             Text(
                               "View on Map",
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -259,22 +261,37 @@ class _JobSuccessScreenState extends State<JobSuccessScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        // Pop until we reach the home screen (root)
-                        Navigator.of(
-                          context,
-                        ).popUntil((route) => route.isFirst);
-                      },
-                      child: const Text(
-                        "Go to Home",
-                        style: TextStyle(color: Colors.grey),
+                    SizedBox(height: 16.h),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48.h,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.of(
+                            context,
+                          ).popUntil((route) => route.isFirst);
+                        },
+                        icon: Icon(Icons.home_outlined, size: 20.sp),
+                        label: Text(
+                          "Go to Home",
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(color: Colors.white24, width: 1.w),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28.w),
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+              SizedBox(height: 20.h),
             ],
           ),
         ),

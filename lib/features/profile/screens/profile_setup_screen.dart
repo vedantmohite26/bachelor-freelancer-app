@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/auth_service.dart';
@@ -41,7 +42,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Form(
           key: _formKey,
           child: Column(
@@ -56,11 +57,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       backgroundColor: Colors.grey[200],
                       child: Icon(
                         Icons.person,
-                        size: 50,
+                        size: 50.sp,
                         color: Colors.grey[400],
                       ),
                     ),
-                    const Positioned(
+                    Positioned(
                       bottom: 0,
                       right: 0,
                       child: CircleAvatar(
@@ -68,7 +69,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         radius: 18,
                         child: Icon(
                           Icons.camera_alt,
-                          size: 18,
+                          size: 18.sp,
                           color: Colors.white,
                         ),
                       ),
@@ -76,7 +77,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: 30.h),
 
               // Name
               TextFormField(
@@ -85,7 +86,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     val!.isEmpty ? 'Please enter your name' : null,
                 onSaved: (val) => name = val!,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // Bio
               TextFormField(
@@ -96,7 +97,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 maxLines: 3,
                 onSaved: (val) => bio = val ?? '',
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // Skills (Helper Only)
               if (!widget.isSeeker) ...[
@@ -106,9 +107,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
 
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -138,7 +139,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: 30.h),
               ],
 
               // Submit

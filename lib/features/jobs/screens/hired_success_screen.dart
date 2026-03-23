@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:confetti/confetti.dart';
 
 import 'package:freelancer/core/theme/app_theme.dart';
@@ -91,7 +92,7 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
               child: IconButton(
                 onPressed: () => Navigator.pop(context),
                 icon: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
@@ -103,16 +104,16 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
 
             SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(24.0.w),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 60),
+                    SizedBox(height: 60.h),
 
                     // Avatars & Handshake
                     SizedBox(
-                      height: 120,
-                      width: 200,
+                      height: 120.h,
+                      width: 200.w,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
@@ -136,14 +137,14 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
                           Positioned(
                             top: -10,
                             child: Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(8.w),
                               decoration: const BoxDecoration(
                                 color: Colors.transparent,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.handshake,
-                                color: Color(0xFFFFD700), // Gold
-                                size: 32,
+                                color: const Color(0xFFFFD700), // Gold
+                                size: 32.sp,
                               ),
                             ),
                           ),
@@ -151,14 +152,14 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // Text
                     RichText(
                       textAlign: TextAlign.center,
                       text: TextSpan(
-                        style: const TextStyle(
-                          fontSize: 28,
+                        style: TextStyle(
+                          fontSize: 28.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           height: 1.2,
@@ -175,22 +176,25 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
 
                     Text(
                       "Great choice. Let's get this task started.",
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.grey[400]),
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: Colors.grey[400],
+                      ),
                     ),
 
-                    const SizedBox(height: 48),
+                    SizedBox(height: 48.h),
 
                     // Timeline Card
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: EdgeInsets.all(20.w),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1F2937), // Lighter dark
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.w),
                         border: Border.all(color: Colors.grey[800]!),
                       ),
                       child: Column(
@@ -217,16 +221,16 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
 
                     // Helper Contact Details Card
                     if (widget.helperEmail.isNotEmpty ||
                         widget.helperPhoneNumber.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: EdgeInsets.all(20.w),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1F2937),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.w),
                           border: Border.all(color: Colors.grey[800]!),
                         ),
                         child: Column(
@@ -237,20 +241,20 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
                                 Icon(
                                   Icons.contact_phone,
                                   color: Colors.blue[400],
-                                  size: 20,
+                                  size: 20.sp,
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8.w),
                                 Text(
                                   'Helper Contact Details',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.grey[200],
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
                             if (widget.helperPhoneNumber.isNotEmpty)
                               _buildContactRow(
                                 icon: Icons.phone,
@@ -259,7 +263,7 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
                               ),
                             if (widget.helperEmail.isNotEmpty) ...[
                               if (widget.helperPhoneNumber.isNotEmpty)
-                                const SizedBox(height: 12),
+                                SizedBox(height: 12.h),
                               _buildContactRow(
                                 icon: Icons.email,
                                 label: 'Email',
@@ -270,7 +274,7 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
                         ),
                       ),
 
-                    const SizedBox(height: 40),
+                    SizedBox(height: 40.h),
 
                     // Action Buttons
                     SizedBox(
@@ -280,30 +284,30 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2563EB), // Blue
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(30.w),
                           ),
                           elevation: 0,
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               "Go to Chat",
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(width: 8),
-                            Icon(Icons.chat_bubble_outline, size: 20),
+                            SizedBox(width: 8.w),
+                            Icon(Icons.chat_bubble_outline, size: 20.sp),
                           ],
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     TextButton(
                       onPressed: widget.onViewTask,
@@ -311,26 +315,26 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 8,
-                            height: 8,
+                            width: 8.w,
+                            height: 8.h,
                             decoration: const BoxDecoration(
                               color: Colors.yellow,
                               shape: BoxShape.circle,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           Text(
                             "View Task Details",
                             style: TextStyle(
                               color: Colors.grey[400],
-                              fontSize: 14,
+                              fontSize: 14.sp,
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                   ],
                 ),
               ),
@@ -343,7 +347,7 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
 
   Widget _buildAvatar(String imageUrl, Color borderColor) {
     return Container(
-      padding: const EdgeInsets.all(3),
+      padding: EdgeInsets.all(3.w),
       decoration: BoxDecoration(
         color: borderColor,
         shape: BoxShape.circle,
@@ -378,42 +382,42 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
           Column(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: iconBg.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: iconBg, size: 20),
+                child: Icon(icon, color: iconBg, size: 20.sp),
               ),
               if (!isLast)
                 Expanded(
                   child: Container(
-                    width: 2,
+                    width: 2.w,
                     color: Colors.grey[800],
-                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    margin: EdgeInsets.symmetric(vertical: 4.h),
                   ),
                 ),
             ],
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   subtitle,
-                  style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                  style: TextStyle(color: Colors.grey[400], fontSize: 13.sp),
                 ),
-                if (!isLast) const SizedBox(height: 24),
+                if (!isLast) SizedBox(height: 24.h),
               ],
             ),
           ),
@@ -430,31 +434,36 @@ class _HiredSuccessScreenState extends State<HiredSuccessScreen> {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: Colors.grey[800],
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.w),
           ),
-          child: Icon(icon, color: Colors.white70, size: 18),
+          child: Icon(icon, color: Colors.white70, size: 18.sp),
         ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(color: Colors.grey[500], fontSize: 12.sp),
               ),
-            ),
-          ],
+              SizedBox(height: 2.h),
+              Text(
+                value,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1, // Add limit to prevent multiline overflow
+                overflow:
+                    TextOverflow.ellipsis, // Add ellipsis (...) for long text
+              ),
+            ],
+          ),
         ),
       ],
     );

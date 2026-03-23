@@ -1,6 +1,12 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ⚠️ TEMPORARY: Demo read access for Admin Dashboard
+    // REMOVE THIS AFTER THE JUDGES DEMO!
+    match /{document=**} {
+      allow read: if true;
+    }
     
     // ============================================
     // HELPER FUNCTIONS

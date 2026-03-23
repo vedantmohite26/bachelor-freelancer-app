@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/leaderboard_service.dart';
@@ -116,17 +117,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         return SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               // Podium (Top 3)
               if (leaderboard.isNotEmpty) _buildPodium(leaderboard),
 
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // List (Rank 4+)
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 20,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.w,
+                  vertical: 20.h,
                 ),
                 decoration: BoxDecoration(
                   // Rounded top corners
@@ -169,7 +170,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   Widget _buildPodium(List<Map<String, dynamic>> users) {
     return RepaintBoundary(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -181,7 +182,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   rank: 2,
                   user: users[1],
                   color: const Color(0xFFC0C0C0), // Silver
-                  height: 140,
+                  height: 140.h,
                 ),
               ),
 
@@ -193,7 +194,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   rank: 1,
                   user: users[0],
                   color: const Color(0xFFFFD700), // Gold
-                  height: 180,
+                  height: 180.h,
                   isFirst: true,
                 ),
               ),
@@ -205,7 +206,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   rank: 3,
                   user: users[2],
                   color: const Color(0xFFCD7F32), // Bronze
-                  height: 120,
+                  height: 120.h,
                 ),
               ),
           ],
@@ -221,7 +222,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         message,
         style: TextStyle(
           color: theme.colorScheme.onSurfaceVariant,
-          fontSize: 16,
+          fontSize: 16.sp,
         ),
       ),
     );
@@ -258,7 +259,7 @@ class _PodiumItem extends StatelessWidget {
               padding: EdgeInsets.all(isFirst ? 4 : 2),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: color, width: 2),
+                border: Border.all(color: color, width: 2.w),
                 boxShadow: isFirst
                     ? [
                         BoxShadow(
@@ -278,10 +279,10 @@ class _PodiumItem extends StatelessWidget {
             Positioned(
               bottom: -10,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                 decoration: BoxDecoration(
                   color: color,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                 ),
                 child: Text(
                   "$rank",
@@ -290,14 +291,14 @@ class _PodiumItem extends StatelessWidget {
                         ? Colors.black
                         : Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
 
         Text(
           user['name'] ?? 'User',
@@ -312,17 +313,17 @@ class _PodiumItem extends StatelessWidget {
           "${user['points']} pts",
           style: TextStyle(
             color: color,
-            fontSize: 12,
+            fontSize: 12.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
 
         // Podium Block
         Container(
           height: height,
           width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
+          margin: EdgeInsets.symmetric(horizontal: 4.w),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.2),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -376,13 +377,13 @@ class _RankingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: isCurrentUser
             ? AppTheme.primaryBlue.withValues(alpha: 0.2)
             : theme.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
         border: isCurrentUser ? Border.all(color: AppTheme.primaryBlue) : null,
       ),
       child: Row(
@@ -391,24 +392,24 @@ class _RankingCard extends StatelessWidget {
             "#$rank",
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 16,
+              fontSize: 16.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           CachedNetworkAvatar(
             radius: 20,
             fallbackText: name,
             backgroundColor: Colors.grey[700],
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               name,
               style: TextStyle(
                 color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
-                fontSize: 16,
+                fontSize: 16.sp,
               ),
             ),
           ),

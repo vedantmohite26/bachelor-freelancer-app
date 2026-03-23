@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/user_service.dart';
@@ -83,17 +84,17 @@ class HelperProfileScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.lock_outline, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
+                  Icon(Icons.lock_outline, size: 64.sp, color: Colors.grey[400]),
+                  SizedBox(height: 16.h),
                   Text(
                     "This profile is private",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     "The user has restricted visibility to\nhired students only.",
                     textAlign: TextAlign.center,
@@ -120,7 +121,7 @@ class HelperProfileScreen extends StatelessWidget {
               <String, String>{};
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -135,14 +136,14 @@ class HelperProfileScreen extends StatelessWidget {
                       fallbackIconColor: Colors.grey[400],
                     ),
                     Container(
-                      height: 20,
-                      width: 20,
+                      height: 20.h,
+                      width: 20.w,
                       decoration: BoxDecoration(
                         color: isOnline ? const Color(0xFF10B981) : Colors.grey,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: colorScheme.surface,
-                          width: 3,
+                          width: 3.w,
                         ),
                       ),
                     ),
@@ -150,7 +151,7 @@ class HelperProfileScreen extends StatelessWidget {
                 ),
                 if (authService.user?.uid == helperId)
                   Padding(
-                    padding: const EdgeInsets.only(top: 12),
+                    padding: EdgeInsets.only(top: 12.h),
                     child: ElevatedButton.icon(
                       onPressed: () {
                         showDialog(
@@ -160,21 +161,21 @@ class HelperProfileScreen extends StatelessWidget {
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text(
+                                Text(
                                   "My QR Code",
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 20.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                SizedBox(height: 16.h),
                                 QrImageView(
                                   data: helperId,
                                   version: QrVersions.auto,
-                                  size: 200.0,
+                                  size: 200.0.sp,
                                   backgroundColor: Colors.white,
                                 ),
-                                const SizedBox(height: 16),
+                                SizedBox(height: 16.h),
                                 const Text(
                                   "Show this to the Seeker to start the job",
                                   textAlign: TextAlign.center,
@@ -191,46 +192,46 @@ class HelperProfileScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.qr_code, size: 18),
+                      icon: Icon(Icons.qr_code, size: 18.sp),
                       label: const Text("Show QR Code"),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryBlue,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.w),
                         ),
                       ),
                     ),
                   ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   name,
-                  style: const TextStyle(
-                    fontSize: 22,
+                  style: TextStyle(
+                    fontSize: 22.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.verified, color: Colors.blue, size: 16),
-                    const SizedBox(width: 4),
+                    Icon(Icons.verified, color: Colors.blue, size: 16.sp),
+                    SizedBox(width: 4.w),
                     Text(
                       bio,
-                      style: const TextStyle(color: Colors.blue, fontSize: 14),
+                      style: TextStyle(color: Colors.blue, fontSize: 14.sp),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 if (helper['university'] != null)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
+                    padding: EdgeInsets.only(bottom: 4.h),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.school, color: Colors.grey, size: 16),
-                        const SizedBox(width: 6),
+                        Icon(Icons.school, color: Colors.grey, size: 16.sp),
+                        SizedBox(width: 6.w),
                         Text(
                           helper['university'],
                           style: TextStyle(color: colorScheme.onSurfaceVariant),
@@ -243,15 +244,15 @@ class HelperProfileScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.phone, color: Colors.grey, size: 16),
-                      const SizedBox(width: 6),
+                      Icon(Icons.phone, color: Colors.grey, size: 16.sp),
+                      SizedBox(width: 6.w),
                       Text(
                         helper['phoneNumber'],
                         style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // 2. Action Buttons
                 if (authService.user?.uid == helperId)
@@ -272,13 +273,13 @@ class HelperProfileScreen extends StatelessWidget {
                             foregroundColor: colorScheme.onSurface,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(8.w),
                             ),
                           ),
                           child: const Text("Edit Profile"),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
@@ -295,7 +296,7 @@ class HelperProfileScreen extends StatelessWidget {
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(8.w),
                             ),
                           ),
                           child: const Text("Public View"),
@@ -375,13 +376,13 @@ class HelperProfileScreen extends StatelessWidget {
                                     foregroundColor: Colors.white,
                                     elevation: 0,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(8.w),
                                     ),
                                   ),
                                   child: Text(_getConnectionButtonText(status)),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12.w),
                               // Only show Message button if connected
                               if (status == FriendStatus.connected)
                                 Expanded(
@@ -433,7 +434,7 @@ class HelperProfileScreen extends StatelessWidget {
                                         color: AppTheme.primaryBlue,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(8.w),
                                       ),
                                     ),
                                     child: const Text("Message"),
@@ -446,23 +447,23 @@ class HelperProfileScreen extends StatelessWidget {
                     },
                   ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // 3. Online Status Card
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
                   ),
                   decoration: BoxDecoration(
                     color: colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.w),
                     border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
                           color: isOnline
                               ? const Color(0xFF10B981).withValues(alpha: 0.1)
@@ -476,7 +477,7 @@ class HelperProfileScreen extends StatelessWidget {
                               : Colors.grey,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -493,7 +494,7 @@ class HelperProfileScreen extends StatelessWidget {
                                 : "Not receiving gigs",
                             style: TextStyle(
                               color: colorScheme.onSurfaceVariant,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                             ),
                           ),
                         ],
@@ -533,7 +534,7 @@ class HelperProfileScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 if (isMe) ...[
                   // 4. Earnings
@@ -542,19 +543,19 @@ class HelperProfileScreen extends StatelessWidget {
                     child: Text(
                       "Earnings",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                         color: colorScheme.onSurface,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20.w),
                     decoration: BoxDecoration(
                       color: colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.w),
                       border: Border.all(color: colorScheme.outlineVariant),
                     ),
                     child: Column(
@@ -564,39 +565,39 @@ class HelperProfileScreen extends StatelessWidget {
                           "TOTAL EARNINGS",
                           style: TextStyle(
                             color: colorScheme.onSurfaceVariant,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             letterSpacing: 1,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Text(
                           "₹${walletBalance.toStringAsFixed(2)}",
                           style: TextStyle(
-                            fontSize: 32,
+                            fontSize: 32.sp,
                             fontWeight: FontWeight.bold,
                             color: colorScheme.onSurface,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Row(
+                        SizedBox(height: 8.h),
+                        Row(
                           children: [
                             Icon(
                               Icons.trending_up,
-                              color: Color(0xFF10B981),
-                              size: 16,
+                              color: const Color(0xFF10B981),
+                              size: 16.sp,
                             ),
-                            SizedBox(width: 4),
+                            SizedBox(width: 4.w),
                             Text(
                               "+₹50.00 this week",
                               style: TextStyle(
-                                color: Color(0xFF10B981),
-                                fontSize: 14,
+                                color: const Color(0xFF10B981),
+                                fontSize: 14.sp,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -606,7 +607,7 @@ class HelperProfileScreen extends StatelessWidget {
                                 Text(
                                   "$gigsCompleted",
                                   style: TextStyle(
-                                    fontSize: 24,
+                                    fontSize: 24.sp,
                                     fontWeight: FontWeight.bold,
                                     color: colorScheme.onSurface,
                                   ),
@@ -615,7 +616,7 @@ class HelperProfileScreen extends StatelessWidget {
                                   "Gigs Completed",
                                   style: TextStyle(
                                     color: colorScheme.onSurfaceVariant,
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                   ),
                                 ),
                               ],
@@ -630,11 +631,11 @@ class HelperProfileScreen extends StatelessWidget {
                                   ),
                                 );
                               },
-                              child: const Row(
+                              child: Row(
                                 children: [
-                                  Text("View History"),
-                                  SizedBox(width: 4),
-                                  Icon(Icons.arrow_forward, size: 16),
+                                  const Text("View History"),
+                                  SizedBox(width: 4.w),
+                                  Icon(Icons.arrow_forward, size: 16.sp),
                                 ],
                               ),
                             ),
@@ -643,7 +644,7 @@ class HelperProfileScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                 ],
 
                 // 5. My Skills
@@ -653,7 +654,7 @@ class HelperProfileScreen extends StatelessWidget {
                     Text(
                       isMe ? "My Skills" : "Skills",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                         color: colorScheme.onSurface,
                       ),
@@ -672,7 +673,7 @@ class HelperProfileScreen extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
@@ -686,7 +687,7 @@ class HelperProfileScreen extends StatelessWidget {
                     // Add Button Placeholder (only for own profile)
                     if (isMe)
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
                           color: colorScheme.surfaceContainerLow,
                           shape: BoxShape.circle,
@@ -700,7 +701,7 @@ class HelperProfileScreen extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // 6. Reviews
                 Align(
@@ -708,18 +709,18 @@ class HelperProfileScreen extends StatelessWidget {
                   child: Text(
                     "Reviews",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: colorScheme.onSurface,
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20.w),
                   decoration: BoxDecoration(
                     color: colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.w),
                     border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: StreamBuilder<List<Map<String, dynamic>>>(
@@ -753,17 +754,17 @@ class HelperProfileScreen extends StatelessWidget {
                               Text(
                                 avg.toStringAsFixed(1),
                                 style: TextStyle(
-                                  fontSize: 32,
+                                  fontSize: 32.sp,
                                   fontWeight: FontWeight.bold,
                                   color: colorScheme.onSurface,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8.w),
                               Text(
                                 "/ 5.0",
                                 style: TextStyle(
                                   color: colorScheme.onSurfaceVariant,
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                 ),
                               ),
                               const Spacer(),
@@ -774,13 +775,13 @@ class HelperProfileScreen extends StatelessWidget {
                                         ? Icons.star
                                         : Icons.star_border,
                                     color: Colors.amber,
-                                    size: 24,
+                                    size: 24.sp,
                                   );
                                 }),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
@@ -790,14 +791,14 @@ class HelperProfileScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h),
                           // Dynamic Progress Bars
                           ...[5, 4, 3, 2, 1].map((star) {
                             final starCount = distribution[star] ?? 0;
                             final pct = count > 0 ? starCount / count : 0.0;
                             return _buildRatingBar(context, star, pct);
                           }),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h),
                           SizedBox(
                             width: double.infinity,
                             child: OutlinedButton(
@@ -819,7 +820,7 @@ class HelperProfileScreen extends StatelessWidget {
                                     colorScheme.surfaceContainerLow,
                                 foregroundColor: colorScheme.onSurface,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8.w),
                                 ),
                               ),
                               child: const Text("Read all reviews"),
@@ -830,7 +831,7 @@ class HelperProfileScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: 40.h),
               ],
             ),
           );
@@ -854,7 +855,7 @@ class HelperProfileScreen extends StatelessWidget {
 
   Widget _buildRatingBar(BuildContext context, int star, double pct) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Row(
         children: [
           Text(
@@ -864,10 +865,10 @@ class HelperProfileScreen extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4.w),
               child: LinearProgressIndicator(
                 value: pct,
                 backgroundColor: Theme.of(
@@ -878,12 +879,12 @@ class HelperProfileScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Text(
             "${(pct * 100).toInt()}%",
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 12,
+              fontSize: 12.sp,
             ),
           ),
         ],
@@ -905,12 +906,12 @@ class _SkillChip extends StatelessWidget {
     return GestureDetector(
       onTap: hasCertificate ? () => _showCertificate(context) : null,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: hasCertificate
               ? Colors.green.withValues(alpha: 0.08)
               : colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.w),
           border: Border.all(
             color: hasCertificate
                 ? Colors.green.withValues(alpha: 0.4)
@@ -921,19 +922,19 @@ class _SkillChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (hasCertificate)
-              const Icon(Icons.verified, size: 16, color: Colors.green)
+              Icon(Icons.verified, size: 16.sp, color: Colors.green)
             else if (label.toLowerCase().contains('dog'))
-              const Icon(Icons.pets, size: 16, color: Colors.brown)
+              Icon(Icons.pets, size: 16.sp, color: Colors.brown)
             else if (label.toLowerCase().contains('clean'))
-              const Icon(
+              Icon(
                 Icons.cleaning_services,
-                size: 16,
+                size: 16.sp,
                 color: Colors.orange,
               )
             else
-              Icon(Icons.star, size: 16, color: colorScheme.primary),
+              Icon(Icons.star, size: 16.sp, color: colorScheme.primary),
 
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Text(
               label,
               style: TextStyle(
@@ -953,7 +954,7 @@ class _SkillChip extends StatelessWidget {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.w)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -961,13 +962,13 @@ class _SkillChip extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
               child: Row(
                 children: [
-                  const Icon(Icons.verified, color: Colors.green, size: 20),
-                  const SizedBox(width: 8),
+                  Icon(Icons.verified, color: Colors.green, size: 20.sp),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
                       "$label Certificate",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                         color: colorScheme.onSurface,
                       ),
@@ -981,16 +982,16 @@ class _SkillChip extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.w),
                 child: InteractiveViewer(
                   child: Image.network(
                     certificateUrl!,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return SizedBox(
-                        height: 200,
+                        height: 200.h,
                         child: Center(
                           child: CircularProgressIndicator(
                             value: loadingProgress.expectedTotalBytes != null
@@ -1002,17 +1003,17 @@ class _SkillChip extends StatelessWidget {
                       );
                     },
                     errorBuilder: (context, error, stackTrace) => SizedBox(
-                      height: 200,
+                      height: 200.h,
                       child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.broken_image,
-                              size: 48,
+                              size: 48.sp,
                               color: colorScheme.outlineVariant,
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             Text(
                               "Failed to load certificate",
                               style: TextStyle(

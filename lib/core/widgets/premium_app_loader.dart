@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class PremiumAppLoader extends StatefulWidget {
@@ -75,8 +76,8 @@ class _PremiumAppLoaderState extends State<PremiumAppLoader>
                       animation: _pulseAnimation,
                       builder: (context, child) {
                         return Container(
-                          width: 140 + (20 * _pulseAnimation.value),
-                          height: 140 + (20 * _pulseAnimation.value),
+                          width: 140.w + (20 * _pulseAnimation.value),
+                          height: 140.h + (20 * _pulseAnimation.value),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: primaryColor.withValues(
@@ -91,8 +92,8 @@ class _PremiumAppLoaderState extends State<PremiumAppLoader>
                       animation: _pulseAnimation,
                       builder: (context, child) {
                         return Container(
-                          width: 120,
-                          height: 120,
+                          width: 120.w,
+                          height: 120.h,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: primaryColor.withValues(alpha: 0.15),
@@ -109,14 +110,14 @@ class _PremiumAppLoaderState extends State<PremiumAppLoader>
                     ),
                     // Logo Container
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: 100.w,
+                      height: 100.h,
                       decoration: BoxDecoration(
                         color: surfaceColor,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: colorScheme.outline.withValues(alpha: 0.2),
-                          width: 2,
+                          width: 2.w,
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -128,7 +129,7 @@ class _PremiumAppLoaderState extends State<PremiumAppLoader>
                       ),
                       child: ClipOval(
                         child: Padding(
-                          padding: const EdgeInsets.all(20.0),
+                          padding: EdgeInsets.all(20.0.w),
                           child: Image.asset(
                             'assets/images/logo.png',
                             fit: BoxFit.contain,
@@ -137,7 +138,7 @@ class _PremiumAppLoaderState extends State<PremiumAppLoader>
                                 child: Text(
                                   "U",
                                   style: GoogleFonts.splineSans(
-                                    fontSize: 40,
+                                    fontSize: 40.sp,
                                     fontWeight: FontWeight.bold,
                                     color: primaryColor,
                                   ),
@@ -150,13 +151,13 @@ class _PremiumAppLoaderState extends State<PremiumAppLoader>
                     ),
                   ],
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: 40.h),
 
                 // App Name
                 Text(
-                  "UNNATI",
+                  "EARNIFY",
                   style: GoogleFonts.splineSans(
-                    fontSize: 24,
+                    fontSize: 24.sp,
                     fontWeight: FontWeight.bold,
                     color: colorScheme.onSurface,
                     letterSpacing: 4,
@@ -165,14 +166,14 @@ class _PremiumAppLoaderState extends State<PremiumAppLoader>
                 Text(
                   "FREELANCER",
                   style: GoogleFonts.splineSans(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w500,
                     color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                     letterSpacing: 6,
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                SizedBox(height: 40.h),
 
                 // Status Message pulsing
                 AnimatedBuilder(
@@ -187,7 +188,7 @@ class _PremiumAppLoaderState extends State<PremiumAppLoader>
                     widget.statusMessage,
                     style: GoogleFonts.splineSans(
                       color: primaryColor,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 1,
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 
 import 'package:freelancer/core/theme/app_theme.dart';
 
@@ -58,7 +59,7 @@ class _LevelUpScreenState extends State<LevelUpScreen>
               child: ScaleTransition(
                 scale: _scaleAnimation,
                 child: Container(
-                  padding: const EdgeInsets.all(40),
+                  padding: EdgeInsets.all(40.w),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppTheme.coinYellow,
@@ -70,15 +71,15 @@ class _LevelUpScreenState extends State<LevelUpScreen>
                       ),
                     ],
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.stars_rounded,
-                    size: 100,
+                    size: 100.sp,
                     color: Colors.white,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 48),
+            SizedBox(height: 48.h),
 
             // Text
             Text(
@@ -89,33 +90,33 @@ class _LevelUpScreenState extends State<LevelUpScreen>
                 letterSpacing: 2,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               "You are now Level ${widget.newLevel}",
               style: TextStyle(
                 color: theme.colorScheme.onSurface,
-                fontSize: 24,
+                fontSize: 24.sp,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8.h),
+            Text(
               "+50 Student Coins Earned",
               style: TextStyle(
                 color: AppTheme.growthGreen,
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 64),
+            SizedBox(height: 64.h),
 
             ElevatedButton(
               onPressed: widget.onContinue,
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: theme.colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 48,
-                  vertical: 16,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 48.w,
+                  vertical: 16.h,
                 ),
               ),
               child: const Text("Keep Going"),

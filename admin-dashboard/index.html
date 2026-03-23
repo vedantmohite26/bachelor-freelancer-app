@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Earnify — Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Animated background particles -->
+  <div class="bg-particles" id="particles"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <div class="logo-icon">E</div>
+        <div>
+          <h1 class="logo-title">Earnify</h1>
+          <span class="logo-subtitle">Admin Dashboard</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-pill" id="firebaseStatus">
+        <span class="status-dot"></span>
+        <span>Connecting...</span>
+      </div>
+
+      <div class="header-time" id="liveTime"></div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Architecture Section -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-icon">🏗️</span>
+        System Architecture
+      </h2>
+      <div class="architecture-card">
+        <div class="arch-flow">
+          <div class="arch-node arch-mobile">
+            <div class="arch-node-icon">📱</div>
+            <div class="arch-node-label">Flutter App</div>
+            <div class="arch-node-detail">Dart / Android & iOS</div>
+          </div>
+          <div class="arch-arrow">
+            <span>REST API</span>
+            <div class="arch-arrow-line"></div>
+          </div>
+          <div class="arch-node arch-backend">
+            <div class="arch-node-icon">⚡</div>
+            <div class="arch-node-label">FastAPI Backend</div>
+            <div class="arch-node-detail">Python / Uvicorn</div>
+          </div>
+
+        </div>
+        <div class="arch-flow" style="margin-top: 20px;">
+          <div class="arch-node arch-mobile" style="opacity: 0; pointer-events: none;">
+            <div class="arch-node-icon">📱</div>
+            <div class="arch-node-label">Flutter App</div>
+          </div>
+          <div class="arch-arrow-down">
+            <div class="arch-arrow-line-vertical"></div>
+            <span>SDK</span>
+          </div>
+          <div class="arch-node arch-db">
+            <div class="arch-node-icon">🔥</div>
+            <div class="arch-node-label">Firebase</div>
+            <div class="arch-node-detail">Firestore / Auth / Storage</div>
+          </div>
+          <div class="arch-arrow">
+            <span>CDN</span>
+            <div class="arch-arrow-line"></div>
+          </div>
+          <div class="arch-node arch-cloud">
+            <div class="arch-node-icon">☁️</div>
+            <div class="arch-node-label">Cloudinary</div>
+            <div class="arch-node-detail">Image / Doc Storage</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-time Stats -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-icon">📊</span>
+        Live Database Metrics
+        <span class="live-badge">● LIVE</span>
+      </h2>
+      <div class="stats-grid">
+        <div class="stat-card stat-users">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value" id="statUsers">—</div>
+          <div class="stat-label">Registered Users</div>
+          <div class="stat-sparkline" id="sparkUsers"></div>
+        </div>
+        <div class="stat-card stat-jobs">
+          <div class="stat-icon">💼</div>
+          <div class="stat-value" id="statJobs">—</div>
+          <div class="stat-label">Total Jobs</div>
+          <div class="stat-sparkline" id="sparkJobs"></div>
+        </div>
+        <div class="stat-card stat-payments">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="statPayments">—</div>
+          <div class="stat-label">Payments Processed</div>
+          <div class="stat-sparkline" id="sparkPayments"></div>
+        </div>
+        <div class="stat-card stat-ratings">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-value" id="statRatings">—</div>
+          <div class="stat-label">Reviews</div>
+          <div class="stat-sparkline" id="sparkRatings"></div>
+        </div>
+        <div class="stat-card stat-activity">
+          <div class="stat-icon">🔔</div>
+          <div class="stat-value" id="statActivity">—</div>
+          <div class="stat-label">Notifications</div>
+          <div class="stat-sparkline" id="sparkActivity"></div>
+        </div>
+        <div class="stat-card stat-rewards">
+          <div class="stat-icon">🎁</div>
+          <div class="stat-value" id="statRewards">—</div>
+          <div class="stat-label">Rewards Available</div>
+          <div class="stat-sparkline" id="sparkRewards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Collections Explorer -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-icon">🗄️</span>
+        Firestore Collections Explorer
+      </h2>
+      <div class="collections-grid" id="collectionsGrid">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- Live Data Feed -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-icon">📡</span>
+        Recent Users (Live Stream)
+        <span class="live-badge">● LIVE</span>
+      </h2>
+      <div class="data-table-container">
+        <table class="data-table" id="usersTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Rating</th>
+              <th>Jobs Done</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="usersBody">
+            <tr><td colspan="6" class="loading-cell">Loading live data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Recent Jobs -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-icon">💼</span>
+        Recent Jobs
+        <span class="live-badge">● LIVE</span>
+      </h2>
+      <div class="data-table-container">
+        <table class="data-table" id="jobsTable">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Budget (₹)</th>
+              <th>Status</th>
+              <th>Posted</th>
+            </tr>
+          </thead>
+          <tbody id="jobsBody">
+            <tr><td colspan="5" class="loading-cell">Loading live data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+
+
+    <!-- Tech Stack -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-icon">🛠️</span>
+        Technology Stack
+      </h2>
+      <div class="tech-grid">
+        <div class="tech-card">
+          <div class="tech-icon">💙</div>
+          <div class="tech-name">Flutter</div>
+          <div class="tech-detail">Cross-platform mobile UI</div>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">🎯</div>
+          <div class="tech-name">Dart</div>
+          <div class="tech-detail">Type-safe language</div>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">🔥</div>
+          <div class="tech-name">Firebase</div>
+          <div class="tech-detail">Auth, Firestore, Storage</div>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">⚡</div>
+          <div class="tech-name">FastAPI</div>
+          <div class="tech-detail">Python backend framework</div>
+        </div>
+
+        <div class="tech-card">
+          <div class="tech-icon">☁️</div>
+          <div class="tech-name">Cloudinary</div>
+          <div class="tech-detail">Media management</div>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">📍</div>
+          <div class="tech-name">Google Maps</div>
+          <div class="tech-detail">Location services</div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Collection Detail Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon" id="modalIcon"></span>
+          <h2 class="modal-title" id="modalTitle">Collection</h2>
+          <span class="modal-count" id="modalCount"></span>
+        </div>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <div class="modal-loading">Loading documents...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>Unnati Admin Dashboard • Built for Judges Review • Live Firebase Data</p>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "REDACTED_KEY",
+      authDomain: "unnati-freelance.firebaseapp.com",
+      projectId: "unnati-freelance",
+      storageBucket: "unnati-freelance.firebasestorage.app",
+      messagingSenderId: "968875845819",
+      appId: "1:968875845819:web:2548d643fdf1d8e26da19e",
+      measurementId: "G-2QY2BC44GJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Update Firebase status
+    const fbStatus = document.getElementById("firebaseStatus");
+    fbStatus.innerHTML = '<span class="status-dot online"></span><span>Firebase: Connected</span>';
+    fbStatus.classList.add("online");
+
+    // Collections to monitor
+    const collections = [
+      { name: "users", icon: "👥", color: "#6366f1" },
+      { name: "jobs", icon: "💼", color: "#f59e0b" },
+      { name: "payments", icon: "💰", color: "#10b981" },
+      { name: "ratings", icon: "⭐", color: "#fbbf24" },
+      { name: "activity", icon: "🔔", color: "#ef4444" },
+      { name: "rewards", icon: "🎁", color: "#8b5cf6" },
+      { name: "chats", icon: "💬", color: "#06b6d4" },
+      { name: "posts", icon: "📝", color: "#ec4899" },
+      { name: "email_lookup", icon: "📧", color: "#64748b" },
+      { name: "friend_requests", icon: "🤝", color: "#14b8a6" },
+    ];
+
+    // Fetch collection counts
+    async function fetchCollectionCounts() {
+      const grid = document.getElementById("collectionsGrid");
+      grid.innerHTML = "";
+
+      for (const col of collections) {
+        const card = document.createElement("div");
+        card.className = "collection-card";
+        card.style.setProperty("--accent", col.color);
+        card.style.cursor = "pointer";
+        card.innerHTML = `
+          <div class="collection-icon">${col.icon}</div>
+          <div class="collection-name">${col.name}</div>
+          <div class="collection-count" id="count-${col.name}">...</div>
+          <div class="collection-bar"><div class="collection-bar-fill" id="bar-${col.name}"></div></div>
+          <div class="click-hint">Click to explore →</div>
+        `;
+        card.addEventListener("click", () => openCollectionModal(col));
+        grid.appendChild(card);
+
+        // Fetch count with real-time listener
+        try {
+          onSnapshot(collection(db, col.name), (snap) => {
+            const count = snap.size;
+            const countEl = document.getElementById(`count-${col.name}`);
+            if (countEl) countEl.textContent = count + " docs";
+
+            // Update stat cards
+            const statMap = {
+              users: "statUsers",
+              jobs: "statJobs",
+              payments: "statPayments",
+              ratings: "statRatings",
+              activity: "statActivity",
+              rewards: "statRewards",
+            };
+            if (statMap[col.name]) {
+              const statEl = document.getElementById(statMap[col.name]);
+              if (statEl) {
+                // If it's a fresh load animate, otherwise just update text
+                if (statEl.innerText === "0") {
+                  animateValue(statEl, 0, count, 1000);
+                } else {
+                  statEl.textContent = count;
+                }
+              }
+            }
+
+            // Animate bar
+            const maxDocs = 100;
+            const barEl = document.getElementById(`bar-${col.name}`);
+            if (barEl) {
+              barEl.style.width = Math.min((count / maxDocs) * 100, 100) + "%";
+            }
+          }, (error) => {
+            const countEl = document.getElementById(`count-${col.name}`);
+            if (countEl) {
+              countEl.textContent = "Access denied";
+              countEl.style.color = "#ef4444";
+            }
+          });
+        } catch (e) {
+          console.error("Stream error for", col.name, e);
+        }
+      }
+    }
+
+    // Modal logic
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalClose = document.getElementById("modalClose");
+    modalClose.addEventListener("click", () => modalOverlay.classList.remove("open"));
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) modalOverlay.classList.remove("open");
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") modalOverlay.classList.remove("open");
+    });
+
+    async function openCollectionModal(col) {
+      document.getElementById("modalIcon").textContent = col.icon;
+      document.getElementById("modalTitle").textContent = col.name;
+      document.getElementById("modalCount").textContent = "Loading...";
+      document.getElementById("modalBody").innerHTML = '<div class="modal-loading"><div class="spinner"></div> Fetching documents...</div>';
+      modalOverlay.classList.add("open");
+
+      try {
+        const snap = await getDocs(collection(db, col.name));
+        document.getElementById("modalCount").textContent = snap.size + " documents";
+        const body = document.getElementById("modalBody");
+        body.innerHTML = "";
+
+        if (snap.empty) {
+          body.innerHTML = '<div class="modal-empty">No documents in this collection</div>';
+          return;
+        }
+
+        snap.forEach((doc, index) => {
+          const data = doc.data();
+          const docCard = document.createElement("div");
+          docCard.className = "doc-card";
+
+          let fieldsHTML = '';
+          for (const [key, value] of Object.entries(data)) {
+            fieldsHTML += `
+              <div class="doc-field">
+                <span class="doc-key">${escapeHtml(key)}</span>
+                <span class="doc-value">${formatValue(key, value)}</span>
+              </div>
+            `;
+          }
+
+          docCard.innerHTML = `
+            <div class="doc-header">
+              <span class="doc-id-label">Document ID</span>
+              <span class="doc-id">${doc.id}</span>
+            </div>
+            <div class="doc-fields">${fieldsHTML}</div>
+          `;
+          body.appendChild(docCard);
+        });
+      } catch (e) {
+        document.getElementById("modalBody").innerHTML = `<div class="modal-empty" style="color:#ef4444;">⚠️ Error: ${e.message}</div>`;
+      }
+    }
+
+    function formatValue(key, value) {
+      if (value === null || value === undefined) return '<span class="val-null">null</span>';
+      if (typeof value === 'boolean') return `<span class="val-bool">${value}</span>`;
+      if (typeof value === 'number') {
+        if (key.toLowerCase().includes('balance') || key.toLowerCase().includes('earning') || key.toLowerCase().includes('budget') || key.toLowerCase().includes('amount') || key.toLowerCase().includes('price')) {
+          return `<span class="val-money">₹${value.toLocaleString('en-IN')}</span>`;
+        }
+        return `<span class="val-num">${value}</span>`;
+      }
+      if (value?.toDate) {
+        const d = value.toDate();
+        return `<span class="val-date">${d.toLocaleDateString('en-IN')} ${d.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'})}</span>`;
+      }
+      if (Array.isArray(value)) {
+        if (value.length === 0) return '<span class="val-null">[]</span>';
+        return `<span class="val-array">[${value.map(v => typeof v === 'object' ? JSON.stringify(v) : escapeHtml(String(v))).join(', ')}]</span>`;
+      }
+      if (typeof value === 'object') {
+        return `<span class="val-obj">${escapeHtml(JSON.stringify(value))}</span>`;
+      }
+      // String
+      if (key.toLowerCase().includes('email')) return `<span class="val-str">${escapeHtml(value)}</span>`;
+      if (key.toLowerCase().includes('url') || key.toLowerCase().includes('image') || key.toLowerCase().includes('photo')) {
+        return `<a href="${escapeHtml(value)}" target="_blank" class="val-link">🔗 View</a>`;
+      }
+      return `<span class="val-str">${escapeHtml(String(value))}</span>`;
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Animate counter
+    function animateValue(el, start, end, duration) {
+      const range = end - start;
+      const startTime = performance.now();
+      function update(time) {
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.floor(start + range * eased);
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    // Live stream: Users table
+    function streamUsers() {
+      try {
+        const q = query(collection(db, "users"));
+        onSnapshot(q, (snapshot) => {
+          const tbody = document.getElementById("usersBody");
+          tbody.innerHTML = "";
+          if (snapshot.empty) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading-cell">No users found</td></tr>';
+            return;
+          }
+          snapshot.forEach((doc) => {
+            const d = doc.data();
+            const rating = d.rating ? d.rating.toFixed(1) : "—";
+            const status = d.isOnline
+              ? '<span class="badge badge-online">Online</span>'
+              : '<span class="badge badge-offline">Offline</span>';
+            const role = d.role || "user";
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td><strong>${d.name || "—"}</strong></td>
+              <td class="mono">${maskEmail(d.email || "—")}</td>
+              <td><span class="badge badge-role">${role}</span></td>
+              <td>${rating} ⭐</td>
+              <td>${d.gigsCompleted || 0}</td>
+              <td>${status}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }, (err) => {
+          document.getElementById("usersBody").innerHTML =
+            '<tr><td colspan="6" class="loading-cell" style="color:#ef4444;">⚠️ Permission denied — enable Firestore read access</td></tr>';
+        });
+      } catch (e) {
+        console.error("User stream error:", e);
+      }
+    }
+
+    // Live stream: Jobs table
+    function streamJobs() {
+      try {
+        const q = query(collection(db, "jobs"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+          const tbody = document.getElementById("jobsBody");
+          tbody.innerHTML = "";
+          if (snapshot.empty) {
+            tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">No jobs found</td></tr>';
+            return;
+          }
+          snapshot.forEach((doc) => {
+            const d = doc.data();
+            const statusClass = {
+              open: "badge-online",
+              active: "badge-role",
+              assigned: "badge-role",
+              completed: "badge-completed",
+              cancelled: "badge-offline",
+            }[d.status] || "badge-role";
+            const posted = d.createdAt?.toDate?.()
+              ? timeAgo(d.createdAt.toDate())
+              : "—";
+            const tr = document.createElement("tr");
+            tr.style.cursor = "pointer";
+            tr.title = "Click to view full job details";
+            tr.addEventListener("click", () => openJobModal(doc.id, d));
+            tr.innerHTML = `
+              <td><strong>${d.title || "—"}</strong></td>
+              <td>${d.category || "—"}</td>
+              <td class="mono">₹${d.price || d.budget || 0}</td>
+              <td><span class="badge ${statusClass}">${d.status || "—"}</span></td>
+              <td>${posted}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }, (err) => {
+          // If orderBy requires an index, fallback to not ordered
+          if (err.message && err.message.includes('index')) {
+            console.warn("Index missing for orderBy createdAt desc, falling back to unordered", err);
+            const fallbackQ = query(collection(db, "jobs"));
+            onSnapshot(fallbackQ, (fallbackSnapshot) => {
+               // ... redundant... but let's not make it complicated.
+               // Actually we'll just not use orderBy to avoid errors.
+            });
+          }
+          document.getElementById("jobsBody").innerHTML =
+            '<tr><td colspan="5" class="loading-cell" style="color:#ef4444;">⚠️ Permission denied or Index missing</td></tr>';
+        });
+      } catch (e) {
+        console.error("Jobs stream error:", e);
+      }
+    }
+
+    // Open Job Details Modal
+    function openJobModal(id, data) {
+      document.getElementById("modalIcon").textContent = "💼";
+      document.getElementById("modalTitle").textContent = "Job Details";
+      document.getElementById("modalCount").textContent = "";
+      
+      const body = document.getElementById("modalBody");
+      body.innerHTML = "";
+      
+      const docCard = document.createElement("div");
+      docCard.className = "doc-card";
+
+      let fieldsHTML = '';
+      for (const [key, value] of Object.entries(data)) {
+        fieldsHTML += `
+          <div class="doc-field">
+            <span class="doc-key">${escapeHtml(key)}</span>
+            <span class="doc-value">${formatValue(key, value)}</span>
+          </div>
+        `;
+      }
+
+      docCard.innerHTML = `
+        <div class="doc-header">
+          <span class="doc-id-label">Job ID</span>
+          <span class="doc-id">${id}</span>
+        </div>
+        <div class="doc-fields">${fieldsHTML}</div>
+      `;
+      body.appendChild(docCard);
+      
+      modalOverlay.classList.add("open");
+    }
+
+    // Helpers
+    function maskEmail(email) {
+      if (!email || email === "—") return "—";
+      const [user, domain] = email.split("@");
+      if (!domain) return email;
+      return user.substring(0, 2) + "***@" + domain;
+    }
+
+    function timeAgo(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      if (seconds < 60) return seconds + "s ago";
+      if (seconds < 3600) return Math.floor(seconds / 60) + "m ago";
+      if (seconds < 86400) return Math.floor(seconds / 3600) + "h ago";
+      return Math.floor(seconds / 86400) + "d ago";
+    }
+
+
+
+    // Live clock
+    function updateClock() {
+      const el = document.getElementById("liveTime");
+      const now = new Date();
+      el.textContent = now.toLocaleTimeString("en-IN", { hour12: true });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Background particles
+    function createParticles() {
+      const container = document.getElementById("particles");
+      for (let i = 0; i < 30; i++) {
+        const p = document.createElement("div");
+        p.className = "particle";
+        p.style.left = Math.random() * 100 + "%";
+        p.style.top = Math.random() * 100 + "%";
+        p.style.animationDelay = Math.random() * 8 + "s";
+        p.style.animationDuration = (8 + Math.random() * 12) + "s";
+        p.style.width = p.style.height = (2 + Math.random() * 4) + "px";
+        container.appendChild(p);
+      }
+    }
+
+    // Init
+    createParticles();
+    fetchCollectionCounts();
+    streamUsers();
+    streamJobs();
+  </script>
+</body>
+</html>

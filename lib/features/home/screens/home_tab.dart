@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/widgets/cached_network_avatar.dart';
@@ -16,38 +17,38 @@ class HomeTab extends StatelessWidget {
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: Colors.blue.shade50,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.school,
                 color: AppTheme.primaryBlue,
-                size: 20,
+                size: 20.sp,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Current Location",
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                  style: TextStyle(color: Colors.grey, fontSize: 12.sp),
                 ),
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       "UC Berkeley Campus",
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                     ),
                     Icon(
                       Icons.keyboard_arrow_down,
-                      size: 16,
+                      size: 16.sp,
                       color: Colors.grey[700],
                     ),
                   ],
@@ -67,80 +68,80 @@ class HomeTab extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           const CachedNetworkAvatar(radius: 18, backgroundColor: Colors.orange),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
         ],
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Title
-              const Text(
+              Text(
                 "What do you need",
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 28.sp,
                   fontWeight: FontWeight.w900,
                   height: 1.1,
                 ),
               ),
-              const Text(
+              Text(
                 "help with today?",
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 28.sp,
                   fontWeight: FontWeight.w900,
                   color: AppTheme.primaryBlue,
                   height: 1.1,
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // Search Bar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                height: 50,
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                height: 50.h,
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.search, color: Colors.grey[400]),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Text(
                       "Search for tutors, cleaners...",
                       style: TextStyle(color: Colors.grey[400]),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.w),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.tune,
                         color: AppTheme.primaryBlue,
-                        size: 20,
+                        size: 20.sp,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // Popular Tasks
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     "Popular Tasks",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp),
                   ),
                   TextButton(
                     onPressed: () {
@@ -154,7 +155,7 @@ class HomeTab extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
 
               Wrap(
                 spacing: 16,
@@ -187,23 +188,23 @@ class HomeTab extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               // Nearby Helpers
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "Nearby Helpers",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp),
                   ),
-                  Icon(Icons.filter_list, size: 20),
+                  Icon(Icons.filter_list, size: 20.sp),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               SizedBox(
-                height: 140, // Height for helper cards
+                height: 140.h, // Height for helper cards
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('users')
@@ -224,7 +225,7 @@ class HomeTab extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       itemCount: helpers.length,
                       separatorBuilder: (context, index) =>
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                       itemBuilder: (context, index) {
                         final helper =
                             helpers[index].data() as Map<String, dynamic>;
@@ -267,10 +268,10 @@ class _CategoryCard extends StatelessWidget {
 
     return Container(
       width: width,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
         border: Border.all(color: Colors.grey.shade100),
         boxShadow: [
           BoxShadow(
@@ -283,11 +284,11 @@ class _CategoryCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             child: Icon(icon, color: iconColor),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
@@ -311,11 +312,11 @@ class _HelperCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 250,
-      padding: const EdgeInsets.all(16),
+      width: 250.w,
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
         border: Border.all(color: Colors.grey.shade100),
       ),
       child: Row(
@@ -325,7 +326,7 @@ class _HelperCard extends StatelessWidget {
             backgroundColor: Colors.teal.shade100,
             fallbackText: name,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,44 +337,44 @@ class _HelperCard extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.favorite_border,
-                      size: 18,
+                      size: 18.sp,
                       color: Colors.grey,
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   tagline,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Row(
                   children: [
-                    const Icon(Icons.verified, size: 14, color: Colors.green),
-                    const SizedBox(width: 4),
-                    const Text(
+                    Icon(Icons.verified, size: 14.sp, color: Colors.green),
+                    SizedBox(width: 4.w),
+                    Text(
                       "Verified",
                       style: TextStyle(
                         color: Colors.green,
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const Spacer(),
-                    const Icon(Icons.star, size: 14, color: Colors.amber),
+                    Icon(Icons.star, size: 14.sp, color: Colors.amber),
                     Text(
                       " $rating ($reviews)",
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: TextStyle(
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

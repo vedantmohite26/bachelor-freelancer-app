@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/wallet_service.dart';
@@ -79,12 +80,12 @@ class _WalletScreenState extends State<WalletScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           children: [
             // 1. Balance Cards
             SizedBox(
-              height: 180,
+              height: 180.h,
               child: Consumer<WalletService>(
                 builder: (context, wallet, child) {
                   return PageView(
@@ -105,7 +106,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           );
                         },
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.w),
                       _BalanceCard(
                         title: "Student Coins",
                         amount: "${wallet.coins} C",
@@ -127,7 +128,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             // 2. Recent Activity Section
             Row(
@@ -151,14 +152,14 @@ class _WalletScreenState extends State<WalletScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             Consumer<WalletService>(
               builder: (context, wallet, child) {
                 if (wallet.transactions.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text("No recent transactions"),
+                  return Padding(
+                    padding: EdgeInsets.all(16.0.w),
+                    child: const Text("No recent transactions"),
                   );
                 }
                 return ListView.builder(
@@ -212,11 +213,11 @@ class _BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.all(24),
+      margin: EdgeInsets.only(right: 16.w),
+      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.w),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.3),
@@ -236,11 +237,11 @@ class _BalanceCard extends StatelessWidget {
                 title,
                 style: TextStyle(
                   color: textColor.withValues(alpha: 0.8),
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Icon(icon, color: textColor.withValues(alpha: 0.8), size: 28),
+              Icon(icon, color: textColor.withValues(alpha: 0.8), size: 28.sp),
             ],
           ),
           Column(
@@ -250,7 +251,7 @@ class _BalanceCard extends StatelessWidget {
                 amount,
                 style: TextStyle(
                   color: textColor,
-                  fontSize: 32,
+                  fontSize: 32.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -258,12 +259,12 @@ class _BalanceCard extends StatelessWidget {
           ),
           InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.w),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.w),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -275,8 +276,8 @@ class _BalanceCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  Icon(Icons.arrow_forward_ios, size: 12, color: textColor),
+                  SizedBox(width: 4.w),
+                  Icon(Icons.arrow_forward_ios, size: 12.sp, color: textColor),
                 ],
               ),
             ),
@@ -305,11 +306,11 @@ class _TransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 16.h),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
         border: Border.all(color: Colors.grey.shade100),
       ),
       child: Row(
@@ -321,24 +322,24 @@ class _TransactionItem extends StatelessWidget {
             child: Icon(
               isCoin ? Icons.star : Icons.attach_money,
               color: isCoin ? Colors.orange : AppTheme.growthGreen,
-              size: 20,
+              size: 20.sp,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 16.sp,
                   ),
                 ),
                 Text(
                   date,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  style: TextStyle(color: Colors.grey, fontSize: 12.sp),
                 ),
               ],
             ),
@@ -347,7 +348,7 @@ class _TransactionItem extends StatelessWidget {
             amount,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 16.sp,
               color: isPositive ? AppTheme.growthGreen : Colors.black,
             ),
           ),

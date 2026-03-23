@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 
 import 'package:freelancer/core/services/auth_service.dart';
@@ -105,31 +106,31 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   : null;
 
               return SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0.w),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildTypeSelector(),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       _buildAmountField(warning),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       _buildCategoryDropdown(),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       _buildDescriptionField(),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       _buildDatePicker(),
 
-                      const Divider(height: 32),
+                      Divider(height: 32.h),
                       Text(
                         'Details',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
 
                       _buildPaymentMethodDropdown(),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       SwitchListTile(
                         title: const Text('Recurring Transaction?'),
                         activeThumbColor: Theme.of(context).primaryColor,
@@ -139,12 +140,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       if (_isRecurring) _buildFrequencyDropdown(),
 
                       if (_type == TransactionType.expense) ...[
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         // Removed Necessity and Mood selectors
                       ],
 
                       if (_type == TransactionType.income) ...[
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         TextFormField(
                           initialValue: _source,
                           decoration: const InputDecoration(
@@ -155,11 +156,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                       ],
 
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h),
                       ElevatedButton(
                         onPressed: _submitTransaction,
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
                           backgroundColor: _type == TransactionType.income
                               ? Theme.of(context).colorScheme.secondary
                               : (warning?.color ??
@@ -170,7 +171,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         child: Text(
                           'Save Transaction',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 18.sp,
                             color: Colors.white,
                             fontWeight: warning != null
                                 ? FontWeight.bold
@@ -227,7 +228,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             border: const OutlineInputBorder(),
             focusedBorder: warning != null
                 ? OutlineInputBorder(
-                    borderSide: BorderSide(color: warning.color, width: 2),
+                    borderSide: BorderSide(color: warning.color, width: 2.w),
                   )
                 : null,
           ),
@@ -239,7 +240,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           onSaved: (value) => _amount = double.parse(value!),
         ),
         if (warning != null) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           _buildWarningChip(warning),
         ],
       ],
@@ -340,22 +341,22 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   Widget _buildWarningChip(_BudgetWarning warning) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: warning.color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.w),
         border: Border.all(color: warning.color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(warning.icon, color: warning.color, size: 20),
-          const SizedBox(width: 8),
+          Icon(warning.icon, color: warning.color, size: 20.sp),
+          SizedBox(width: 8.w),
           Expanded(
             child: Text(
               warning.message,
               style: TextStyle(
                 color: warning.color,
-                fontSize: 12,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -399,7 +400,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       subtitle: Text("${_date.toLocal()}".split(' ')[0]),
       trailing: const Icon(Icons.calendar_today),
       tileColor: Theme.of(context).colorScheme.surfaceContainer,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.w)),
       onTap: () async {
         final DateTime? picked = await showDatePicker(
           context: context,

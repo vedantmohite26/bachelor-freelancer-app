@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/auth_service.dart';
@@ -77,16 +78,16 @@ class FriendRequestsScreen extends StatelessWidget {
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(60),
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.all(4),
+              margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(50),
+                borderRadius: BorderRadius.circular(50.w),
               ),
               child: TabBar(
                 indicator: BoxDecoration(
                   color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(40),
+                  borderRadius: BorderRadius.circular(40.w),
                 ),
                 labelColor: colorScheme.onPrimary,
                 unselectedLabelColor: colorScheme.onSurface.withValues(
@@ -134,21 +135,21 @@ class FriendRequestsScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 16),
-              const SizedBox(width: 4),
+              Icon(icon, size: 16.sp),
+              SizedBox(width: 4.w),
             ],
             Text(label),
             if (count > 0) ...[
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: EdgeInsets.all(6.w),
                 decoration: const BoxDecoration(
                   color: Colors.white24,
                   shape: BoxShape.circle,
                 ),
                 child: Text(
                   count.toString(),
-                  style: const TextStyle(fontSize: 10, color: Colors.white),
+                  style: TextStyle(fontSize: 10.sp, color: Colors.white),
                 ),
               ),
             ],
@@ -171,7 +172,7 @@ class FriendRequestsScreen extends StatelessWidget {
 
         final requests = snapshot.data!;
         return ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           itemCount: requests.length + 1, // +1 for Sync card
           itemBuilder: (context, index) {
             if (index == requests.length) return _buildSyncContactsCard();
@@ -199,7 +200,7 @@ class FriendRequestsScreen extends StatelessWidget {
                   onReject: () =>
                       friendService.rejectFriendRequest(req['requestId']),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
               ],
             );
           },
@@ -221,7 +222,7 @@ class FriendRequestsScreen extends StatelessWidget {
 
         final requests = snapshot.data!;
         return ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           itemCount: requests.length,
           itemBuilder: (context, index) {
             final req = requests[index];
@@ -247,7 +248,7 @@ class FriendRequestsScreen extends StatelessWidget {
                     req['receiverId'],
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
               ],
             );
           },
@@ -260,10 +261,10 @@ class FriendRequestsScreen extends StatelessWidget {
     return Builder(
       builder: (context) {
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F2E),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.w),
             border: Border.all(color: Colors.white10),
           ),
           child: Column(
@@ -271,7 +272,7 @@ class FriendRequestsScreen extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: EdgeInsets.all(10.w),
                     decoration: const BoxDecoration(
                       color: Color(0xFF2C3E50),
                       shape: BoxShape.circle,
@@ -281,8 +282,8 @@ class FriendRequestsScreen extends StatelessWidget {
                       color: AppTheme.primaryBlue,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  const Expanded(
+                  SizedBox(width: 16.w),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -291,19 +292,19 @@ class FriendRequestsScreen extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                           ),
                         ),
                         Text(
                           "Find people you already know on CampusGig",
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                          style: TextStyle(color: Colors.grey, fontSize: 12.sp),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -318,9 +319,9 @@ class FriendRequestsScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF324B66),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
+                      borderRadius: BorderRadius.circular(50.w),
                     ),
                   ),
                   child: const Text("Find Friends"),
@@ -454,7 +455,7 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20.w),
           color: colorScheme.surface,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -463,24 +464,24 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
                 "Find Friends",
                 style: TextStyle(
                   color: colorScheme.onSurface,
-                  fontSize: 20,
+                  fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 "Search by email ID to instantly find connections",
                 style: TextStyle(
                   color: colorScheme.onSurface.withValues(alpha: 0.6),
-                  fontSize: 14,
+                  fontSize: 14.sp,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               // Search Bar
               Container(
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                 ),
                 child: TextField(
                   controller: _emailController,
@@ -509,21 +510,21 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
                           )
                         : null,
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 16.h,
                     ),
                   ),
                   onChanged: _onSearchChanged,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               if (_errorMessage != null)
                 Padding(
-                  padding: const EdgeInsets.only(left: 4),
+                  padding: EdgeInsets.only(left: 4.w),
                   child: Text(
                     _errorMessage!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                    style: TextStyle(color: Colors.red, fontSize: 12.sp),
                   ),
                 ),
             ],
@@ -543,10 +544,10 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
                         _errorMessage != null
                             ? Icons.search_off
                             : Icons.person_search,
-                        size: 64,
+                        size: 64.sp,
                         color: colorScheme.onSurface.withValues(alpha: 0.2),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Text(
                         _errorMessage ?? "Type an email to search",
                         style: TextStyle(
@@ -557,7 +558,7 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   itemCount: _searchResults.length,
                   itemBuilder: (context, index) {
                     return _buildUserCard(_searchResults[index]);
@@ -573,7 +574,7 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
       child: Row(
         children: [
           // Profile Picture
@@ -597,7 +598,7 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
               fallbackText: user['name'] ?? 'U',
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
 
           // User Info
           Expanded(
@@ -608,27 +609,27 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
                   user['name'] ?? 'Unknown',
                   style: TextStyle(
                     color: colorScheme.onSurface,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   user['email'] ?? '',
                   style: TextStyle(
                     color: colorScheme.onSurface.withValues(alpha: 0.6),
-                    fontSize: 13,
+                    fontSize: 13.sp,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (user['role'] != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 2),
+                    padding: EdgeInsets.only(top: 2.h),
                     child: Text(
                       user['role'],
                       style: TextStyle(
                         color: colorScheme.onSurface.withValues(alpha: 0.4),
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                     ),
                   ),
@@ -656,9 +657,9 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
                         color: colorScheme.outline.withValues(alpha: 0.3),
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.w),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                       minimumSize: const Size(0, 32),
                     ),
                     child: Text(
@@ -674,9 +675,9 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
                         color: colorScheme.outline.withValues(alpha: 0.3),
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.w),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                       minimumSize: const Size(0, 32),
                     ),
                     child: Text(
@@ -695,14 +696,14 @@ class _FindFriendsTabState extends State<_FindFriendsTab> {
                   style: FilledButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.w),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
                     minimumSize: const Size(0, 32),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Connect",
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold),
                   ),
                 );
               },
@@ -787,24 +788,24 @@ class _RequestCardState extends State<RequestCard> {
   Widget build(BuildContext context) {
     if (_statusMessage != null) {
       return Container(
-        height: 80,
+        height: 80.h,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: _statusColor!.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.w),
           border: Border.all(color: _statusColor!.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.check_circle, color: _statusColor),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Text(
               _statusMessage!,
               style: TextStyle(
                 color: _statusColor,
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 16.sp,
               ),
             ),
           ],
@@ -813,10 +814,10 @@ class _RequestCardState extends State<RequestCard> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
         border: Border.all(
           color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
         ),
@@ -831,7 +832,7 @@ class _RequestCardState extends State<RequestCard> {
                 backgroundColor: widget.imageColor,
                 fallbackText: widget.name,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -844,7 +845,7 @@ class _RequestCardState extends State<RequestCard> {
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                           ),
                         ),
                         Text(
@@ -853,17 +854,17 @@ class _RequestCardState extends State<RequestCard> {
                             color: Theme.of(
                               context,
                             ).colorScheme.onSurface.withValues(alpha: 0.6),
-                            fontSize: 12,
+                            fontSize: 12.sp,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       widget.role,
                       style: TextStyle(
                         color: Theme.of(context).primaryColor,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ],
@@ -871,7 +872,7 @@ class _RequestCardState extends State<RequestCard> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           if (_isLoading)
             const Center(child: CircularProgressIndicator())
           else if (widget.isSent)
@@ -888,9 +889,9 @@ class _RequestCardState extends State<RequestCard> {
                   side: BorderSide(
                     color: Theme.of(context).colorScheme.outline,
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
+                    borderRadius: BorderRadius.circular(50.w),
                   ),
                 ),
                 child: const Text("Cancel Request"),
@@ -909,15 +910,15 @@ class _RequestCardState extends State<RequestCard> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+                        borderRadius: BorderRadius.circular(50.w),
                       ),
                     ),
                     child: const Text("Confirm"),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () =>
@@ -927,9 +928,9 @@ class _RequestCardState extends State<RequestCard> {
                       side: BorderSide(
                         color: Theme.of(context).colorScheme.outline,
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+                        borderRadius: BorderRadius.circular(50.w),
                       ),
                     ),
                     child: const Text("Delete"),

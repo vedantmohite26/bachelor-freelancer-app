@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/auth_service.dart';
@@ -142,50 +143,54 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(24.0.w),
         child: Column(
           children: [
-            const SizedBox(height: 60),
+            SizedBox(height: 60.h),
             // Logo / Header
-            Icon(Icons.flash_on_rounded, size: 64, color: colorScheme.primary),
-            const SizedBox(height: 16),
+            Icon(
+              Icons.flash_on_rounded,
+              size: 64.sp,
+              color: colorScheme.primary,
+            ),
+            SizedBox(height: 16.h),
             Text(
               "Welcome to Freelancer",
               style: textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text("The Campus Job Marketplace", style: textTheme.bodyMedium),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
 
             // Mock Hero Image Placeholder
             Container(
-              height: 200,
+              height: 200.h,
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerHighest.withValues(
                   alpha: 0.3,
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20.w),
               ),
               child: Center(
                 child: Icon(
                   Icons.people_alt_rounded,
-                  size: 80,
+                  size: 80.sp,
                   color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                 ),
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
 
             // Role Toggle
             Container(
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerHighest.withValues(
                   alpha: 0.5,
                 ),
-                borderRadius: BorderRadius.circular(100),
+                borderRadius: BorderRadius.circular(100.w),
               ),
               child: Row(
                 children: [
@@ -207,14 +212,14 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Email / Password Form
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24.w),
               decoration: BoxDecoration(
                 color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20.w),
                 boxShadow: [
                   BoxShadow(
                     color: colorScheme.onSurface.withValues(alpha: 0.05),
@@ -234,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       prefixIcon: Icon(Icons.email_outlined),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   // Password Input
                   TextFormField(
@@ -245,27 +250,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       prefixIcon: Icon(Icons.lock_outline),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // Action Button
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 50.h,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _submitAuth,
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.w),
                         ),
                       ),
                       child: _isLoading
                           ? CircularProgressIndicator(
                               color: colorScheme.onPrimary,
                             )
-                          : const Text(
+                          : Text(
                               "Login",
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -275,7 +280,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             TextButton(
               onPressed: () {
@@ -300,11 +305,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Social Login (Mock)
             Text("Or continue with", style: textTheme.bodySmall),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -393,8 +398,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                   },
                 ),
-                const SizedBox(width: 16),
-                _SocialButton(icon: Icons.apple, onTap: () {}),
               ],
             ),
 
@@ -432,10 +435,10 @@ class _RoleButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: EdgeInsets.symmetric(vertical: 12.h),
         decoration: BoxDecoration(
           color: isSelected ? colorScheme.surface : Colors.transparent,
-          borderRadius: BorderRadius.circular(100),
+          borderRadius: BorderRadius.circular(100.w),
           boxShadow: isSelected
               ? [
                   BoxShadow(
@@ -472,12 +475,12 @@ class _SocialButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           border: Border.all(color: colorScheme.outlineVariant),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.w),
         ),
-        child: Icon(icon, size: 32, color: colorScheme.onSurface),
+        child: Icon(icon, size: 32.sp, color: colorScheme.onSurface),
       ),
     );
   }

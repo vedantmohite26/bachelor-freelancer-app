@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/wallet_service.dart';
 import 'package:freelancer/core/services/auth_service.dart';
@@ -134,7 +135,7 @@ class _CoinShopScreenState extends State<CoinShopScreen>
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "Unnati Shop",
+          "Earnify Shop",
           style: TextStyle(
             color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.bold,
@@ -146,7 +147,7 @@ class _CoinShopScreenState extends State<CoinShopScreen>
             icon: Icon(
               Icons.cloud_upload,
               color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-              size: 20,
+              size: 20.sp,
             ),
             onPressed: () async {
               await Provider.of<RewardsService>(
@@ -163,10 +164,10 @@ class _CoinShopScreenState extends State<CoinShopScreen>
           ),
           // Debug Add Coins Button
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.add_circle_outline,
               color: Colors.greenAccent,
-              size: 20,
+              size: 20.sp,
             ),
             onPressed: () async {
               final walletService = Provider.of<WalletService>(
@@ -202,19 +203,19 @@ class _CoinShopScreenState extends State<CoinShopScreen>
         children: [
           // Prominent Balance Header
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
             child: Column(
               children: [
                 Text(
                   "YOUR BALANCE",
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     letterSpacing: 2,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Consumer<WalletService>(
                   builder: (context, wallet, _) {
                     return Row(
@@ -225,23 +226,23 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                         Icon(
                           Icons.monetization_on,
                           color: theme.colorScheme.tertiary,
-                          size: 32,
+                          size: 32.sp,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Text(
                           "${wallet.coins}",
                           style: TextStyle(
                             color: theme.colorScheme.onSurface,
-                            fontSize: 48,
+                            fontSize: 48.sp,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Text(
                           "COINS",
                           style: TextStyle(
                             color: theme.colorScheme.tertiary,
-                            fontSize: 14,
+                            fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -255,16 +256,16 @@ class _CoinShopScreenState extends State<CoinShopScreen>
 
           // Custom TabBar
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            height: 48,
+            margin: EdgeInsets.symmetric(horizontal: 16.w),
+            height: 48.h,
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.w),
             ),
             child: TabBar(
               controller: _tabController,
               indicator: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.w),
                 color: const Color.fromARGB(255, 255, 255, 0),
               ),
               labelColor: Colors.black,
@@ -286,7 +287,7 @@ class _CoinShopScreenState extends State<CoinShopScreen>
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           Expanded(
             child: _isLoading
@@ -295,7 +296,7 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                     controller: _tabController,
                     children: [
                       _buildRewardsGrid('redeem_code', 1.2),
-                      _buildRewardsGrid('power_up', 0.75),
+                      _buildRewardsGrid('power_up', 0.65),
                     ],
                   ),
           ),
@@ -319,20 +320,20 @@ class _CoinShopScreenState extends State<CoinShopScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.inventory_2_outlined,
-                  size: 64,
+                  size: 64.sp,
                   color: Colors.grey,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   "No items available in $category",
                   style: const TextStyle(color: Colors.grey),
                 ),
-                const SizedBox(height: 16),
-                const Text(
+                SizedBox(height: 16.h),
+                Text(
                   "Tip: Tap the cloud icon ☁️ to seed data!",
-                  style: TextStyle(color: Colors.white24, fontSize: 12),
+                  style: TextStyle(color: Colors.white24, fontSize: 12.sp),
                 ),
               ],
             ),
@@ -341,9 +342,9 @@ class _CoinShopScreenState extends State<CoinShopScreen>
 
         if (category == 'redeem_code') {
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             itemCount: rewards.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            separatorBuilder: (context, index) => SizedBox(height: 16.h),
             itemBuilder: (context, index) {
               return RepaintBoundary(
                 child: _buildRedeemCodeCard(rewards[index]),
@@ -353,7 +354,7 @@ class _CoinShopScreenState extends State<CoinShopScreen>
         }
 
         return GridView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             childAspectRatio: aspectRatio,
@@ -379,7 +380,7 @@ class _CoinShopScreenState extends State<CoinShopScreen>
       onTap: () => _handleRedeem(item),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.w),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -401,13 +402,13 @@ class _CoinShopScreenState extends State<CoinShopScreen>
               top: -20,
               child: Icon(
                 icon,
-                size: 100,
+                size: 100.sp,
                 color: Colors.white.withValues(alpha: 0.1),
               ),
             ),
 
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(8.0.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -417,28 +418,28 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                     children: [
                       // Brand Icon
                       Container(
-                        padding: const EdgeInsets.all(6),
+                        padding: EdgeInsets.all(6.w),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(icon, color: Colors.white, size: 16),
+                        child: Icon(icon, color: Colors.white, size: 16.sp),
                       ),
                       // "GIFT CARD" Label
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 6.w,
+                          vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(4.w),
                         ),
-                        child: const Text(
+                        child: Text(
                           "GIFT CARD",
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 8,
+                            fontSize: 8.sp,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1,
                           ),
@@ -458,7 +459,7 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                               ? Colors.black87
                               : Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           shadows: [
                             Shadow(
                               color: brandColor.computeLuminance() > 0.5
@@ -478,7 +479,7 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                           color: brandColor.computeLuminance() > 0.5
                               ? Colors.black54
                               : Colors.white70,
-                          fontSize: 10,
+                          fontSize: 10.sp,
                         ),
                       ),
                     ],
@@ -487,10 +488,10 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                   // Price Button (Bottom)
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    padding: EdgeInsets.symmetric(vertical: 6.h),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.w),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -498,15 +499,15 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                         Icon(
                           Icons.monetization_on,
                           color: theme.colorScheme.tertiary,
-                          size: 16,
+                          size: 16.sp,
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Text(
                           item['cost'].toString(),
                           style: TextStyle(
                             color: theme.colorScheme.tertiary,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                           ),
                         ),
                       ],
@@ -534,7 +535,7 @@ class _CoinShopScreenState extends State<CoinShopScreen>
           end: Alignment.bottomRight,
           colors: [Color(0xFF2C2C2E), Color(0xFF000000)],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.w),
         border: Border.all(
           color: isHighlight
               ? color.withValues(alpha: 0.5)
@@ -562,8 +563,8 @@ class _CoinShopScreenState extends State<CoinShopScreen>
             top: -20,
             right: -20,
             child: Container(
-              width: 100,
-              height: 100,
+              width: 100.w,
+              height: 100.h,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: color.withValues(alpha: 0.1),
@@ -577,13 +578,13 @@ class _CoinShopScreenState extends State<CoinShopScreen>
           ),
 
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.0.w),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Icon Bubble
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: color.withValues(alpha: 0.15),
@@ -596,12 +597,12 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                     ],
                     border: Border.all(
                       color: color.withValues(alpha: 0.3),
-                      width: 1,
+                      width: 1.w,
                     ),
                   ),
-                  child: Icon(icon, size: 32, color: color),
+                  child: Icon(icon, size: 32.sp, color: color),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // Title
                 Text(
@@ -610,14 +611,14 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                   style: GoogleFonts.plusJakartaSans(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     height: 1.2,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
 
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
 
                 // Subtitle
                 Text(
@@ -625,7 +626,7 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.grey[400],
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 2,
@@ -644,11 +645,11 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                       foregroundColor: Colors.black,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.w),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 0,
-                        horizontal: 8,
+                      padding: EdgeInsets.symmetric(
+                        vertical: 0.h,
+                        horizontal: 8.w,
                       ),
                       minimumSize: const Size(0, 36),
                     ),
@@ -656,13 +657,13 @@ class _CoinShopScreenState extends State<CoinShopScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.monetization_on, size: 14),
-                        const SizedBox(width: 4),
+                        Icon(Icons.monetization_on, size: 14.sp),
+                        SizedBox(width: 4.w),
                         Text(
                           "${item['cost']}",
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.w800,
-                            fontSize: 13,
+                            fontSize: 13.sp,
                           ),
                         ),
                       ],

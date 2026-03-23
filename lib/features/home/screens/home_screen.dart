@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:flutter/services.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/features/home/screens/seeker_home_tab.dart';
@@ -124,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final selectedProfileIcon = CachedNetworkAvatar(
               imageUrl: photoUrl,
               radius: 12,
-              border: Border.all(color: AppTheme.primaryBlue, width: 2),
+              border: Border.all(color: AppTheme.primaryBlue, width: 2.w),
             );
 
             final List<NavigationDestination> destinations = widget.isSeeker

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
@@ -96,12 +97,12 @@ class _SelectJobLocationScreenState extends State<SelectJobLocationScreen> {
           if (_selectedLocation != null)
             TextButton(
               onPressed: _onConfirmLocation,
-              child: const Text(
+              child: Text(
                 'Confirm',
                 style: TextStyle(
                   color: AppTheme.primaryBlue,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                 ),
               ),
             ),
@@ -148,11 +149,11 @@ class _SelectJobLocationScreenState extends State<SelectJobLocationScreen> {
             right: 16,
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12.w),
                 child: Text(
                   'Tap on the map to select job location',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                   textAlign: TextAlign.center,
@@ -169,7 +170,7 @@ class _SelectJobLocationScreenState extends State<SelectJobLocationScreen> {
               right: 16,
               child: Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -179,7 +180,7 @@ class _SelectJobLocationScreenState extends State<SelectJobLocationScreen> {
                             Icons.location_on,
                             color: AppTheme.primaryBlue,
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,14 +188,14 @@ class _SelectJobLocationScreenState extends State<SelectJobLocationScreen> {
                                 Text(
                                   'Selected Location',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                     color: Colors.grey[600],
                                   ),
                                 ),
                                 Text(
                                   '${_selectedLocation!.latitude.toStringAsFixed(6)}, ${_selectedLocation!.longitude.toStringAsFixed(6)}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

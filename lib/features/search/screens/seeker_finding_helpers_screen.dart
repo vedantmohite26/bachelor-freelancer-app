@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SeekerFindingHelpersScreen extends StatefulWidget {
@@ -43,7 +44,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.all(8.0.w),
           child: Container(
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
@@ -59,7 +60,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
           "Search in progress",
           style: GoogleFonts.plusJakartaSans(
             color: const Color(0xFF111418),
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -71,17 +72,17 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0,
-                    vertical: 32.0,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 24.0.w,
+                    vertical: 32.0.h,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Central Illustration Area
                       SizedBox(
-                        height: 300,
-                        width: 300,
+                        height: 300.h,
+                        width: 300.w,
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
@@ -109,10 +110,10 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                                 );
                               },
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: EdgeInsets.all(12.w),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(12.w),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withValues(
@@ -126,10 +127,10 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                                     color: Colors.grey.shade100,
                                   ),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.cleaning_services,
                                   color: primaryColor,
-                                  size: 30,
+                                  size: 30.sp,
                                 ),
                               ),
                             ),
@@ -138,10 +139,10 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                               top: 20,
                               left: 20,
                               child: Container(
-                                padding: const EdgeInsets.all(8),
+                                padding: EdgeInsets.all(8.w),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.6),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8.w),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withValues(
@@ -155,39 +156,39 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                                     color: Colors.grey.shade100,
                                   ),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.laptop_mac,
                                   color: primaryColor,
-                                  size: 24,
+                                  size: 24.sp,
                                 ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h),
                       // Headline Text
                       Text(
                         "Finding local helpers near you...",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.plusJakartaSans(
                           color: const Color(0xFF111418),
-                          fontSize: 28,
+                          fontSize: 28.sp,
                           fontWeight: FontWeight.bold,
                           height: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         "We're connecting you with trusted students in your neighborhood.",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.plusJakartaSans(
                           color: const Color(0xFF637588),
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.normal,
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      SizedBox(height: 40.h),
                       // Progress Bar
                       Container(
                         width: double.infinity,
@@ -195,9 +196,9 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                         child: Column(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4.0,
-                                vertical: 8.0,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 4.0.w,
+                                vertical: 8.0.h,
                               ),
                               child: Row(
                                 mainAxisAlignment:
@@ -207,7 +208,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                                     "Searching...",
                                     style: GoogleFonts.plusJakartaSans(
                                       color: const Color(0xFF111418),
-                                      fontSize: 14,
+                                      fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -215,7 +216,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                                     "45%",
                                     style: GoogleFonts.plusJakartaSans(
                                       color: const Color(0xFF637588),
-                                      fontSize: 14,
+                                      fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -223,7 +224,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                               ),
                             ),
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(9999),
+                              borderRadius: BorderRadius.circular(9999.w),
                               child: const LinearProgressIndicator(
                                 value: 0.45,
                                 backgroundColor: Color(0xFFdbe0e6),
@@ -241,34 +242,34 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
             ),
             // Bottom "While you wait" section
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24.w),
               child: Column(
                 children: [
                   Text(
                     "WHILE YOU WAIT",
                     style: GoogleFonts.plusJakartaSans(
                       color: const Color(0xFF111418).withValues(alpha: 0.4),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Row(
+                  SizedBox(height: 16.h),
+                  Row(
                     children: [
-                      _QuickCategory(
+                      const _QuickCategory(
                         icon: Icons.local_cafe,
                         label: "Coffee Run",
                         primaryColor: primaryColor,
                       ),
-                      SizedBox(width: 12),
-                      _QuickCategory(
+                      SizedBox(width: 12.w),
+                      const _QuickCategory(
                         icon: Icons.menu_book,
                         label: "Tutoring",
                         primaryColor: primaryColor,
                       ),
-                      SizedBox(width: 12),
-                      _QuickCategory(
+                      SizedBox(width: 12.w),
+                      const _QuickCategory(
                         icon: Icons.shopping_bag,
                         label: "Groceries",
                         primaryColor: primaryColor,
@@ -300,10 +301,10 @@ class _QuickCategory extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: EdgeInsets.symmetric(vertical: 12.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.w),
           border: Border.all(color: Colors.grey.shade100),
           boxShadow: [
             BoxShadow(
@@ -315,19 +316,19 @@ class _QuickCategory extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: primaryColor, size: 20),
+              child: Icon(icon, color: primaryColor, size: 20.sp),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               label,
               style: GoogleFonts.plusJakartaSans(
                 color: const Color(0xFF111418),
-                fontSize: 12,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
               ),
             ),

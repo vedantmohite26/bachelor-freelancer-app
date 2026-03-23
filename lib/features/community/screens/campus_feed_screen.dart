@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/community_service.dart';
@@ -87,11 +88,11 @@ class CampusFeedScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.forum_outlined, size: 64, color: Colors.grey[300]),
-                  const SizedBox(height: 16),
+                  Icon(Icons.forum_outlined, size: 64.sp, color: Colors.grey[300]),
+                  SizedBox(height: 16.h),
                   Text(
                     "No posts yet. Be the first!",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 16.sp),
                   ),
                 ],
               ),
@@ -99,9 +100,9 @@ class CampusFeedScreen extends StatelessWidget {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             itemCount: posts.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            separatorBuilder: (context, index) => SizedBox(height: 16.h),
             itemBuilder: (context, index) {
               final post = posts[index];
               final timestamp =
@@ -217,7 +218,7 @@ class _SearchUserDialogState extends State<_SearchUserDialog> {
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => _search(),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           if (_isLoading) const CircularProgressIndicator(),
           if (_errorMessage != null)
             Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
@@ -259,7 +260,7 @@ class _SearchUserDialogState extends State<_SearchUserDialog> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primaryBlue,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: 12.w),
           ),
           child: const Text("Connect"),
         ),
@@ -348,10 +349,10 @@ class _CreatePostDialogState extends State<_CreatePostDialog> {
           onPressed: _isLoading ? null : _submit,
           style: FilledButton.styleFrom(backgroundColor: AppTheme.primaryBlue),
           child: _isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
+              ? SizedBox(
+                  width: 20.w,
+                  height: 20.h,
+                  child: const CircularProgressIndicator(
                     strokeWidth: 2,
                     color: Colors.white,
                   ),
@@ -395,10 +396,10 @@ class _PostCard extends StatelessWidget {
     final currentUserId = authService.user?.uid;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.w),
         // border: Border.all(color: Colors.grey.shade100), // Clean UI
         boxShadow: [
           BoxShadow(
@@ -427,7 +428,7 @@ class _PostCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -438,11 +439,11 @@ class _PostCard extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       if (isOfficial)
-                        const Padding(
-                          padding: EdgeInsets.only(left: 4),
+                        Padding(
+                          padding: EdgeInsets.only(left: 4.w),
                           child: Icon(
                             Icons.verified,
-                            size: 14,
+                            size: 14.sp,
                             color: AppTheme.primaryBlue,
                           ),
                         ),
@@ -450,7 +451,7 @@ class _PostCard extends StatelessWidget {
                   ),
                   Text(
                     timeAgo,
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    style: TextStyle(color: Colors.grey, fontSize: 12.sp),
                   ),
                 ],
               ),
@@ -458,11 +459,11 @@ class _PostCard extends StatelessWidget {
               const Icon(Icons.more_horiz, color: Colors.grey),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           // Content
-          Text(content, style: const TextStyle(fontSize: 15, height: 1.4)),
-          const SizedBox(height: 16),
+          Text(content, style: TextStyle(fontSize: 15.sp, height: 1.4)),
+          SizedBox(height: 16.h),
 
           // Actions
           Row(
@@ -475,10 +476,10 @@ class _PostCard extends StatelessWidget {
                 },
                 child: _ActionBtn(icon: Icons.favorite_border, label: "$likes"),
               ),
-              const SizedBox(width: 24),
+              SizedBox(width: 24.w),
               _ActionBtn(icon: Icons.chat_bubble_outline, label: "$comments"),
               const Spacer(),
-              const Icon(Icons.share_outlined, color: Colors.grey, size: 20),
+              Icon(Icons.share_outlined, color: Colors.grey, size: 20.sp),
             ],
           ),
         ],
@@ -496,8 +497,8 @@ class _ActionBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey),
-        const SizedBox(width: 6),
+        Icon(icon, size: 20.sp, color: Colors.grey),
+        SizedBox(width: 6.w),
         Text(
           label,
           style: const TextStyle(

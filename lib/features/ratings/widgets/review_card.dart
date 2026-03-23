@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/user_service.dart';
@@ -39,11 +40,11 @@ class ReviewCard extends StatelessWidget {
     final dateStr = DateFormat('MMM d, yyyy').format(date);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 16.h),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
         border: Border.all(
           color: colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
@@ -76,7 +77,7 @@ class ReviewCard extends StatelessWidget {
                           backgroundColor: colorScheme.primaryContainer,
                           fallbackIconColor: colorScheme.onPrimaryContainer,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,15 +103,15 @@ class ReviewCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFBBF24).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.w),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.star, size: 14, color: Color(0xFFFBBF24)),
-                    const SizedBox(width: 4),
+                    Icon(Icons.star, size: 14.sp, color: const Color(0xFFFBBF24)),
+                    SizedBox(width: 4.w),
                     Text(
                       overallRating.toStringAsFixed(1),
                       style: textTheme.labelSmall?.copyWith(
@@ -124,22 +125,22 @@ class ReviewCard extends StatelessWidget {
             ],
           ),
           if (tags.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Wrap(
               spacing: 8,
               runSpacing: 4,
               children: tags
                   .map(
                     (tag) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 4.h,
                       ),
                       decoration: BoxDecoration(
                         color: colorScheme.secondaryContainer.withValues(
                           alpha: 0.5,
                         ),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(6.w),
                       ),
                       child: Text(
                         tag,
@@ -153,7 +154,7 @@ class ReviewCard extends StatelessWidget {
             ),
           ],
           if (feedback != null && feedback.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Text(feedback, style: textTheme.bodyMedium),
           ],
         ],

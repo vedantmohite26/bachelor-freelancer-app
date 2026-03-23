@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/rating_service.dart';
 import 'package:freelancer/features/ratings/widgets/review_card.dart';
@@ -38,25 +39,25 @@ class HelperReviewsScreen extends StatelessWidget {
               averageRating: averageRating,
               reviewCount: reviewCount,
             ),
-            const Divider(height: 1),
+            Divider(height: 1.h),
             // Reviews List
             StreamBuilder<List<Map<String, dynamic>>>(
               stream: ratingService.getHelperRatings(helperId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
+                  return Center(
                     child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: CircularProgressIndicator(),
+                      padding: EdgeInsets.all(32.w),
+                      child: const CircularProgressIndicator(),
                     ),
                   );
                 }
 
                 if (snapshot.hasError) {
-                  return const Center(
+                  return Center(
                     child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Text('Error loading reviews'),
+                      padding: EdgeInsets.all(32.w),
+                      child: const Text('Error loading reviews'),
                     ),
                   );
                 }
@@ -64,10 +65,10 @@ class HelperReviewsScreen extends StatelessWidget {
                 final reviews = snapshot.data ?? [];
 
                 if (reviews.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Text('No reviews found'),
+                      padding: EdgeInsets.all(32.w),
+                      child: const Text('No reviews found'),
                     ),
                   );
                 }
@@ -75,7 +76,7 @@ class HelperReviewsScreen extends StatelessWidget {
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   itemCount: reviews.length,
                   itemBuilder: (context, index) {
                     return ReviewCard(review: reviews[index]);

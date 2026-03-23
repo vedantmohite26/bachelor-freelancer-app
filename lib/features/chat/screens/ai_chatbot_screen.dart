@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -78,29 +79,29 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: AppTheme.primaryBlue.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.smart_toy,
                 color: AppTheme.primaryBlue,
-                size: 20,
+                size: 20.sp,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "AI Assistant",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
                 ),
                 Text(
                   "Always here to help",
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.normal,
                   ),
@@ -118,7 +119,7 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
@@ -163,14 +164,14 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
                 color: isDark
                     ? colorScheme.surfaceContainerHighest
                     : colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(24.w),
                 border: Border.all(
                   color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                 ),
               ),
               child: Row(
                 children: [
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: TextField(
                       controller: _messageController,
@@ -182,8 +183,8 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
                         ),
                         border: InputBorder.none,
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 12.h,
                         ),
                       ),
                       onSubmitted: (_) => _sendMessage(),
@@ -206,7 +207,7 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Container(
             decoration: const BoxDecoration(
               color: AppTheme.primaryBlue,
@@ -242,8 +243,8 @@ class _ChatBubble extends StatelessWidget {
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        margin: EdgeInsets.symmetric(vertical: 4.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: isUser
               ? AppTheme.primaryBlue
@@ -268,7 +269,7 @@ class _ChatBubble extends StatelessWidget {
           message,
           style: GoogleFonts.inter(
             color: isUser ? Colors.white : colorScheme.onSurface,
-            fontSize: 15,
+            fontSize: 15.sp,
             height: 1.4,
           ),
         ),

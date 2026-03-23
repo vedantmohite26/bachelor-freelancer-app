@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freelancer/features/jobs/screens/hired_success_screen.dart';
 import 'package:freelancer/features/chat/screens/chat_screen.dart';
@@ -244,11 +245,11 @@ class _JobApplicationsScreenState extends State<JobApplicationsScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Applications', style: TextStyle(fontSize: 16)),
+            Text('Applications', style: TextStyle(fontSize: 16.sp)),
             Text(
               widget.jobTitle,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.normal,
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -275,25 +276,25 @@ class _JobApplicationsScreenState extends State<JobApplicationsScreen> {
                 debugPrint('Error loading applications: ${snapshot.error}');
                 return Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: EdgeInsets.all(24.0.w),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
-                          size: 64,
+                          size: 64.sp,
                           color: Colors.red,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         Text(
                           'Unable to load applications',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                             color: colorScheme.onSurface,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Text(
                           snapshot.error.toString().contains(
                                 'requires an index',
@@ -302,7 +303,7 @@ class _JobApplicationsScreenState extends State<JobApplicationsScreen> {
                               : 'Please check your connection and try again.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 14.sp,
                             color: colorScheme.onSurfaceVariant,
                           ),
                         ),
@@ -324,18 +325,18 @@ class _JobApplicationsScreenState extends State<JobApplicationsScreen> {
                     children: [
                       Icon(
                         Icons.inbox_outlined,
-                        size: 64,
+                        size: 64.sp,
                         color: Colors.grey[300],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Text(
                         'No applications yet',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         'Helpers will apply soon',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                        style: TextStyle(fontSize: 14.sp, color: Colors.grey[500]),
                       ),
                     ],
                   ),
@@ -343,20 +344,20 @@ class _JobApplicationsScreenState extends State<JobApplicationsScreen> {
               }
 
               return ListView(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.w),
                 children: [
                   if (pendingApplications.isNotEmpty) ...[
                     Text(
                       'Pending (${pendingApplications.length})',
-                      style: const TextStyle(
-                        fontSize: 18,
+                      style: TextStyle(
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     ...pendingApplications.map(
                       (app) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
+                        padding: EdgeInsets.only(bottom: 12.h),
                         child: _ApplicationCard(
                           application: app,
                           onAccept: (name, image, email, phoneNumber) =>
@@ -388,23 +389,23 @@ class _JobApplicationsScreenState extends State<JobApplicationsScreen> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   if (applications.any(
                     (app) => app['status'] == 'accepted',
                   )) ...[
-                    const Text(
+                    Text(
                       'Processed',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     ...applications
                         .where((app) => app['status'] == 'accepted')
                         .map(
                           (app) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
+                            padding: EdgeInsets.only(bottom: 12.h),
                             child: _ProcessedApplicationCard(application: app),
                           ),
                         ),
@@ -470,10 +471,10 @@ class _ApplicationCard extends StatelessWidget {
         return GestureDetector(
           onTap: onViewProfile,
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.w),
               border: Border.all(
                 color: _isProfileHighlighted(helper ?? {})
                     ? const Color(0xFFFFD700)
@@ -501,39 +502,39 @@ class _ApplicationCard extends StatelessWidget {
                       backgroundColor: colorScheme.surfaceContainerLow,
                       fallbackIconColor: colorScheme.primary,
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              fontSize: 16.sp,
                             ),
                           ),
                           if (skills.isNotEmpty)
                             Text(
                               skills.take(2).join(" • "),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 color: colorScheme.onSurfaceVariant,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.star,
-                                size: 14,
+                                size: 14.sp,
                                 color: Colors.amber,
                               ),
                               Text(
                                 " $rating ($reviewCount reviews)",
-                                style: const TextStyle(fontSize: 12),
+                                style: TextStyle(fontSize: 12.sp),
                               ),
                             ],
                           ),
@@ -542,7 +543,7 @@ class _ApplicationCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Row(
                   children: [
                     Expanded(
@@ -553,13 +554,13 @@ class _ApplicationCard extends StatelessWidget {
                           side: BorderSide(color: colorScheme.error),
                           minimumSize: const Size(double.infinity, 56),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.w),
                           ),
                         ),
                         child: const Text('Reject'),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => onAccept(
@@ -573,7 +574,7 @@ class _ApplicationCard extends StatelessWidget {
                           foregroundColor: Colors.white,
                           minimumSize: const Size(double.infinity, 56),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.w),
                           ),
                         ),
                         child: const Text('Accept'),
@@ -634,10 +635,10 @@ class _ProcessedApplicationCard extends StatelessWidget {
         final blurContact = safetySettings?['blurContact'] ?? true;
 
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.w),
             border: Border.all(
               color: isAccepted
                   ? const Color(0xFF10B981).withValues(alpha: 0.3)
@@ -655,33 +656,33 @@ class _ProcessedApplicationCard extends StatelessWidget {
                     backgroundColor: colorScheme.surfaceContainerLow,
                     fallbackIconColor: colorScheme.primary,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           name,
-                          style: const TextStyle(
-                            fontSize: 15,
+                          style: TextStyle(
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2.h),
                         Row(
                           children: [
                             Icon(
                               isAccepted ? Icons.check_circle : Icons.cancel,
-                              size: 14,
+                              size: 14.sp,
                               color: isAccepted
                                   ? const Color(0xFF10B981)
                                   : Colors.grey,
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4.w),
                             Text(
                               isAccepted ? 'Hired' : 'Rejected',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 color: isAccepted
                                     ? const Color(0xFF10B981)
                                     : Colors.grey,
@@ -705,13 +706,13 @@ class _ProcessedApplicationCard extends StatelessWidget {
                   builder: (context, jobSnapshot) {
                     if (jobSnapshot.connectionState ==
                         ConnectionState.waiting) {
-                      return const Padding(
-                        padding: EdgeInsets.only(top: 16),
+                      return Padding(
+                        padding: EdgeInsets.only(top: 16.h),
                         child: Center(
                           child: SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            height: 20.h,
+                            width: 20.w,
+                            child: const CircularProgressIndicator(strokeWidth: 2),
                           ),
                         ),
                       );
@@ -735,26 +736,26 @@ class _ProcessedApplicationCard extends StatelessWidget {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 16),
-                        const Divider(height: 1),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 16.h),
+                        Divider(height: 1.h),
+                        SizedBox(height: 12.h),
 
                         if (email
                             .isNotEmpty) // Email is usually less sensitive but let's show it.
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
+                            padding: EdgeInsets.only(bottom: 8.h),
                             child: Row(
                               children: [
                                 Icon(
                                   Icons.email,
-                                  size: 14,
+                                  size: 14.sp,
                                   color: colorScheme.primary,
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8.w),
                                 Text(
                                   email,
                                   style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: 13.sp,
                                     color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
@@ -767,23 +768,23 @@ class _ProcessedApplicationCard extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.phone,
-                                size: 14,
+                                size: 14.sp,
                                 color: colorScheme.primary,
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8.w),
                               Text(
                                 displayedPhone,
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
                               if (shouldBlur)
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
+                                  padding: EdgeInsets.only(left: 8.0.w),
                                   child: Icon(
                                     Icons.lock,
-                                    size: 12,
+                                    size: 12.sp,
                                     color: colorScheme.onSurfaceVariant
                                         .withValues(alpha: 0.5),
                                   ),
@@ -791,7 +792,7 @@ class _ProcessedApplicationCard extends StatelessWidget {
                             ],
                           ),
 
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         _buildAction(
                           context,
                           jobStatus,
@@ -826,7 +827,7 @@ class _ProcessedApplicationCard extends StatelessWidget {
         width: double.infinity,
         child: ElevatedButton.icon(
           onPressed: null,
-          icon: const Icon(Icons.check_circle, size: 18),
+          icon: Icon(Icons.check_circle, size: 18.sp),
           label: const Text('Job Completed'),
           style: ElevatedButton.styleFrom(
             disabledBackgroundColor: const Color(
@@ -862,7 +863,7 @@ class _ProcessedApplicationCard extends StatelessWidget {
               ),
             );
           },
-          icon: const Icon(Icons.payment, size: 18),
+          icon: Icon(Icons.payment, size: 18.sp),
           label: const Text('Complete Payment'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orange,
@@ -914,7 +915,7 @@ class _ProcessedApplicationCard extends StatelessWidget {
               );
             }
           },
-          icon: const Icon(Icons.qr_code_scanner, size: 18), // Scan to complete
+          icon: Icon(Icons.qr_code_scanner, size: 18.sp), // Scan to complete
           label: const Text('End Job & Pay'),
           style: ElevatedButton.styleFrom(
             backgroundColor: colorScheme.primary,
@@ -941,7 +942,7 @@ class _ProcessedApplicationCard extends StatelessWidget {
             ),
           );
         },
-        icon: const Icon(Icons.qr_code_scanner, size: 18),
+        icon: Icon(Icons.qr_code_scanner, size: 18.sp),
         label: const Text('Start Job'),
         style: ElevatedButton.styleFrom(
           backgroundColor: colorScheme.primary,

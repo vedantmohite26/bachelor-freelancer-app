@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
@@ -115,18 +116,18 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
       body: Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 100),
+            padding: EdgeInsets.only(bottom: 100.h),
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Helper Card
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20.w),
                     decoration: BoxDecoration(
                       color: colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.w),
                       border: Border.all(color: colorScheme.outlineVariant),
                     ),
                     child: Row(
@@ -136,7 +137,7 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                           backgroundColor: colorScheme.surfaceContainerHigh,
                           fallbackIconColor: colorScheme.onSurfaceVariant,
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16.w),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,16 +145,16 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                               Text(
                                 widget.helperName,
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 18.sp,
                                   fontWeight: FontWeight.bold,
                                   color: colorScheme.onSurface,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4.h),
                               Text(
                                 "Helper",
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 14.sp,
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
@@ -164,21 +165,21 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
 
                   // Overall Rating
                   Center(
                     child: Text(
                       "How was your experience?",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
                         color: colorScheme.onSurface,
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   // Star Rating
                   Row(
@@ -190,14 +191,14 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                           index < _overallRating
                               ? Icons.star
                               : Icons.star_border,
-                          size: 48,
+                          size: 48.sp,
                           color: const Color(0xFFFBBF24),
                         ),
                       );
                     }),
                   ),
 
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
 
                   Center(
                     child: Text(
@@ -205,25 +206,25 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                           ? _getRatingText(_overallRating)
                           : "Tap to rate",
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40.h),
 
                   // Detailed Ratings
                   Text(
                     "Rate Specific Areas",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: colorScheme.onSurface,
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
                   _RatingSlider(
                     icon: Icons.chat_bubble_outline,
@@ -233,7 +234,7 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                         setState(() => _communication = value),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   _RatingSlider(
                     icon: Icons.access_time,
@@ -242,7 +243,7 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                     onChanged: (value) => setState(() => _punctuality = value),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   _RatingSlider(
                     icon: Icons.star_outline,
@@ -251,19 +252,19 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                     onChanged: (value) => setState(() => _quality = value),
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
 
                   // Feedback
                   Text(
                     "Additional Feedback (Optional)",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: colorScheme.onSurface,
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   TextField(
                     controller: _feedbackController,
@@ -276,19 +277,19 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                       filled: true,
                       fillColor: colorScheme.surfaceContainerLow,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.w),
                         borderSide: BorderSide(
                           color: colorScheme.outlineVariant,
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.w),
                         borderSide: BorderSide(
                           color: colorScheme.outlineVariant,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.w),
                         borderSide: const BorderSide(
                           color: AppTheme.primaryBlue,
                         ),
@@ -296,7 +297,7 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // Quick Tags
                   Wrap(
@@ -319,28 +320,28 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                     }).toList(),
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
 
                   // Add Photo
                   Text(
                     "Add Photo Proof (Optional)",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: colorScheme.onSurface,
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   InkWell(
                     onTap: () {},
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.w),
                     child: Container(
-                      height: 120,
+                      height: 120.h,
                       decoration: BoxDecoration(
                         color: colorScheme.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.w),
                         border: Border.all(
                           color: colorScheme.outlineVariant,
                           style: BorderStyle.solid,
@@ -351,10 +352,10 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                         children: [
                           Icon(
                             Icons.add_photo_alternate,
-                            size: 40,
+                            size: 40.sp,
                             color: colorScheme.onSurfaceVariant,
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           Text(
                             "Tap to add photo",
                             style: TextStyle(
@@ -376,7 +377,7 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 color: colorScheme.surface,
                 boxShadow: [
@@ -392,7 +393,7 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
               ),
               child: SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 56.h,
                 child: ElevatedButton(
                   onPressed: _overallRating > 0 && !_isLoading
                       ? _submitReview
@@ -405,21 +406,21 @@ class _RateHelperScreenState extends State<RateHelperScreen> {
                     ),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.w),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         "Submit Review",
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Icon(Icons.check, size: 20),
+                      SizedBox(width: 8.w),
+                      Icon(Icons.check, size: 20.sp),
                     ],
                   ),
                 ),
@@ -471,12 +472,12 @@ class _RatingSlider extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: AppTheme.primaryBlue),
-            const SizedBox(width: 8),
+            Icon(icon, size: 20.sp, color: AppTheme.primaryBlue),
+            SizedBox(width: 8.w),
             Text(
               label,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
                 color: colorScheme.onSurface,
               ),
@@ -484,15 +485,15 @@ class _RatingSlider extends StatelessWidget {
             const Spacer(),
             Text(
               value.toStringAsFixed(1),
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.primaryBlue,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: AppTheme.primaryBlue,
@@ -526,21 +527,21 @@ class _QuickTag extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: isSelected
             ? AppTheme.primaryBlue.withValues(alpha: 0.1)
             : colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.w),
         border: Border.all(
           color: isSelected ? AppTheme.primaryBlue : Colors.transparent,
-          width: 2,
+          width: 2.w,
         ),
       ),
       child: Text(
         label,
         style: TextStyle(
-          fontSize: 14,
+          fontSize: 14.sp,
           fontWeight: FontWeight.w600,
           color: isSelected ? AppTheme.primaryBlue : colorScheme.onSurface,
         ),

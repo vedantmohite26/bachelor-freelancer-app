@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:freelancer/features/home/screens/home_screen.dart';
 
@@ -39,7 +40,7 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen> {
           x: random.nextDouble(),
           y: random.nextDouble() * -1,
           speed: 1 + random.nextDouble() * 3,
-          size: 4 + random.nextDouble() * 8,
+          size: 4.sp + random.nextDouble() * 8,
           color: [
             const Color(0xFF10B981),
             const Color(0xFF3B82F6),
@@ -77,7 +78,7 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen> {
                       height: c.size * 0.6,
                       decoration: BoxDecoration(
                         color: c.color.withValues(alpha: 1 - value * 0.4),
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(2.w),
                       ),
                     ),
                   ),
@@ -93,37 +94,40 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen> {
 
                 // Celebration Icon
                 Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(24.w),
                   decoration: BoxDecoration(
                     color: Colors.blue.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.check_circle_rounded,
-                    color: Color(0xFF135bec),
-                    size: 80,
+                    color: const Color(0xFF135bec),
+                    size: 80.sp,
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 Text(
                   "Payment Received!",
                   style: GoogleFonts.outfit(
                     color: Colors.white,
-                    fontSize: 28,
+                    fontSize: 28.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  padding: EdgeInsets.symmetric(horizontal: 40.w),
                   child: Text(
                     "You've successfully completed\n${widget.jobTitle}",
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(color: Colors.grey, fontSize: 16),
+                    style: GoogleFonts.inter(
+                      color: Colors.grey,
+                      fontSize: 16.sp,
+                    ),
                   ),
                 ),
 
@@ -131,11 +135,11 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen> {
 
                 // Earnings Summary Card
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 24),
-                  padding: const EdgeInsets.all(24),
+                  margin: EdgeInsets.symmetric(horizontal: 24.w),
+                  padding: EdgeInsets.all(24.w),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1A2233),
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(24.w),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.05),
                     ),
@@ -149,9 +153,9 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen> {
                         icon: Icons.account_balance_wallet_rounded,
                         color: Colors.greenAccent,
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Divider(color: Colors.white10),
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        child: const Divider(color: Colors.white10),
                       ),
                       _buildEarningRow(
                         context,
@@ -160,9 +164,9 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen> {
                         icon: Icons.monetization_on_rounded,
                         color: Colors.amber,
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Divider(color: Colors.white10),
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        child: const Divider(color: Colors.white10),
                       ),
                       _buildEarningRow(
                         context,
@@ -179,10 +183,10 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen> {
 
                 // Back to Dashboard Button
                 Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(24.w),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 56.h,
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pushAndRemoveUntil(
@@ -199,14 +203,14 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen> {
                         backgroundColor: const Color(0xFF135bec),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.w),
                         ),
                         elevation: 0,
                       ),
                       child: Text(
                         "Back to Dashboard",
                         style: GoogleFonts.inter(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -231,26 +235,26 @@ class _PaymentReceivedScreenState extends State<PaymentReceivedScreen> {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.w),
           ),
-          child: Icon(icon, color: color, size: 24),
+          child: Icon(icon, color: color, size: 24.sp),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16.w),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: GoogleFonts.inter(color: Colors.grey, fontSize: 14),
+              style: GoogleFonts.inter(color: Colors.grey, fontSize: 14.sp),
             ),
             Text(
               value,
               style: GoogleFonts.outfit(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),

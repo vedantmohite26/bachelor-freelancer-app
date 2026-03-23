@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/firestore_service.dart';
 import 'package:freelancer/features/jobs/widgets/job_card.dart';
@@ -17,6 +18,7 @@ class JobFeedScreen extends StatefulWidget {
 }
 
 class _JobFeedScreenState extends State<JobFeedScreen> {
+  static const double _maxRadiusKm = 10.0; // 10 km radius filter
   bool _isMapView = false;
   Position? _currentPosition;
   Set<String> _appliedJobIds = {};
@@ -118,15 +120,15 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            Icon(Icons.location_on, color: primaryBlue, size: 20),
-            const SizedBox(width: 8),
+            Icon(Icons.location_on, color: primaryBlue, size: 20.sp),
+            SizedBox(width: 8.w),
             Text(
               _currentPosition != null
                   ? "${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}"
                   : "Fetching location...",
               style: TextStyle(
                 color: colorScheme.onSurface,
-                fontSize: 14,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -136,12 +138,12 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
                 color: cardColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.w),
               ),
               child: Row(
                 children: [
@@ -151,10 +153,10 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
                         if (_isMapView) _toggleView();
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
                         decoration: BoxDecoration(
                           color: !_isMapView ? primaryBlue : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.w),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -164,9 +166,9 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
                               color: !_isMapView
                                   ? colorScheme.onPrimary
                                   : colorScheme.onSurfaceVariant,
-                              size: 20,
+                              size: 20.sp,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8.w),
                             Text(
                               "List View",
                               style: TextStyle(
@@ -187,10 +189,10 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
                         if (!_isMapView) _toggleView();
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
                         decoration: BoxDecoration(
                           color: _isMapView ? primaryBlue : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.w),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -200,9 +202,9 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
                               color: _isMapView
                                   ? colorScheme.onPrimary
                                   : colorScheme.onSurfaceVariant,
-                              size: 20,
+                              size: 20.sp,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8.w),
                             Text(
                               "Map View",
                               style: TextStyle(
@@ -238,13 +240,34 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
                     ),
                   );
                 }
-                final jobs = snapshot.data ?? [];
+                final allJobs = snapshot.data ?? [];
+
+                // Filter jobs within 10km radius
+                final jobs = _currentPosition != null
+                    ? allJobs.where((job) {
+                        if (job['latitude'] == null ||
+                            job['longitude'] == null) {
+                          return true; // Show jobs without location data
+                        }
+                        try {
+                          final distMeters = Geolocator.distanceBetween(
+                            _currentPosition!.latitude,
+                            _currentPosition!.longitude,
+                            job['latitude'],
+                            job['longitude'],
+                          );
+                          return distMeters <= _maxRadiusKm * 1000;
+                        } catch (_) {
+                          return true;
+                        }
+                      }).toList()
+                    : allJobs;
                 if (_isMapView) {
                   return MapScreen(onToggleView: _toggleView, jobs: jobs);
                 }
                 return Column(
                   children: [
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     if (jobs.isEmpty)
                       const Expanded(
                         child: Center(
@@ -257,16 +280,16 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
                     else
                       Expanded(
                         child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 8.h,
                           ),
                           cacheExtent:
                               500, // Pre-render cards off-screen for smoother scrolling
                           addRepaintBoundaries: true,
                           itemCount: jobs.length,
                           separatorBuilder: (context, index) =>
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12.h),
                           itemBuilder: (context, index) {
                             final job = jobs[index];
                             String distanceDisplay = "...";

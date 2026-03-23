@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 
 import 'package:freelancer/core/services/auth_service.dart';
@@ -153,7 +154,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
@@ -163,10 +164,10 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
                       ? Alignment.centerRight
                       : Alignment.centerLeft,
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+                    margin: EdgeInsets.only(bottom: 12.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 10.h,
                     ),
                     decoration: BoxDecoration(
                       color: isUser
@@ -209,15 +210,15 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
           ),
           if (_isTyping)
             Padding(
-              padding: const EdgeInsets.only(left: 16, bottom: 8),
+              padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
               child: Row(
                 children: [
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                  SizedBox(
+                    width: 16.w,
+                    height: 16.h,
+                    child: const CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Text(
                     'Analyzing data...',
                     style: TextStyle(color: Colors.grey.shade600),
@@ -233,7 +234,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
 
   Widget _buildInputArea() {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(8.w),
       color: Theme.of(context).colorScheme.surfaceContainer,
       child: SafeArea(
         child: Row(
@@ -245,20 +246,20 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
                 decoration: InputDecoration(
                   hintText: 'Ask: "Can I spend 500?"',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(24.w),
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
                   fillColor: Theme.of(context).scaffoldBackgroundColor,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 20.w,
+                    vertical: 10.h,
                   ),
                 ),
                 onSubmitted: (_) => _sendMessage(),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             FloatingActionButton.small(
               onPressed: _sendMessage,
               backgroundColor: Theme.of(context).colorScheme.primary,

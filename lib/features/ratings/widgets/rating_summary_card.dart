@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/rating_service.dart';
 
@@ -26,10 +27,10 @@ class RatingSummaryCard extends StatelessWidget {
     final textTheme = theme.textTheme;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
         border: Border.all(
           color: colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
@@ -56,11 +57,11 @@ class RatingSummaryCard extends StatelessWidget {
                             ? Icons.star
                             : Icons.star_border,
                         color: const Color(0xFFFBBF24),
-                        size: 20,
+                        size: 20.sp,
                       );
                     }),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     '$reviewCount ${reviewCount == 1 ? 'Review' : 'Reviews'}',
                     style: textTheme.bodyMedium?.copyWith(
@@ -69,7 +70,7 @@ class RatingSummaryCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(width: 32),
+              SizedBox(width: 32.w),
               // Rating Bars
               Expanded(
                 child: FutureBuilder<Map<int, int>>(
@@ -88,11 +89,11 @@ class RatingSummaryCard extends StatelessWidget {
                             ? count / maxCount
                             : 0.0;
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          padding: EdgeInsets.symmetric(vertical: 2.h),
                           child: Row(
                             children: [
                               SizedBox(
-                                width: 12,
+                                width: 12.w,
                                 child: Text(
                                   '$star',
                                   style: textTheme.labelSmall?.copyWith(
@@ -100,10 +101,10 @@ class RatingSummaryCard extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8.w),
                               Expanded(
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: BorderRadius.circular(4.w),
                                   child: LinearProgressIndicator(
                                     value: percentage.toDouble(),
                                     backgroundColor:

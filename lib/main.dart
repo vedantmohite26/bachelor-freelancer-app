@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/core/services/firestore_service.dart';
 import 'package:freelancer/core/services/job_service.dart';
@@ -89,7 +90,7 @@ class MyApp extends StatelessWidget {
       child: DynamicColorBuilder(
         builder: (lightDynamic, darkDynamic) {
           return MaterialApp(
-            title: 'Unnati Freelancer',
+            title: 'Earnify',
             debugShowCheckedModeBanner: false,
             // Pass dynamic schemes to AppTheme
             theme: AppTheme.lightTheme(lightDynamic).copyWith(
@@ -109,6 +110,10 @@ class MyApp extends StatelessWidget {
               ),
             ),
             themeMode: ThemeMode.system,
+            builder: (context, child) {
+              Responsive.init(context);
+              return child!;
+            },
             // Start with loading screen
             // Named routes for efficient navigation
             routes: {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/friend_service.dart';
@@ -42,18 +43,18 @@ class NewChatScreen extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.people_outline,
-                    size: 64,
+                    size: 64.sp,
                     color: Theme.of(context).colorScheme.outlineVariant,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     "No friends yet",
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   const Text("Add friends from the Community tab!"),
                 ],
               ),
@@ -61,9 +62,9 @@ class NewChatScreen extends StatelessWidget {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             itemCount: friends.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            separatorBuilder: (context, index) => SizedBox(height: 16.h),
             itemBuilder: (context, index) {
               final friend = friends[index];
               return _FriendListItem(
@@ -121,12 +122,12 @@ class _FriendListItem extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.w),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.w),
           border: Border.all(
             color: colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
@@ -140,23 +141,23 @@ class _FriendListItem extends StatelessWidget {
               backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.1),
               fallbackIconColor: AppTheme.primaryBlue,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     role,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),

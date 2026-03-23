@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:freelancer/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -124,14 +125,14 @@ class _LoadingScreenState extends State<LoadingScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, color: colorScheme.error, size: 48),
-              const SizedBox(height: 16),
+              Icon(Icons.error_outline, color: colorScheme.error, size: 48.sp),
+              SizedBox(height: 16.h),
               Text(
                 _statusMessage,
                 textAlign: TextAlign.center,
                 style: textTheme.bodyLarge,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               _buildRetryButton(theme),
             ],
           ),
@@ -150,7 +151,7 @@ class _LoadingScreenState extends State<LoadingScreen>
           child: Column(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(4.w),
                 child: TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.0, end: _progress),
                   duration: const Duration(milliseconds: 400),
@@ -169,7 +170,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                   },
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 _statusMessage,
                 style: textTheme.bodySmall?.copyWith(
@@ -199,8 +200,8 @@ class _LoadingScreenState extends State<LoadingScreen>
       style: ElevatedButton.styleFrom(
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.w)),
       ),
     );
   }

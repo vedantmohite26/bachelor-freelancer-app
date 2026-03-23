@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 
 class SearchHelperScreen extends StatelessWidget {
@@ -22,7 +23,7 @@ class SearchHelperScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        padding: EdgeInsets.symmetric(horizontal: 24.0.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -31,21 +32,21 @@ class SearchHelperScreen extends StatelessWidget {
               alignment: Alignment.topRight,
               children: [
                 Container(
-                  height: 300,
+                  height: 300.h,
                   width: double.infinity,
                   // Placeholder for Cyclist Illustration
                   decoration: const BoxDecoration(
                     // image: DecorationImage(image: AssetImage('assets/cyclist.png'))
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.directions_bike,
-                    size: 200,
+                    size: 200.sp,
                     color: AppTheme.primaryBlue,
                   ),
                 ),
                 // Floating Icons
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(12.w),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
@@ -64,24 +65,24 @@ class SearchHelperScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
-            const Text(
+            Text(
               "Finding local helpers\nnear you...",
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 26,
+                fontSize: 26.sp,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12.h),
+            Text(
               "We're connecting you with trusted\nstudents in your neighborhood.",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey, fontSize: 16),
+              style: TextStyle(color: Colors.grey, fontSize: 16.sp),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
 
             // Progress Bar
             const Row(
@@ -100,9 +101,9 @@ class SearchHelperScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4.w),
               child: LinearProgressIndicator(
                 value: 0.45,
                 minHeight: 8,
@@ -114,16 +115,16 @@ class SearchHelperScreen extends StatelessWidget {
             const Spacer(),
 
             // While you wait
-            const Text(
+            Text(
               "WHILE YOU WAIT",
               style: TextStyle(
                 color: Colors.grey,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1,
-                fontSize: 12,
+                fontSize: 12.sp,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -132,7 +133,7 @@ class SearchHelperScreen extends StatelessWidget {
                 _buildWaitAction(Icons.shopping_bag, "Groceries"),
               ],
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
           ],
         ),
       ),
@@ -143,8 +144,8 @@ class SearchHelperScreen extends StatelessWidget {
     return Column(
       children: [
         Container(
-          height: 60,
-          width: 60,
+          height: 60.h,
+          width: 60.w,
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
@@ -159,10 +160,10 @@ class SearchHelperScreen extends StatelessWidget {
           ),
           child: Icon(icon, color: AppTheme.primaryBlue),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.sp),
         ),
       ],
     );

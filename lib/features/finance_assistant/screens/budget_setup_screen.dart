@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/features/finance_assistant/models/budget_model.dart';
@@ -99,13 +100,13 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        padding: EdgeInsets.symmetric(horizontal: 20.0.w),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
 
               // Income Input
               _buildInputField(
@@ -117,7 +118,7 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // Fixed Expenses Input
               _buildInputField(
@@ -129,16 +130,16 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // Disposable Income Card
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: Theme.of(
                     context,
                   ).colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.w),
                   border: Border.all(
                     color: Theme.of(
                       context,
@@ -151,15 +152,15 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                       'Disposable Income (Savings Potential)',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Text(
                       '₹${disposableIncome.toStringAsFixed(0)}',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
-                        fontSize: 28,
+                        fontSize: 28.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -167,16 +168,16 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                 ),
               ),
 
-              const SizedBox(height: 40),
-              Divider(color: Theme.of(context).dividerColor, height: 1),
-              const SizedBox(height: 30),
+              SizedBox(height: 40.h),
+              Divider(color: Theme.of(context).dividerColor, height: 1.h),
+              SizedBox(height: 30.h),
 
               // Budgeting & Goals Section
               Text(
                 'Budgeting & Goals',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -184,11 +185,11 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                 'Allocate your disposable income into spending budget and savings.',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                 ),
               ),
 
-              const SizedBox(height: 30),
+              SizedBox(height: 30.h),
 
               // Monthly Spending Budget Slider
               Row(
@@ -198,7 +199,7 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                     'Monthly Spending Budget',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                   ),
                   GestureDetector(
@@ -210,9 +211,9 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                       onSaved: (val) => setState(() => _monthlyLimit = val),
                     ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 4.h,
                       ),
                       decoration: BoxDecoration(
                         border: Border.all(
@@ -220,7 +221,7 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                             context,
                           ).colorScheme.primary.withValues(alpha: 0.4),
                         ),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.w),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -229,14 +230,14 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                             '₹${_monthlyLimit.toStringAsFixed(0)}',
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.primary,
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4.w),
                           Icon(
                             Icons.edit,
-                            size: 14,
+                            size: 14.sp,
                             color: Theme.of(
                               context,
                             ).colorScheme.primary.withValues(alpha: 0.6),
@@ -264,15 +265,15 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
               // Projected Fixed Savings Tag
               Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 8.h,
                   ),
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
                     ).colorScheme.secondary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.w),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -280,15 +281,15 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                       Icon(
                         Icons.savings,
                         color: Theme.of(context).colorScheme.secondary,
-                        size: 16,
+                        size: 16.sp,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Text(
                         'Projected Fixed Savings: ₹${projectedFixedSavings.toStringAsFixed(0)}',
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 13.sp,
                         ),
                       ),
                     ],
@@ -296,7 +297,7 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                 ),
               ),
 
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
 
               // Savings Goal Slider
               Row(
@@ -306,7 +307,7 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                     'Savings Goal (%)',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                   ),
                   GestureDetector(
@@ -319,9 +320,9 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                           setState(() => _savingsTargetPercent = val),
                     ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 4.h,
                       ),
                       decoration: BoxDecoration(
                         border: Border.all(
@@ -329,7 +330,7 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                             context,
                           ).colorScheme.secondary.withValues(alpha: 0.4),
                         ),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.w),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -338,14 +339,14 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                             '${_savingsTargetPercent.toStringAsFixed(0)}%',
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.secondary,
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4.w),
                           Icon(
                             Icons.edit,
-                            size: 14,
+                            size: 14.sp,
                             color: Theme.of(
                               context,
                             ).colorScheme.secondary.withValues(alpha: 0.6),
@@ -374,12 +375,12 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.secondary,
                     fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                    fontSize: 13.sp,
                   ),
                 ),
               ),
 
-              const SizedBox(height: 50),
+              SizedBox(height: 50.h),
 
               // Save Button
               ElevatedButton(
@@ -387,9 +388,9 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.w),
                   ),
                 ),
                 child: const Text(
@@ -397,7 +398,7 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: 30.h),
             ],
           ),
         ),
@@ -483,16 +484,16 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
           label,
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontSize: 12,
+            fontSize: 12.sp,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         TextFormField(
           controller: controller,
           keyboardType: TextInputType.number,
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurface,
-            fontSize: 16,
+            fontSize: 16.sp,
           ),
           decoration: InputDecoration(
             prefixText: '₹ ',
@@ -502,7 +503,7 @@ class _BudgetSetupScreenState extends State<BudgetSetupScreen> {
             filled: true,
             fillColor: Theme.of(context).colorScheme.surfaceContainer,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.w),
               borderSide: BorderSide.none,
             ),
           ),

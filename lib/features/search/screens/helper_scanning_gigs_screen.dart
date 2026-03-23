@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HelperScanningGigsScreen extends StatefulWidget {
@@ -107,8 +108,8 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                   children: [
                     // Outer Glow Ring
                     Container(
-                      width: 128,
-                      height: 128,
+                      width: 128.w,
+                      height: 128.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: primaryColor.withValues(alpha: 0.2),
@@ -119,8 +120,8 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                       animation: _pulseAnimation,
                       builder: (context, child) {
                         return Container(
-                          width: 96 + (10 * _pulseAnimation.value),
-                          height: 96 + (10 * _pulseAnimation.value),
+                          width: 96.w + (10 * _pulseAnimation.value),
+                          height: 96.h + (10 * _pulseAnimation.value),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: primaryColor.withValues(
@@ -132,8 +133,8 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                     ),
                     // Logo Container
                     Container(
-                      width: 96,
-                      height: 96,
+                      width: 96.w,
+                      height: 96.h,
                       decoration: BoxDecoration(
                         color: backgroundDark.withValues(alpha: 0.8),
                         shape: BoxShape.circle,
@@ -152,7 +153,7 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                         child: Text(
                           "S",
                           style: GoogleFonts.splineSans(
-                            fontSize: 48,
+                            fontSize: 48.sp,
                             fontWeight: FontWeight.bold,
                             color: primaryColor,
                           ),
@@ -161,7 +162,7 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 // Text pulsing
                 AnimatedBuilder(
                   animation: _pulseAnimation,
@@ -177,7 +178,7 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                     "Scanning nearby campus gigs...",
                     style: GoogleFonts.splineSans(
                       color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0.5,
                     ),
@@ -196,7 +197,7 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
               children: [
                 // Progress Bar
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  padding: EdgeInsets.symmetric(horizontal: 24.0.w),
                   child: SizedBox(
                     width: double.infinity,
                     child: Column(
@@ -209,7 +210,7 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                               "Searching area",
                               style: GoogleFonts.splineSans(
                                 color: Colors.white,
-                                fontSize: 14,
+                                fontSize: 14.sp,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -217,15 +218,15 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                               "45%",
                               style: GoogleFonts.splineSans(
                                 color: primaryColor,
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(9999),
+                          borderRadius: BorderRadius.circular(9999.w),
                           child: LinearProgressIndicator(
                             value: 0.45,
                             backgroundColor: Colors.white.withValues(
@@ -239,13 +240,13 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 // Tips Carousel
                 SizedBox(
-                  height: 100, // Approximate height for the card
+                  height: 100.h, // Approximate height for the card
                   child: ListView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
                     physics: const BouncingScrollPhysics(),
                     children: [
                       _buildTipCard(
@@ -254,7 +255,7 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                         subtitle: "Complete your profile to get the badge.",
                         primaryColor: primaryColor,
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.w),
                       _buildTipCard(
                         icon: Icons.security,
                         title:
@@ -277,7 +278,7 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
             child: GestureDetector(
               onTap: () => Navigator.of(context).pop(),
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
@@ -300,24 +301,24 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
     return Container(
       width: MediaQuery.of(context).size.width * 0.85,
       constraints: const BoxConstraints(maxWidth: 400),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12), // rounded-xl
+        borderRadius: BorderRadius.circular(12.w), // rounded-xl
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
               color: primaryColor.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: primaryColor, size: 24),
+            child: Icon(icon, color: primaryColor, size: 24.sp),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,16 +328,16 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                   title,
                   style: GoogleFonts.splineSans(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   subtitle,
                   style: GoogleFonts.splineSans(
                     color: Colors.grey.shade400,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
               ],
@@ -393,8 +394,8 @@ class _PulsingDotState extends State<_PulsingDot>
           alignment: Alignment.center,
           children: [
             Container(
-              width: 10,
-              height: 10,
+              width: 10.w,
+              height: 10.h,
               decoration: BoxDecoration(
                 color: widget.color,
                 shape: BoxShape.circle,
@@ -402,8 +403,8 @@ class _PulsingDotState extends State<_PulsingDot>
               ),
             ),
             Container(
-              width: 30 * _controller.value,
-              height: 30 * _controller.value,
+              width: 30.w * _controller.value,
+              height: 30.h * _controller.value,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: widget.color.withValues(

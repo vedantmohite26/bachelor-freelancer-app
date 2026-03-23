@@ -269,6 +269,9 @@ class MockNotificationService implements NotificationService {
   }
 
   @override
+  void listenForNotifications(String userId) {}
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 

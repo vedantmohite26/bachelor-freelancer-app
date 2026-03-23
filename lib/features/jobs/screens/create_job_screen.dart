@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/auth_service.dart';
@@ -37,7 +38,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
         foregroundColor: Colors.black,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Form(
           key: _formKey,
           child: Column(
@@ -51,7 +52,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                   AppTheme.growthGreen,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               Text(
                 "What do you need help with?",
@@ -59,7 +60,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 1. Job Title
               TextFormField(
@@ -71,7 +72,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                     val!.isEmpty ? 'Please enter a title' : null,
                 onSaved: (val) => title = val!,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // 2. Category Dropdown
               DropdownButtonFormField<String>(
@@ -85,14 +86,14 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                     .toList(),
                 onChanged: (val) => setState(() => category = val!),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // 3. Price Slider
               Text(
                 "Your Offer: ₹${price.round()}",
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                 ),
               ),
               Slider(
@@ -104,18 +105,18 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                 label: "₹${price.round()}",
                 onChanged: (val) => setState(() => price = val),
               ),
-              const Text(
+              Text(
                 "Suggested: ₹150 - ₹250 based on similar jobs",
-                style: TextStyle(fontSize: 12, color: AppTheme.textLight),
+                style: TextStyle(fontSize: 12.sp, color: AppTheme.textLight),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 4. Job Type Selector
-              const Text(
+              Text(
                 "Job Type",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               SegmentedButton<String>(
                 segments: const [
                   ButtonSegment(
@@ -136,7 +137,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                   });
                 },
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
 
               // Submit Button
               SizedBox(

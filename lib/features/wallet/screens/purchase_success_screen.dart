@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -108,13 +109,13 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
           children: [
             // Celebration Icon
             Container(
-              height: 200,
+              height: 200.h,
               width: double.infinity,
               alignment: Alignment.center,
               child: Icon(
                 isPowerUp ? Icons.rocket_launch : Icons.celebration,
                 color: brandColor,
-                size: 100,
+                size: 100.sp,
               ),
             ),
 
@@ -122,11 +123,11 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
               isPowerUp ? "Activated!" : "You got it!",
               style: GoogleFonts.outfit(
                 color: colorScheme.onSurface,
-                fontSize: 32,
+                fontSize: 32.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               isPowerUp
                   ? "${widget.title} is now active."
@@ -134,7 +135,7 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
               style: TextStyle(color: colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             // Card Section
             if (isPowerUp)
@@ -142,11 +143,11 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
             else
               _buildRedeemCodeCard(brandColor, icon, colorScheme),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             // Stats Row
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: Row(
                 children: [
                   Expanded(
@@ -158,7 +159,7 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                       colorScheme,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: _buildStatCard(
                       "+",
@@ -171,17 +172,17 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             // Action Buttons
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: Column(
                 children: [
                   if (!isPowerUp)
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
+                      height: 50.h,
                       child: ElevatedButton(
                         onPressed: () {
                           Clipboard.setData(
@@ -200,15 +201,15 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                               ? Colors.black
                               : Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(25.w),
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.copy),
-                            SizedBox(width: 8),
-                            Text(
+                            const Icon(Icons.copy),
+                            SizedBox(width: 8.w),
+                            const Text(
                               "Copy Code",
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
@@ -216,10 +217,10 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                         ),
                       ),
                     ),
-                  if (!isPowerUp) const SizedBox(height: 16),
+                  if (!isPowerUp) SizedBox(height: 16.h),
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 50.h,
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
@@ -229,13 +230,13 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                         ),
                         side: BorderSide.none,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(25.w),
                         ),
                       ),
                       child: const Text("Back to Shop"),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
                 ],
               ),
             ),
@@ -251,14 +252,14 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
     ColorScheme colorScheme,
   ) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
+      margin: EdgeInsets.symmetric(horizontal: 24.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [brandColor, brandColor.withValues(alpha: 0.7)],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.w),
         boxShadow: [
           BoxShadow(
             color: brandColor.withValues(alpha: 0.3),
@@ -271,51 +272,51 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
         children: [
           // Top Card Visual
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24.w),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Brand Icon
                 Container(
-                  height: 80,
-                  width: 80,
+                  height: 80.h,
+                  width: 80.w,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.w),
                   ),
-                  child: Icon(icon, color: Colors.white, size: 40),
+                  child: Icon(icon, color: Colors.white, size: 40.sp),
                 ),
                 // Brand Info
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Icon(icon, color: Colors.white, size: 32),
-                    const SizedBox(height: 8),
+                    Icon(icon, color: Colors.white, size: 32.sp),
+                    SizedBox(height: 8.h),
                     Text(
                       widget.title,
                       textAlign: TextAlign.right,
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 18.sp,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 4.h,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.w),
                       ),
                       child: Text(
                         widget.subtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white70,
                           fontWeight: FontWeight.bold,
-                          fontSize: 11,
+                          fontSize: 11.sp,
                         ),
                       ),
                     ),
@@ -328,7 +329,7 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
           // Reveal Area
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
               color: colorScheme.surfaceContainerHighest,
               borderRadius: const BorderRadius.vertical(
@@ -340,12 +341,12 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                 GestureDetector(
                   onTap: () => setState(() => _isRevealed = true),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
                     decoration: BoxDecoration(
                       color: _isRevealed
                           ? brandColor.withValues(alpha: 0.1)
                           : colorScheme.surfaceContainerHigh,
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(30.w),
                       border: Border.all(
                         color: _isRevealed
                             ? brandColor.withValues(alpha: 0.3)
@@ -359,9 +360,9 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                           Icon(
                             Icons.touch_app,
                             color: colorScheme.onSurface,
-                            size: 20,
+                            size: 20.sp,
                           ),
-                        if (!_isRevealed) const SizedBox(width: 8),
+                        if (!_isRevealed) SizedBox(width: 8.w),
                         Text(
                           _isRevealed ? _generatedCode : "Tap to reveal code",
                           style: GoogleFonts.jetBrainsMono(
@@ -369,7 +370,7 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                                 ? brandColor
                                 : colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             letterSpacing: 1,
                           ),
                         ),
@@ -377,12 +378,12 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Text(
                   "Expires in 30 days.",
                   style: TextStyle(
                     color: colorScheme.onSurfaceVariant,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
               ],
@@ -402,8 +403,8 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
     final duration = isHighlight ? '3 days' : '24 hours';
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(32),
+      margin: EdgeInsets.symmetric(horizontal: 24.w),
+      padding: EdgeInsets.all(32.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -413,10 +414,10 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
             colorScheme.surfaceContainerLow,
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.w),
         border: Border.all(
           color: brandColor.withValues(alpha: 0.4),
-          width: 1.5,
+          width: 1.5.w,
         ),
         boxShadow: [
           BoxShadow(
@@ -430,13 +431,13 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
         children: [
           // Icon
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: brandColor.withValues(alpha: 0.15),
               border: Border.all(
                 color: brandColor.withValues(alpha: 0.3),
-                width: 2,
+                width: 2.w,
               ),
               boxShadow: [
                 BoxShadow(
@@ -446,45 +447,45 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
                 ),
               ],
             ),
-            child: Icon(icon, size: 48, color: brandColor),
+            child: Icon(icon, size: 48.sp, color: brandColor),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           Text(
             widget.title,
             style: GoogleFonts.outfit(
               color: colorScheme.onSurface,
-              fontSize: 22,
+              fontSize: 22.sp,
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             widget.subtitle,
-            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
+            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14.sp),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           // Duration Badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
             decoration: BoxDecoration(
               color: brandColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(30.w),
               border: Border.all(color: brandColor.withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.timer, color: brandColor, size: 18),
-                const SizedBox(width: 8),
+                Icon(Icons.timer, color: brandColor, size: 18.sp),
+                SizedBox(width: 8.w),
                 Text(
                   "Active for $duration",
                   style: TextStyle(
                     color: brandColor,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                   ),
                 ),
               ],
@@ -503,16 +504,16 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
     ColorScheme colorScheme,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding: EdgeInsets.symmetric(vertical: 20.h),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.w),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
               shape: BoxShape.circle,
@@ -520,22 +521,22 @@ class _PurchaseSuccessScreenState extends State<PurchaseSuccessScreen> {
             child: Icon(
               symbol == "+" ? Icons.add : Icons.remove,
               color: color,
-              size: 16,
+              size: 16.sp,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             value,
             style: TextStyle(
               color: colorScheme.onSurface,
-              fontSize: 20,
+              fontSize: 20.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             label,
-            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10),
+            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 10.sp),
           ),
         ],
       ),

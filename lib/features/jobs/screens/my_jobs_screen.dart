@@ -41,33 +41,37 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
           // Filter Tabs
           Container(
             color: colorScheme.surface,
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                _FilterChip(
-                  label: 'All',
-                  isSelected: _selectedFilter == 'all',
-                  onTap: () => setState(() => _selectedFilter = 'all'),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label: 'Open',
-                  isSelected: _selectedFilter == 'open',
-                  onTap: () => setState(() => _selectedFilter = 'open'),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label: 'Assigned',
-                  isSelected: _selectedFilter == 'assigned',
-                  onTap: () => setState(() => _selectedFilter = 'assigned'),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label: 'Completed',
-                  isSelected: _selectedFilter == 'completed',
-                  onTap: () => setState(() => _selectedFilter = 'completed'),
-                ),
-              ],
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  _FilterChip(
+                    label: 'All',
+                    isSelected: _selectedFilter == 'all',
+                    onTap: () => setState(() => _selectedFilter = 'all'),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Open',
+                    isSelected: _selectedFilter == 'open',
+                    onTap: () => setState(() => _selectedFilter = 'open'),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Assigned',
+                    isSelected: _selectedFilter == 'assigned',
+                    onTap: () => setState(() => _selectedFilter = 'assigned'),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: 'Completed',
+                    isSelected: _selectedFilter == 'completed',
+                    onTap: () => setState(() => _selectedFilter = 'completed'),
+                  ),
+                ],
+              ),
             ),
           ),
 

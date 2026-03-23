@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'dart:convert';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
@@ -123,31 +124,31 @@ class _JobVerificationScannerScreenState
               Icon(
                 isComplete ? Icons.payments_rounded : Icons.check_circle,
                 color: Colors.white,
-                size: 80,
+                size: 80.sp,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               Text(
                 isComplete ? "Job Verified!" : "Verified!",
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 32,
+                  fontSize: 32.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 isComplete
                     ? "Proceeding to payment..."
                     : "Job started with $helperName",
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(color: Colors.white, fontSize: 16.sp),
               ),
               if (!isComplete &&
                   helperPhone != null &&
                   helperPhone != 'N/A') ...[
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   helperPhone,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: Colors.white70, fontSize: 14.sp),
                 ),
               ],
             ],
@@ -203,34 +204,34 @@ class _JobVerificationScannerScreenState
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 24.w,
+                    vertical: 12.h,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.black54,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(30.w),
                   ),
                   child: Text(
                     widget.mode == 'complete'
                         ? "Scan completion QR to end job"
                         : "Scan ${widget.helperName}'s QR Code",
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   widget.mode == 'complete'
                       ? "Helper's completion QR will verify job is done"
                       : "Ask the helper to show their QR code from their profile",
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 14,
-                    shadows: [
+                    fontSize: 14.sp,
+                    shadows: const [
                       Shadow(
                         color: Colors.black,
                         blurRadius: 4,
@@ -250,7 +251,7 @@ class _JobVerificationScannerScreenState
             child: Center(
               child: IconButton(
                 onPressed: () => _controller.toggleTorch(),
-                icon: const Icon(Icons.flashlight_on, size: 32),
+                icon: Icon(Icons.flashlight_on, size: 32.sp),
                 color: Colors.white,
               ),
             ),

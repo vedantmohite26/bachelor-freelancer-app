@@ -93,7 +93,7 @@ class LeaderboardService {
 
       batch.set(docRef, {
         'name': user['name'],
-        'email': 'demo$i@unnati.app',
+        'email': 'demo$i@earnify.app',
         'role': 'helper',
         'points': user['points'],
         'gigsCompleted': user['gigs'],

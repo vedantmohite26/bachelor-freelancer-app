@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/user_service.dart';
@@ -237,29 +238,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           TextButton(
             onPressed: _isLoading ? null : _saveProfile,
             child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                ? SizedBox(
+                    width: 20.w,
+                    height: 20.h,
+                    child: const CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text(
+                : Text(
                     "Save",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16.sp,
+                    ),
                   ),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.w),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (_isUploading)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 16),
-                  child: LinearProgressIndicator(color: AppTheme.primaryBlue),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 16.h),
+                  child: const LinearProgressIndicator(color: AppTheme.primaryBlue),
                 ),
               // Avatar Placeholder (Edit functionality could be added here later)
               Center(
@@ -277,15 +281,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: GestureDetector(
                         onTap: _uploadProfileImage,
                         child: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: EdgeInsets.all(4.w),
                           decoration: const BoxDecoration(
                             color: AppTheme.primaryBlue,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.camera_alt,
                             color: Colors.white,
-                            size: 20,
+                            size: 20.sp,
                           ),
                         ),
                       ),
@@ -293,10 +297,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               _buildTextField("Full Name", _nameController, Icons.person),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               _buildTextField(
                 "Bio",
@@ -304,14 +308,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Icons.info_outline,
                 maxLines: 3,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               _buildTextField(
                 "University / College",
                 _universityController,
                 Icons.school,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               _buildTextField(
                 "Phone Number",
@@ -320,13 +324,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 inputType: TextInputType.phone,
                 isRequired: true,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
-              const Text(
+              Text(
                 "Skills",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Row(
                 children: [
                   Expanded(
@@ -337,28 +341,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         filled: true,
                         fillColor: colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.w),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                        ),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
                       ),
                       onSubmitted: (_) => _addSkill(),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   IconButton(
                     onPressed: _addSkill,
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.add_circle,
                       color: AppTheme.primaryBlue,
-                      size: 32,
+                      size: 32.sp,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -367,12 +369,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   return InputChip(
                     label: Text(skill),
                     avatar: hasCertificate
-                        ? const Icon(
+                        ? Icon(
                             Icons.check_circle,
                             color: Colors.green,
-                            size: 18,
+                            size: 18.sp,
                           )
-                        : const Icon(Icons.upload_file, size: 18),
+                        : Icon(Icons.upload_file, size: 18.sp),
                     onDeleted: () => _removeSkill(skill),
                     onPressed: () {
                       if (hasCertificate) {
@@ -392,7 +394,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 }).toList(),
               ),
 
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
             ],
           ),
         ),
@@ -430,7 +432,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return SizedBox(
-                    height: 200,
+                    height: 200.h,
                     child: Center(
                       child: CircularProgressIndicator(
                         value: loadingProgress.expectedTotalBytes != null
@@ -441,13 +443,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   );
                 },
-                errorBuilder: (context, error, stackTrace) => const SizedBox(
-                  height: 200,
-                  child: Center(child: Text("Failed to load image")),
+                errorBuilder: (context, error, stackTrace) => SizedBox(
+                  height: 200.h,
+                  child: const Center(child: Text("Failed to load image")),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
           ],
         ),
       ),
@@ -473,7 +475,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             color: colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         TextFormField(
           controller: controller,
           maxLines: maxLines,
@@ -494,7 +496,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             filled: true,
             fillColor: colorScheme.surfaceContainerHighest,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.w),
               borderSide: BorderSide.none,
             ),
           ),

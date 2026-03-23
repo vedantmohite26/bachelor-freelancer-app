@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 
@@ -34,7 +35,7 @@ class ProfileViewScreen extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.w),
         child: Column(
           children: [
             // Profile Header
@@ -47,42 +48,42 @@ class ProfileViewScreen extends StatelessWidget {
                   backgroundColor: Colors.amber,
                 ),
                 Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: EdgeInsets.all(4.w),
                   decoration: const BoxDecoration(
                     color: Colors.green,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 16),
+                  child: Icon(Icons.check, color: Colors.white, size: 16.sp),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16.h),
+            Text(
               "Alex Rivera",
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 24,
+                fontSize: 24.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 4),
-            const Row(
+            SizedBox(height: 4.h),
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Computer Science Major • 4.8",
                   style: TextStyle(color: Colors.grey),
                 ),
-                Icon(Icons.star, color: Colors.grey, size: 14),
+                Icon(Icons.star, color: Colors.grey, size: 14.sp),
               ],
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8.h),
+            Text(
               "Versatile helper skilled in coding and moving.\nAlways happy to help fellow students!",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              style: TextStyle(color: Colors.grey, fontSize: 14.sp),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Action Buttons
             Row(
@@ -99,15 +100,15 @@ class ProfileViewScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryBlue,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+                        borderRadius: BorderRadius.circular(50.w),
                       ),
                     ),
                     child: const Text("Message"),
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
@@ -115,7 +116,7 @@ class ProfileViewScreen extends StatelessWidget {
                         const SnackBar(content: Text('Already friends!')),
                       );
                     },
-                    icon: const Icon(Icons.check, size: 16),
+                    icon: Icon(Icons.check, size: 16.sp),
                     label: const Text("Friends"),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.primaryBlue,
@@ -123,45 +124,45 @@ class ProfileViewScreen extends StatelessWidget {
                         color: Color(0xFF2C3E50),
                       ), // Darker border
                       backgroundColor: const Color(0xFF1F1F2E),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
+                        borderRadius: BorderRadius.circular(50.w),
                       ),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Skills Chips
             SizedBox(
-              height: 40,
+              height: 40.h,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
                   _buildSkillChip(Icons.code, "Coding"),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _buildSkillChip(Icons.local_shipping, "Moving"),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _buildSkillChip(Icons.school, "Tutoring"),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _buildSkillChip(Icons.pets, "Dog Walking"),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Mutual Friends
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   "Mutual Friends",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 18.sp,
                   ),
                 ),
                 TextButton(
@@ -180,7 +181,7 @@ class ProfileViewScreen extends StatelessWidget {
               ],
             ),
             SizedBox(
-              height: 90,
+              height: 90.h,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
@@ -192,18 +193,18 @@ class ProfileViewScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Community Kudos
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   "Community Kudos",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 18.sp,
                   ),
                 ),
                 TextButton(
@@ -229,7 +230,7 @@ class ProfileViewScreen extends StatelessWidget {
               description:
                   "Alex was super helpful with my Java assignment. Explained everything clearly and didn't just give me the answers!",
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _buildKudoCard(
               name: "Tom Wilson",
               time: "1 week ago",
@@ -246,15 +247,15 @@ class ProfileViewScreen extends StatelessWidget {
 
   Widget _buildSkillChip(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: const Color(0xFF2C3E50),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.w),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 6),
+          Icon(icon, color: Colors.white, size: 16.sp),
+          SizedBox(width: 6.w),
           Text(label, style: const TextStyle(color: Colors.white)),
         ],
       ),
@@ -263,7 +264,7 @@ class ProfileViewScreen extends StatelessWidget {
 
   Widget _buildFriendAvatar(String name, Color color) {
     return Padding(
-      padding: const EdgeInsets.only(right: 16),
+      padding: EdgeInsets.only(right: 16.w),
       child: Column(
         children: [
           CircleAvatar(
@@ -271,8 +272,8 @@ class ProfileViewScreen extends StatelessWidget {
             backgroundColor: color,
             child: Text(name[0], style: const TextStyle(color: Colors.white)),
           ),
-          const SizedBox(height: 8),
-          Text(name, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          SizedBox(height: 8.h),
+          Text(name, style: TextStyle(color: Colors.grey, fontSize: 12.sp)),
         ],
       ),
     );
@@ -286,10 +287,10 @@ class ProfileViewScreen extends StatelessWidget {
     required String description,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F2E),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
         border: Border.all(color: Colors.white10),
       ),
       child: Column(
@@ -305,7 +306,7 @@ class ProfileViewScreen extends StatelessWidget {
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,26 +320,26 @@ class ProfileViewScreen extends StatelessWidget {
                     ),
                     Text(
                       time,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      style: TextStyle(color: Colors.grey, fontSize: 12.sp),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: tagColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.w),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.star, size: 12, color: tagColor),
-                    const SizedBox(width: 4),
+                    Icon(Icons.star, size: 12.sp, color: tagColor),
+                    SizedBox(width: 4.w),
                     Text(
                       tag,
                       style: TextStyle(
                         color: tagColor,
-                        fontSize: 10,
+                        fontSize: 10.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -347,7 +348,7 @@ class ProfileViewScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(description, style: const TextStyle(color: Colors.white70)),
         ],
       ),

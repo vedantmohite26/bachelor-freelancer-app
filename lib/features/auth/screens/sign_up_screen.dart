@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -389,7 +390,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final textTheme = theme.textTheme;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -398,15 +399,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
             title: "Basic Info",
             colorScheme: colorScheme,
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
           Text(
             "Create Your Account",
             style: textTheme.displaySmall?.copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 28,
+              fontSize: 28.sp,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             "Join your campus community to start earning or hiring.",
             style: textTheme.bodyLarge?.copyWith(
@@ -414,12 +415,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
           Text(
             "I want to...",
             style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Row(
             children: [
               Expanded(
@@ -431,7 +432,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   onTap: () => setState(() => _isHelper = true),
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               Expanded(
                 child: _RoleCard(
                   icon: Icons.business_center,
@@ -443,7 +444,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
           _buildTextField(
             controller: _nameController,
             label: "Full Name",
@@ -452,7 +453,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             colorScheme: colorScheme,
             textTheme: textTheme,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           _buildTextField(
             controller: _emailController,
             label: "Email",
@@ -462,7 +463,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             colorScheme: colorScheme,
             textTheme: textTheme,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           if (!widget.isGoogleSignIn) ...[
             Text(
               "Password",
@@ -470,7 +471,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             TextField(
               controller: _passwordController,
               obscureText: _obscurePassword,
@@ -487,29 +488,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text("Must be at least 8 characters.", style: textTheme.bodySmall),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
           ],
           SizedBox(
-            height: 56,
+            height: 56.h,
             child: ElevatedButton(
               onPressed: _nextStep,
               style: _buttonStyle(colorScheme),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     "Continue",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(width: 8),
-                  Icon(Icons.arrow_forward, size: 20),
+                  SizedBox(width: 8.w),
+                  Icon(Icons.arrow_forward, size: 20.sp),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           Center(
             child: TextButton(
               onPressed: () {
@@ -528,7 +529,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       style: TextStyle(
                         color: colorScheme.primary,
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ],
@@ -546,7 +547,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final textTheme = theme.textTheme;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -555,22 +556,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
             title: "Profile Details",
             colorScheme: colorScheme,
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
           Text(
             "Almost there!",
             style: textTheme.displaySmall?.copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 28,
+              fontSize: 28.sp,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             "Tell us a bit more about yourself.",
             style: textTheme.bodyLarge?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // University
           _buildTextField(
@@ -581,7 +582,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             colorScheme: colorScheme,
             textTheme: textTheme,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Phone Number
           _buildTextField(
@@ -593,14 +594,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
             colorScheme: colorScheme,
             textTheme: textTheme,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Document Verification
           Text(
             "Identity Verification",
             style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _buildDocumentUpload(
             label: "Aadhaar Card",
             isVerified: _isAadhaarVerified,
@@ -628,13 +629,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
           if (_aadhaarError != null)
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: EdgeInsets.only(top: 8.h),
               child: Text(
                 _aadhaarError!,
-                style: TextStyle(color: colorScheme.error, fontSize: 12),
+                style: TextStyle(color: colorScheme.error, fontSize: 12.sp),
               ),
             ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           _buildDocumentUpload(
             label: "PAN Card",
             isVerified: _isPanVerified,
@@ -662,21 +663,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
           if (_panError != null)
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: EdgeInsets.only(top: 8.h),
               child: Text(
                 _panError!,
-                style: TextStyle(color: colorScheme.error, fontSize: 12),
+                style: TextStyle(color: colorScheme.error, fontSize: 12.sp),
               ),
             ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Bio
           Text(
             "Short Bio",
             style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           TextField(
             controller: _bioController,
             maxLines: 3,
@@ -684,7 +685,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               hintText: "I am a CS student avoiding assignments...",
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Skills (for Helpers)
           if (_isHelper) ...[
@@ -694,7 +695,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Row(
               children: [
                 Expanded(
@@ -704,18 +705,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     onSubmitted: (_) => _addSkill(),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 IconButton(
                   onPressed: _addSkill,
                   icon: Icon(
                     Icons.add_circle,
                     color: colorScheme.primary,
-                    size: 32,
+                    size: 32.sp,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -735,20 +736,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   )
                   .toList(),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
           ],
 
           SizedBox(
-            height: 56,
+            height: 56.h,
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleSignUp,
               style: _buttonStyle(colorScheme),
               child: _isLoading
                   ? CircularProgressIndicator(color: colorScheme.onPrimary)
-                  : const Text(
+                  : Text(
                       "Create Account",
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -772,18 +773,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (file == null) {
       return InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.w),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             border: Border.all(color: colorScheme.outline),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.w),
             color: colorScheme.surface,
           ),
           child: Row(
             children: [
               Icon(Icons.upload_file, color: colorScheme.primary),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -793,7 +794,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   Text(
                     "Tap to upload",
-                    style: TextStyle(fontSize: 12, color: colorScheme.outline),
+                    style: TextStyle(fontSize: 12.sp, color: colorScheme.outline),
                   ),
                 ],
               ),
@@ -819,14 +820,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onView,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.w),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
             border: Border.all(
               color: isVerified ? Colors.green : colorScheme.error,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.w),
             color: isVerified
                 ? Colors.green.withValues(alpha: 0.1)
                 : colorScheme.error.withValues(alpha: 0.05),
@@ -839,7 +840,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     : (isPdf ? Icons.picture_as_pdf : Icons.image),
                 color: isVerified ? Colors.green : colorScheme.error,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -853,7 +854,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: colorScheme.onSurfaceVariant,
                       ),
                     ),
@@ -861,7 +862,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       Text(
                         "Verification Failed",
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: colorScheme.error,
                         ),
                       ),
@@ -899,18 +900,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
           children: [
             Text(
               "Step $step of 2",
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
             ),
             const Spacer(),
             Text(
               title,
-              style: TextStyle(fontSize: 14, color: colorScheme.outline),
+              style: TextStyle(fontSize: 14.sp, color: colorScheme.outline),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(4.w),
           child: LinearProgressIndicator(
             value: step == 1 ? 0.5 : 1.0,
             minHeight: 8,
@@ -938,7 +939,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           label,
           style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         TextField(
           controller: controller,
           keyboardType: inputType,
@@ -955,7 +956,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       disabledBackgroundColor: colorScheme.onSurface.withValues(alpha: 0.12),
       disabledForegroundColor: colorScheme.onSurface.withValues(alpha: 0.38),
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.w)),
     );
   }
 }
@@ -982,38 +983,38 @@ class _RoleCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.w),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: isSelected
               ? colorScheme.primary.withValues(alpha: 0.08)
               : colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.w),
           border: Border.all(
             color: isSelected
                 ? colorScheme.primary
                 : colorScheme.outlineVariant,
-            width: 2,
+            width: 2.w,
           ),
         ),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: isSelected
                     ? colorScheme.primary
                     : colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.w),
               ),
               child: Icon(
                 icon,
                 color: isSelected ? colorScheme.onPrimary : colorScheme.outline,
-                size: 32,
+                size: 32.sp,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Text(
               title,
               style: textTheme.titleMedium?.copyWith(
@@ -1021,7 +1022,7 @@ class _RoleCard extends StatelessWidget {
                 color: isSelected ? colorScheme.primary : colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               subtitle,
               style: textTheme.bodySmall?.copyWith(
@@ -1030,9 +1031,9 @@ class _RoleCard extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             if (isSelected) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Container(
-                padding: const EdgeInsets.all(4),
+                padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
                   shape: BoxShape.circle,
@@ -1040,7 +1041,7 @@ class _RoleCard extends StatelessWidget {
                 child: Icon(
                   Icons.check,
                   color: colorScheme.onPrimary,
-                  size: 16,
+                  size: 16.sp,
                 ),
               ),
             ],

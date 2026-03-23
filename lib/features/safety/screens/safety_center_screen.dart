@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
@@ -187,7 +188,7 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
         "https://www.google.com/maps/search/?api=1&query=${position.latitude},${position.longitude}";
 
     final message =
-        "I'm using Unnati Safe-Walk! Track my live status or see my location here: $mapLink";
+        "I'm using Earnify Safe-Walk! Track my live status or see my location here: $mapLink";
 
     // 3. Launch WhatsApp
     Uri whatsappUrl;
@@ -286,7 +287,7 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
         'icon': Icons.chat_bubble_outline,
         'title': 'Stay on Platform',
         'desc':
-            'Keep all communication and payments within the Unnati app to ensure you are protected.',
+            'Keep all communication and payments within the Earnify app to ensure you are protected.',
         'color': Colors.green,
       },
       {
@@ -336,7 +337,7 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                   Text(
                     "Safety Tips for Helpers",
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 20,
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
                       color: colorScheme.onSurface,
                     ),
@@ -347,20 +348,20 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Expanded(
                 child: ListView.separated(
                   itemCount: tips.length,
                   separatorBuilder: (context, index) =>
-                      const Divider(height: 32),
-                  padding: const EdgeInsets.only(bottom: 32),
+                      Divider(height: 32.h),
+                  padding: EdgeInsets.only(bottom: 32.h),
                   itemBuilder: (context, index) {
                     final tip = tips[index];
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12.w),
                           decoration: BoxDecoration(
                             color: (tip['color'] as Color).withValues(
                               alpha: 0.1,
@@ -370,10 +371,10 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                           child: Icon(
                             tip['icon'] as IconData,
                             color: tip['color'] as Color,
-                            size: 24,
+                            size: 24.sp,
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16.w),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,15 +383,15 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                                 tip['title'] as String,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                   color: colorScheme.onSurface,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4.h),
                               Text(
                                 tip['desc'] as String,
                                 style: GoogleFonts.inter(
-                                  fontSize: 14,
+                                  fontSize: 14.sp,
                                   color: colorScheme.onSurfaceVariant,
                                   height: 1.5,
                                 ),
@@ -454,7 +455,7 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
           style: GoogleFonts.plusJakartaSans(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,
-            fontSize: 18,
+            fontSize: 18.sp,
           ),
         ),
         centerTitle: true,
@@ -476,31 +477,31 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
             Text(
               "Your Safety First",
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 24,
+                fontSize: 24.sp,
                 fontWeight: FontWeight.bold,
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               "We prioritize student safety. Access emergency tools and manage your privacy instantly.",
               style: GoogleFonts.inter(
-                fontSize: 15,
+                fontSize: 15.sp,
                 color: colorScheme.onSurfaceVariant,
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             Text(
               "Quick Assistance",
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             Row(
               children: [
@@ -514,7 +515,7 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                     onTap: () => _launchDialer('100'),
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: _SafetyCard(
                     icon: Icons.phone_in_talk,
@@ -527,7 +528,7 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Row(
               children: [
                 Expanded(
@@ -543,7 +544,7 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: _SafetyCard(
                     icon: Icons.perm_contact_calendar_outlined,
@@ -560,16 +561,16 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
               ],
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             // Safe-Walk Section
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 color: isDark
                     ? colorScheme.surfaceContainer
                     : const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(24.w),
                 border: Border.all(
                   color: isDark
                       ? colorScheme.outlineVariant
@@ -582,22 +583,22 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(8.w),
                         decoration: const BoxDecoration(
                           color: AppTheme.primaryBlue,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.directions_walk,
                           color: Colors.white,
-                          size: 20,
+                          size: 20.sp,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Text(
                         "Safe-Walk",
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                           color: colorScheme.primary,
                         ),
@@ -612,22 +613,22 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Text(
                     "Share your real-time location with trusted contacts during a gig or while walking home.",
                     style: GoogleFonts.inter(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: colorScheme.onSurfaceVariant,
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Divider(
                     color: isDark
                         ? colorScheme.outlineVariant
                         : const Color(0xFFBFDBFE),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -638,7 +639,7 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                               ? AppTheme.primaryBlue
                               : colorScheme.onSurface.withValues(alpha: 0.6),
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 13.sp,
                         ),
                       ),
                       if (_safeWalk)
@@ -653,17 +654,17 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             Text(
               "Privacy Controls",
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
                 color: colorScheme.onSurface, // Dynamic color
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             _PrivacySwitch(
               icon: Icons.blur_on,
@@ -672,7 +673,7 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
               value: _blurContact,
               onChanged: (v) => _updateSetting('blurContact', v),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             _PrivacySwitch(
               icon: Icons.visibility_off_outlined,
               title: "Profile Visibility",
@@ -681,11 +682,11 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
               onChanged: (v) => _updateSetting('profileVisibility', v),
             ),
 
-            const SizedBox(height: 48),
+            SizedBox(height: 48.h),
 
             SizedBox(
               width: double.infinity,
-              height: 56,
+              height: 56.h,
               child: ElevatedButton.icon(
                 onPressed: () {
                   HapticFeedback.mediumImpact();
@@ -703,16 +704,16 @@ class _SafetyCenterScreenState extends State<SafetyCenterScreen> {
                   elevation: 4,
                   shadowColor: AppTheme.primaryBlue.withValues(alpha: 0.4),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(30.w),
                   ),
                   textStyle: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    fontSize: 16.sp,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
           ],
         ),
       ),
@@ -744,12 +745,12 @@ class _SafetyCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(20.w),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isDark ? colorScheme.surfaceContainer : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.w),
           border: Border.all(
             color: isDark ? colorScheme.outlineVariant : Colors.grey.shade100,
           ),
@@ -765,28 +766,28 @@ class _SafetyCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
                 color: isDark ? color.withValues(alpha: 0.2) : bgColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: color, size: 24.sp),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               title,
               style: GoogleFonts.plusJakartaSans(
                 fontWeight: FontWeight.w700,
-                fontSize: 15,
+                fontSize: 15.sp,
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               subtitle,
               style: GoogleFonts.inter(
                 color: colorScheme.onSurfaceVariant,
-                fontSize: 12,
+                fontSize: 12.sp,
               ),
             ),
           ],
@@ -817,10 +818,10 @@ class _PrivacySwitch extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? colorScheme.surfaceContainer : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.w),
         border: Border.all(
           color: isDark ? colorScheme.outlineVariant : Colors.grey.shade100,
         ),
@@ -831,7 +832,7 @@ class _PrivacySwitch extends StatelessWidget {
             icon,
             color: isDark ? colorScheme.onSurfaceVariant : Colors.grey[400],
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -847,7 +848,7 @@ class _PrivacySwitch extends StatelessWidget {
                   subtitle,
                   style: GoogleFonts.inter(
                     color: colorScheme.onSurfaceVariant,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
               ],
@@ -899,7 +900,7 @@ class _TrustedContactsModalState extends State<_TrustedContactsModal> {
               decoration: const InputDecoration(labelText: 'Name'),
               textCapitalization: TextCapitalization.words,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             TextField(
               controller: _phoneController,
               decoration: const InputDecoration(labelText: 'Phone Number'),
@@ -950,9 +951,9 @@ class _TrustedContactsModalState extends State<_TrustedContactsModal> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
-        top: 24,
-        left: 24,
-        right: 24,
+        top: 24.h,
+        left: 24.w,
+        right: 24.w,
         bottom: MediaQuery.of(context).viewInsets.bottom + 24,
       ),
       child: Column(
@@ -965,7 +966,7 @@ class _TrustedContactsModalState extends State<_TrustedContactsModal> {
               Text(
                 "Trusted Contacts",
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 20,
+                  fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onSurface,
                 ),
@@ -976,25 +977,25 @@ class _TrustedContactsModalState extends State<_TrustedContactsModal> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           if (widget.contacts.isEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: EdgeInsets.symmetric(vertical: 24.h),
               child: Center(
                 child: Column(
                   children: [
                     Icon(
                       Icons.contact_phone_outlined,
-                      size: 48,
+                      size: 48.sp,
                       color: isDark ? Colors.grey[600] : Colors.grey[300],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     Text(
                       "No trusted contacts yet\nThese contacts will be notified during Safe-Walk.",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         color: colorScheme.onSurfaceVariant,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ],
@@ -1043,10 +1044,10 @@ class _TrustedContactsModalState extends State<_TrustedContactsModal> {
                 );
               },
             ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           SizedBox(
             width: double.infinity,
-            height: 56,
+            height: 56.h,
             child: ElevatedButton.icon(
               onPressed: _showAddDialog,
               icon: const Icon(Icons.add, color: Colors.white),
@@ -1056,11 +1057,11 @@ class _TrustedContactsModalState extends State<_TrustedContactsModal> {
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                 ),
                 textStyle: GoogleFonts.inter(
                   fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                 ),
               ),
             ),

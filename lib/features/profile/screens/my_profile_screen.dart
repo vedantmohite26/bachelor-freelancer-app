@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/auth_service.dart';
@@ -79,7 +80,7 @@ class MyProfileScreen extends StatelessWidget {
                 // Header Card
                 Container(
                   color: colorScheme.surface,
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(24.w),
                   child: Column(
                     children: [
                       Stack(
@@ -95,17 +96,17 @@ class MyProfileScreen extends StatelessWidget {
                               bottom: 0,
                               right: 0,
                               child: Container(
-                                padding: const EdgeInsets.all(10),
+                                padding: EdgeInsets.all(10.w),
                                 decoration: const BoxDecoration(
                                   color: Color(0xFF10B981),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const SizedBox(width: 4, height: 4),
+                                child: SizedBox(width: 4.w, height: 4.h),
                               ),
                             ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -114,41 +115,38 @@ class MyProfileScreen extends StatelessWidget {
                               name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 24,
+                              style: TextStyle(
+                                fontSize: 24.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(
+                          SizedBox(width: 4.w),
+                          Icon(
                             Icons.verified,
                             color: AppTheme.primaryBlue,
-                            size: 20,
+                            size: 20.sp,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         email,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 14.sp, color: Colors.grey),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       if (profile['university'] != null)
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
+                          padding: EdgeInsets.only(bottom: 4.h),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.school,
                                 color: Colors.grey,
-                                size: 16,
+                                size: 16.sp,
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6.w),
                               Flexible(
                                 child: Text(
                                   profile['university'],
@@ -164,40 +162,34 @@ class MyProfileScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
-                              Icons.phone,
-                              color: Colors.grey,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 6),
+                            Icon(Icons.phone, color: Colors.grey, size: 16.sp),
+                            SizedBox(width: 6.w),
                             Text(
                               profile['phoneNumber'],
                               style: TextStyle(color: Colors.grey[700]),
                             ),
                           ],
                         ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       // Online/Offline Toggle Card
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 12.h,
                         ),
                         decoration: BoxDecoration(
                           color: colorScheme.surface,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.w),
                           border: Border.all(color: colorScheme.outlineVariant),
                         ),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(8.w),
                               decoration: BoxDecoration(
                                 color: isOnline
-                                    ? const Color(
-                                        0xFF10B981,
-                                      ).withValues(alpha: 0.1)
+                                    ? const Color(0xFF10B981).withValues(alpha: 0.1)
                                     : Colors.grey.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
@@ -206,10 +198,10 @@ class MyProfileScreen extends StatelessWidget {
                                 color: isOnline
                                     ? const Color(0xFF10B981)
                                     : Colors.grey,
-                                size: 20,
+                                size: 20.sp,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +221,7 @@ class MyProfileScreen extends StatelessWidget {
                                         : "Not receiving gigs",
                                     style: TextStyle(
                                       color: colorScheme.onSurfaceVariant,
-                                      fontSize: 12,
+                                      fontSize: 12.sp,
                                     ),
                                   ),
                                 ],
@@ -243,14 +235,11 @@ class MyProfileScreen extends StatelessWidget {
                                   bool scanning = true;
 
                                   // Start timer to auto-close screen after delay
-                                  Future.delayed(
-                                    const Duration(seconds: 3),
-                                    () {
-                                      if (scanning && context.mounted) {
-                                        Navigator.of(context).pop();
-                                      }
-                                    },
-                                  );
+                                  Future.delayed(const Duration(seconds: 3), () {
+                                    if (scanning && context.mounted) {
+                                      Navigator.of(context).pop();
+                                    }
+                                  });
 
                                   // Wait for screen to close (either by timer or user back)
                                   await Navigator.push(
@@ -274,41 +263,39 @@ class MyProfileScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       if (rating > 0)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 6.h,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFFFBBF24,
-                                ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
+                                color: const Color(0xFFFBBF24).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8.w),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.star,
-                                    color: Color(0xFFFBBF24),
-                                    size: 16,
+                                    color: const Color(0xFFFBBF24),
+                                    size: 16.sp,
                                   ),
-                                  const SizedBox(width: 4),
+                                  SizedBox(width: 4.w),
                                   Text(
                                     rating.toStringAsFixed(1),
-                                    style: const TextStyle(
-                                      fontSize: 14,
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
                                     " ($reviewCount)",
-                                    style: const TextStyle(
-                                      fontSize: 14,
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
                                       color: Colors.grey,
                                     ),
                                   ),
@@ -321,11 +308,11 @@ class MyProfileScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // Stats Grid
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Row(
                     children: [
                       Expanded(
@@ -336,7 +323,7 @@ class MyProfileScreen extends StatelessWidget {
                           color: const Color(0xFF10B981),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
@@ -360,49 +347,49 @@ class MyProfileScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // XP Progress Bar
                 _XpProgressCard(totalPoints: totalPoints),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // Skills
                 if (skills.isNotEmpty) ...[
                   Container(
                     width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(20),
+                    margin: EdgeInsets.symmetric(horizontal: 20.w),
+                    padding: EdgeInsets.all(20.w),
                     decoration: BoxDecoration(
                       color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.w),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           "Skills",
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12.h),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
                           children: skills
                               .map(
                                 (skill) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 12.w,
+                                    vertical: 8.h,
                                   ),
                                   decoration: BoxDecoration(
                                     color: AppTheme.primaryBlue.withValues(
                                       alpha: 0.1,
                                     ),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(8.w),
                                   ),
                                   child: Text(
                                     skill,
@@ -418,27 +405,27 @@ class MyProfileScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                 ],
 
                 // Reviews Section
                 Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(20),
+                  margin: EdgeInsets.symmetric(horizontal: 20.w),
+                  padding: EdgeInsets.all(20.w),
                   decoration: BoxDecoration(
                     color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.w),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Text(
+                          Text(
                             "Reviews",
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -467,27 +454,27 @@ class MyProfileScreen extends StatelessWidget {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       if (rating > 0 && reviewCount > 0) ...[
                         RatingSummaryCard(
                           helperId: userId,
                           averageRating: rating,
                           reviewCount: reviewCount,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                       ],
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // Logout Button
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 56.h,
                     child: OutlinedButton.icon(
                       onPressed: () async {
                         // Confirm Dialog
@@ -525,25 +512,25 @@ class MyProfileScreen extends StatelessWidget {
                         }
                       },
                       icon: const Icon(Icons.logout, color: Colors.red),
-                      label: const Text(
+                      label: Text(
                         "Logout",
                         style: TextStyle(
                           color: Colors.red,
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.red),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.w),
                         ),
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 100),
+                SizedBox(height: 100.h),
               ],
             ),
           );
@@ -570,36 +557,39 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.w),
             ),
-            child: Icon(icon, color: color, size: 32),
+            child: Icon(icon, color: color, size: 32.sp),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 24.sp,
               fontWeight: FontWeight.bold,
               color: colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             label,
-            style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -637,11 +627,11 @@ class _XpProgressCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.w),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -650,7 +640,7 @@ class _XpProgressCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -658,15 +648,15 @@ class _XpProgressCard extends StatelessWidget {
                       AppTheme.primaryBlue.withValues(alpha: 0.7),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.bolt_rounded,
                   color: Colors.white,
-                  size: 24,
+                  size: 24.sp,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -674,7 +664,7 @@ class _XpProgressCard extends StatelessWidget {
                     Text(
                       'Level $level — $title',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                         color: colorScheme.onSurface,
                       ),
@@ -682,7 +672,7 @@ class _XpProgressCard extends StatelessWidget {
                     Text(
                       '$totalPoints XP total',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: colorScheme.onSurfaceVariant,
                       ),
                     ),
@@ -691,42 +681,37 @@ class _XpProgressCard extends StatelessWidget {
               ),
               // Level badge
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.w),
                 ),
                 child: Text(
                   'Lv.$level',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.primaryBlue,
                     fontWeight: FontWeight.w900,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // Progress bar
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.w),
             child: SizedBox(
-              height: 10,
+              height: 10.h,
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: colorScheme.surfaceContainerHigh,
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppTheme.primaryBlue,
-                ),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryBlue),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
 
           // XP info
           Row(
@@ -735,14 +720,14 @@ class _XpProgressCard extends StatelessWidget {
               Text(
                 '$xpInCurrentLevel / $xpPerLevel XP',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
               Text(
                 '$xpNeededForNextLevel XP to Level ${level + 1}',
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.primaryBlue,
                 ),

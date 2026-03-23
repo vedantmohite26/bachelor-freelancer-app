@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
@@ -97,7 +98,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                 return ListView.builder(
                   reverse: true, // Show newest at the bottom
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final msg = messages[index];
@@ -121,7 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildInputArea() {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         border: Border(
@@ -147,19 +148,19 @@ class _ChatScreenState extends State<ChatScreen> {
                 filled: true,
                 fillColor: colorScheme.surfaceContainerHighest,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(24.w),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 20.w,
+                  vertical: 10.h,
                 ),
               ),
               textCapitalization: TextCapitalization.sentences,
               onSubmitted: (_) => _sendMessage(),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Container(
             decoration: const BoxDecoration(
               color: AppTheme.primaryBlue,
@@ -168,15 +169,15 @@ class _ChatScreenState extends State<ChatScreen> {
             child: IconButton(
               onPressed: _isSending ? null : _sendMessage,
               icon: _isSending
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
+                  ? SizedBox(
+                      width: 20.w,
+                      height: 20.h,
+                      child: const CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
                       ),
                     )
-                  : const Icon(Icons.send, color: Colors.white, size: 20),
+                  : Icon(Icons.send, color: Colors.white, size: 20.sp),
             ),
           ),
         ],
@@ -198,8 +199,8 @@ class _MessageBubble extends StatelessWidget {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        margin: EdgeInsets.only(bottom: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
@@ -221,16 +222,16 @@ class _MessageBubble extends StatelessWidget {
               message,
               style: TextStyle(
                 color: isMe ? Colors.white : colorScheme.onSurface,
-                fontSize: 15,
+                fontSize: 15.sp,
               ),
             ),
             if (time != null) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 _formatTime(time!),
                 style: TextStyle(
                   color: isMe ? Colors.white70 : colorScheme.onSurfaceVariant,
-                  fontSize: 10,
+                  fontSize: 10.sp,
                 ),
               ),
             ],

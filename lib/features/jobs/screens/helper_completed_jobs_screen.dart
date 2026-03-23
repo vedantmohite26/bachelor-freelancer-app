@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/job_service.dart';
 import 'package:freelancer/core/services/auth_service.dart';
@@ -40,15 +41,15 @@ class HelperCompletedJobsScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, size: 48, color: colorScheme.error),
-                  const SizedBox(height: 16),
+                  Icon(Icons.error_outline, size: 48.sp, color: colorScheme.error),
+                  SizedBox(height: 16.h),
                   Text(
                     "Error loading jobs",
                     style: theme.textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    padding: EdgeInsets.symmetric(horizontal: 32.w),
                     child: Text(
                       '${snapshot.error}',
                       textAlign: TextAlign.center,
@@ -71,17 +72,17 @@ class HelperCompletedJobsScreen extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.task_alt,
-                    size: 64,
+                    size: 64.sp,
                     color: colorScheme.outlineVariant,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     "No completed jobs yet",
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     "Complete jobs to see them here",
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -94,7 +95,7 @@ class HelperCompletedJobsScreen extends StatelessWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             itemCount: jobs.length,
             itemBuilder: (context, index) {
               final job = jobs[index];
@@ -150,12 +151,12 @@ class _CompletedJobCard extends StatelessWidget {
           ),
         );
       },
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.w),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.w),
           border: Border.all(
             color: isPending
                 ? Colors.orange.withValues(alpha: 0.5)
@@ -169,20 +170,20 @@ class _CompletedJobCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
                     color: isPending
                         ? Colors.orange.withValues(alpha: 0.1)
                         : const Color(0xFF10B981).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.w),
                   ),
                   child: Icon(
                     isPending ? Icons.pending_actions : Icons.check_circle,
                     color: isPending ? Colors.orange : const Color(0xFF10B981),
-                    size: 24,
+                    size: 24.sp,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +194,7 @@ class _CompletedJobCard extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         dateText,
                         style: theme.textTheme.bodySmall?.copyWith(

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/payment_service.dart';
@@ -142,7 +143,7 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
           x: random.nextDouble(),
           y: random.nextDouble() * -1,
           speed: 1 + random.nextDouble() * 3,
-          size: 4 + random.nextDouble() * 8,
+          size: 4.sp + random.nextDouble() * 8,
           color: [
             const Color(0xFF10B981),
             const Color(0xFF3B82F6),
@@ -164,7 +165,7 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
   }
 
   Widget _buildPaymentScreen() {
-    final simUpiId = '${widget.helperId.substring(0, 6)}@unnati';
+    final simUpiId = '${widget.helperId.substring(0, 6)}@earnify';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -188,8 +189,8 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
             top: -100,
             left: -100,
             child: Container(
-              width: 300,
-              height: 300,
+              width: 300.w,
+              height: 300.h,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
@@ -207,8 +208,8 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
             bottom: -50,
             right: -50,
             child: Container(
-              width: 250,
-              height: 250,
+              width: 250.w,
+              height: 250.h,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: const Color(0xFF10B981).withValues(alpha: 0.1),
@@ -225,24 +226,21 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
 
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
               child: Column(
                 children: [
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   // Recipient Card
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(24.w),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF1E293B),
-                          Color(0xFF0F172A),
-                        ],
+                        colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(24.w),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.1),
                       ),
@@ -258,8 +256,8 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                       children: [
                         // Avatar / Icon
                         Container(
-                          width: 64,
-                          height: 64,
+                          width: 64.w,
+                          height: 64.h,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const LinearGradient(
@@ -282,40 +280,40 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                                   : "U",
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
-                                fontSize: 28,
+                                fontSize: 28.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         Text(
                           "Paying to",
                           style: GoogleFonts.outfit(
                             color: Colors.grey[400],
-                            fontSize: 14,
+                            fontSize: 14.sp,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
                         Text(
                           widget.helperName,
                           style: GoogleFonts.outfit(
                             color: Colors.white,
-                            fontSize: 24,
+                            fontSize: 24.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 6.h,
                           ),
                           decoration: BoxDecoration(
                             color: const Color(
                               0xFF3B82F6,
                             ).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(20.w),
                             border: Border.all(
                               color: const Color(
                                 0xFF3B82F6,
@@ -325,17 +323,17 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.verified_user_outlined,
-                                size: 14,
-                                color: Color(0xFF3B82F6),
+                                size: 14.sp,
+                                color: const Color(0xFF3B82F6),
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6.w),
                               Text(
                                 simUpiId,
                                 style: GoogleFonts.jetBrainsMono(
                                   color: const Color(0xFF3B82F6),
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -346,7 +344,7 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
 
                   // Amount Display with Glow
                   Column(
@@ -355,26 +353,26 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                         "Total Amount",
                         style: GoogleFonts.outfit(
                           color: Colors.grey[400],
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           letterSpacing: 1,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       AnimatedBuilder(
                         animation: _pulseAnimation,
                         builder: (context, child) {
                           return Transform.scale(
                             scale: _isProcessing ? 1.0 : _pulseAnimation.value,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 40,
-                                vertical: 20,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 40.w,
+                                vertical: 20.h,
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(
                                   0xFF10B981,
                                 ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(30.w),
                                 border: Border.all(
                                   color: const Color(
                                     0xFF10B981,
@@ -394,7 +392,7 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                                 "₹${widget.amount.toStringAsFixed(0)}",
                                 style: GoogleFonts.outfit(
                                   color: const Color(0xFF10B981),
-                                  fontSize: 48,
+                                  fontSize: 48.sp,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: -1,
                                 ),
@@ -406,14 +404,14 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                     ],
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
 
                   // Job Details (Simplified)
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.w),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05),
                       ),
@@ -425,7 +423,7 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                           "Job",
                           style: GoogleFonts.outfit(
                             color: Colors.grey[400],
-                            fontSize: 14,
+                            fontSize: 14.sp,
                           ),
                         ),
                         Expanded(
@@ -434,7 +432,7 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                             textAlign: TextAlign.end,
                             style: GoogleFonts.outfit(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -445,34 +443,34 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                     ),
                   ),
 
-                  const SizedBox(height: 48),
+                  SizedBox(height: 48.h),
 
                   // Error Message
                   if (_error != null)
                     Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: EdgeInsets.all(12.w),
+                      margin: EdgeInsets.only(bottom: 16.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.w),
                         border: Border.all(
                           color: const Color(0xFFEF4444).withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.error_outline,
-                            color: Color(0xFFEF4444),
-                            size: 20,
+                            color: const Color(0xFFEF4444),
+                            size: 20.sp,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           Expanded(
                             child: Text(
                               _error!,
-                              style: const TextStyle(
-                                color: Color(0xFFEF4444),
-                                fontSize: 13,
+                              style: TextStyle(
+                                color: const Color(0xFFEF4444),
+                                fontSize: 13.sp,
                               ),
                             ),
                           ),
@@ -483,7 +481,7 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                   // Swipe/Tap to Pay Button
                   SizedBox(
                     width: double.infinity,
-                    height: 64,
+                    height: 64.h,
                     child: ElevatedButton(
                       onPressed: _isProcessing ? null : _processPayment,
                       style: ElevatedButton.styleFrom(
@@ -494,26 +492,26 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                         ).withValues(alpha: 0.4),
                         elevation: 8,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.w),
                         ),
                       ),
                       child: _isProcessing
                           ? Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
+                                SizedBox(
+                                  width: 24.w,
+                                  height: 24.h,
+                                  child: const CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Colors.white,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                SizedBox(width: 12.w),
                                 Text(
                                   "Processing...",
                                   style: GoogleFonts.outfit(
-                                    fontSize: 18,
+                                    fontSize: 18.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -522,15 +520,12 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(
-                                  Icons.check_circle_outline,
-                                  size: 28,
-                                ),
-                                const SizedBox(width: 12),
+                                Icon(Icons.check_circle_outline, size: 28.sp),
+                                SizedBox(width: 12.w),
                                 Text(
                                   "Pay Securely",
                                   style: GoogleFonts.outfit(
-                                    fontSize: 20,
+                                    fontSize: 20.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -539,7 +534,7 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // Footer Security
                   Row(
@@ -548,14 +543,14 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                       Icon(
                         Icons.shield_outlined,
                         color: Colors.grey[600],
-                        size: 16,
+                        size: 16.sp,
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6.w),
                       Text(
                         "Encrypted & Secure Payment",
                         style: GoogleFonts.outfit(
                           color: Colors.grey[600],
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ],
@@ -607,7 +602,7 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                       height: c.size * 0.6,
                       decoration: BoxDecoration(
                         color: c.color.withValues(alpha: 1 - value * 0.5),
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(2.w),
                       ),
                     ),
                   ),
@@ -625,8 +620,8 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                 children: [
                   // Green checkmark
                   Container(
-                    width: 120,
-                    height: 120,
+                    width: 120.w,
+                    height: 120.h,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
@@ -642,44 +637,44 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.check_rounded,
                       color: Colors.white,
-                      size: 64,
+                      size: 64.sp,
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40.h),
 
                   Text(
                     "Payment Successful!",
                     style: GoogleFonts.outfit(
                       color: Colors.white,
-                      fontSize: 32,
+                      fontSize: 32.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   Text(
                     "₹${widget.amount.toStringAsFixed(0)} sent to ${widget.helperName}",
                     style: GoogleFonts.outfit(
                       color: Colors.grey[400],
-                      fontSize: 18,
+                      fontSize: 18.sp,
                     ),
                   ),
 
-                  const SizedBox(height: 48),
+                  SizedBox(height: 48.h),
 
                   // Transaction Details Card
                   Container(
                     width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 40),
-                    padding: const EdgeInsets.all(24),
+                    margin: EdgeInsets.symmetric(horizontal: 40.w),
+                    padding: EdgeInsets.all(24.w),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1E293B).withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(24.w),
                       border: Border.all(
                         color: const Color(0xFF10B981).withValues(alpha: 0.2),
                       ),
@@ -694,9 +689,9 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                     child: Column(
                       children: [
                         _buildDetailRow("Status", "SUCCESS", isGreen: true),
-                        const Divider(color: Color(0xFF334155), height: 32),
+                        Divider(color: const Color(0xFF334155), height: 32.h),
                         _buildDetailRow("UPI Ref", _upiRefId ?? "N/A"),
-                        const Divider(color: Color(0xFF334155), height: 32),
+                        Divider(color: const Color(0xFF334155), height: 32.h),
                         _buildDetailRow(
                           "Amount",
                           "₹${widget.amount.toStringAsFixed(0)}",
@@ -705,14 +700,14 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
 
                   // Auto redirect hint
                   Text(
                     "Redirecting you shortly...",
                     style: GoogleFonts.outfit(
                       color: Colors.grey[600],
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -731,14 +726,14 @@ class _UPIPaymentScreenState extends State<UPIPaymentScreen>
       children: [
         Text(
           label,
-          style: GoogleFonts.outfit(color: Colors.grey[500], fontSize: 14),
+          style: GoogleFonts.outfit(color: Colors.grey[500], fontSize: 14.sp),
         ),
         Flexible(
           child: Text(
             value,
             style: GoogleFonts.outfit(
               color: isGreen ? const Color(0xFF10B981) : Colors.white,
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.bold,
             ),
             overflow: TextOverflow.ellipsis,

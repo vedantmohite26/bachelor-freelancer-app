@@ -38,7 +38,7 @@ class PaymentService extends ChangeNotifier {
       'amount': amount,
       'jobTitle': jobTitle,
       'helperName': helperName ?? 'Helper',
-      'helperUpiId': helperUpiId ?? '$helperId@unnati',
+      'helperUpiId': helperUpiId ?? '$helperId@earnify',
       'upiRefId': upiRefId,
       'status': 'pending',
       'createdAt': FieldValue.serverTimestamp(),

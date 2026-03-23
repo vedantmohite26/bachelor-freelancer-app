@@ -109,4 +109,19 @@ class NotificationService {
       'isRead': true,
     });
   }
+
+  // Delete all user notifications
+  Future<void> deleteAllUserNotifications(String userId) async {
+    final batch = _firestore.batch();
+    final snapshots = await _firestore
+        .collection('activity')
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    for (var doc in snapshots.docs) {
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
+  }
 }

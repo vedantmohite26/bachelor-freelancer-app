@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/job_service.dart';
@@ -161,15 +162,15 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
           children: [
             Icon(
               Icons.check_circle_outline,
-              size: 64,
+              size: 64.sp,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               "No Active Jobs",
               style: GoogleFonts.plusJakartaSans(
                 color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 20,
+                fontSize: 20.sp,
               ),
             ),
           ],
@@ -206,7 +207,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
           style: GoogleFonts.plusJakartaSans(
             color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 18.sp,
           ),
         ),
         centerTitle: true,
@@ -238,14 +239,14 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                   return GestureDetector(
                     onTap: () => _showSessionDetails(context, job, profile),
                     child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 24),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
+                      margin: EdgeInsets.symmetric(horizontal: 24.w),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.w,
+                        vertical: 16.h,
                       ),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surfaceContainer,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(24.w),
                         border: Border.all(
                           color: Theme.of(context).colorScheme.outlineVariant,
                         ),
@@ -253,10 +254,10 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(2),
+                            padding: EdgeInsets.all(2.w),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: accentColor, width: 2),
+                              border: Border.all(color: accentColor, width: 2.w),
                             ),
                             child: CachedNetworkAvatar(
                               imageUrl: avatar,
@@ -266,7 +267,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                               ).colorScheme.surfaceContainerHigh,
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: 16.w),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,17 +278,17 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                     color: Theme.of(
                                       context,
                                     ).colorScheme.onSurface,
-                                    fontSize: 16,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4.h),
                                 Row(
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 2,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.w,
+                                        vertical: 2.h,
                                       ),
                                       decoration: BoxDecoration(
                                         color: status == 'in_progress'
@@ -297,7 +298,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                             : Colors.blue.withValues(
                                                 alpha: 0.2,
                                               ),
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(8.w),
                                       ),
                                       child: Text(
                                         status == 'assigned'
@@ -311,15 +312,15 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                               : Theme.of(
                                                   context,
                                                 ).colorScheme.primary,
-                                          fontSize: 12,
+                                          fontSize: 12.sp,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    SizedBox(width: 8.w),
                                     Icon(
                                       Icons.info_outline,
-                                      size: 14,
+                                      size: 14.sp,
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onSurface
@@ -347,17 +348,17 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                   children: [
                     Icon(
                       Icons.hourglass_empty_rounded,
-                      size: 64,
+                      size: 64.sp,
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     Text(
                       "Ready to Begin",
                       style: GoogleFonts.plusJakartaSans(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontSize: 24,
+                        fontSize: 24.sp,
                       ),
                     ),
                   ],
@@ -367,7 +368,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
 
               // 3. Action Buttons
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
                 child: _buildButtons(context, status, job),
               ),
 
@@ -408,8 +409,8 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
     }) {
       return Container(
         width: double.infinity,
-        height: 56,
-        margin: const EdgeInsets.only(bottom: 16),
+        height: 56.h,
+        margin: EdgeInsets.only(bottom: 16.h),
         child: ElevatedButton(
           onPressed: onTap,
           style: ElevatedButton.styleFrom(
@@ -425,19 +426,19 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                 : Theme.of(context).colorScheme.onSurface,
             elevation: isPrimary ? 4 : 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.w),
             ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 20),
-              const SizedBox(width: 12),
+              Icon(icon, size: 20.sp),
+              SizedBox(width: 12.w),
               Text(
                 label,
                 style: GoogleFonts.plusJakartaSans(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                 ),
               ),
             ],
@@ -697,19 +698,19 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
           ),
           child: Column(
             children: [
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Container(
-                width: 40,
-                height: 4,
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: Theme.of(context).dividerColor,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.w),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -720,7 +721,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                             "Session Details",
                             style: GoogleFonts.plusJakartaSans(
                               color: Theme.of(context).colorScheme.onSurface,
-                              fontSize: 24,
+                              fontSize: 24.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -735,13 +736,13 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       // Job Info Card
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: EdgeInsets.all(20.w),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.w),
                           border: Border.all(
                             color: Theme.of(context).colorScheme.outlineVariant,
                           ),
@@ -759,7 +760,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                       color: Theme.of(
                                         context,
                                       ).colorScheme.onSurface,
-                                      fontSize: 18,
+                                      fontSize: 18.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -768,51 +769,51 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                   "₹${job['price']}",
                                   style: GoogleFonts.plusJakartaSans(
                                     color: const Color(0xFF10B981),
-                                    fontSize: 18,
+                                    fontSize: 18.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
                             // Date & Time Row
                             Row(
                               children: [
                                 _detailItem(Icons.calendar_today, dateStr),
-                                const SizedBox(width: 16),
+                                SizedBox(width: 16.w),
                                 _detailItem(Icons.access_time, timeStr),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h),
                             Text(
                               job['description'] ?? "No description.",
                               style: GoogleFonts.inter(
                                 color: Theme.of(
                                   context,
                                 ).colorScheme.onSurfaceVariant,
-                                fontSize: 14,
+                                fontSize: 14.sp,
                                 height: 1.5,
                               ),
                             ),
-                            const Divider(height: 32),
+                            Divider(height: 32.h),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(8),
+                                  padding: EdgeInsets.all(8.w),
                                   decoration: BoxDecoration(
                                     color: const Color(
                                       0xFF3B82F6,
                                     ).withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.location_on,
-                                    color: Color(0xFF3B82F6),
-                                    size: 18,
+                                    color: const Color(0xFF3B82F6),
+                                    size: 18.sp,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                SizedBox(width: 12.w),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -827,11 +828,11 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                           color: Theme.of(
                                             context,
                                           ).colorScheme.onSurface,
-                                          fontSize: 14,
+                                          fontSize: 14.sp,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      SizedBox(height: 8.h),
                                       if (job['latitude'] != null &&
                                           job['longitude'] != null)
                                         InkWell(
@@ -853,7 +854,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                             "View on Map",
                                             style: GoogleFonts.inter(
                                               color: const Color(0xFF3B82F6),
-                                              fontSize: 13,
+                                              fontSize: 13.sp,
                                               fontWeight: FontWeight.w600,
                                               decoration:
                                                   TextDecoration.underline,
@@ -868,22 +869,22 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h),
                       // User Info
                       Text(
                         widget.isSeeker ? "Helper Info" : "Seeker Info",
                         style: GoogleFonts.plusJakartaSans(
                           color: Theme.of(context).colorScheme.onSurface,
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.w),
                         ),
                         child: Column(
                           children: [
@@ -896,7 +897,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                     context,
                                   ).colorScheme.surfaceContainerHigh,
                                 ),
-                                const SizedBox(width: 16),
+                                SizedBox(width: 16.w),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -908,11 +909,11 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                           color: Theme.of(
                                             context,
                                           ).colorScheme.onSurface,
-                                          fontSize: 18,
+                                          fontSize: 18.sp,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      SizedBox(height: 4.h),
                                       Text(
                                         widget.isSeeker
                                             ? "Assigned Helper"
@@ -921,7 +922,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                           color: Theme.of(
                                             context,
                                           ).colorScheme.onSurfaceVariant,
-                                          fontSize: 14,
+                                          fontSize: 14.sp,
                                         ),
                                       ),
                                     ],
@@ -929,32 +930,32 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                                 ),
                               ],
                             ),
-                            const Divider(height: 32),
+                            Divider(height: 32.h),
                             // Contact Items
                             _contactItem(Icons.phone_outlined, seekerPhone),
-                            const SizedBox(height: 12),
+                            SizedBox(height: 12.h),
                             _contactItem(Icons.email_outlined, seekerEmail),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       Text(
                         "Bio",
                         style: GoogleFonts.plusJakartaSans(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
                           color: Theme.of(
                             context,
                           ).colorScheme.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.w),
                         ),
                         child: Text(
                           bio,
@@ -962,12 +963,12 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                             color: Theme.of(
                               context,
                             ).colorScheme.onSurfaceVariant,
-                            fontSize: 14,
+                            fontSize: 14.sp,
                             fontStyle: FontStyle.italic,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      SizedBox(height: 40.h),
                     ],
                   ),
                 ),
@@ -985,15 +986,15 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
       children: [
         Icon(
           icon,
-          size: 14,
+          size: 14.sp,
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6.w),
         Text(
           text,
           style: GoogleFonts.inter(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontSize: 13,
+            fontSize: 13.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -1005,19 +1006,19 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHigh,
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 16, color: const Color(0xFF3B82F6)),
+          child: Icon(icon, size: 16.sp, color: const Color(0xFF3B82F6)),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         Text(
           text,
           style: GoogleFonts.inter(
             color: Theme.of(context).colorScheme.onSurface,
-            fontSize: 14,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -1089,12 +1090,12 @@ class _JobSessionTimerState extends State<JobSessionTimer> {
             _buildDigit(seconds, isHighlight: true),
           ],
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           "SESSION DURATION",
           style: GoogleFonts.inter(
             color: Colors.white24,
-            fontSize: 12,
+            fontSize: 12.sp,
             letterSpacing: 2,
             fontWeight: FontWeight.w600,
           ),
@@ -1107,7 +1108,7 @@ class _JobSessionTimerState extends State<JobSessionTimer> {
     return Text(
       value,
       style: GoogleFonts.jetBrainsMono(
-        fontSize: 56,
+        fontSize: 56.sp,
         fontWeight: FontWeight.bold,
         color: isHighlight
             ? const Color(0xFF3B82F6)
@@ -1126,11 +1127,11 @@ class _JobSessionTimerState extends State<JobSessionTimer> {
 
   Widget _buildSeparator() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      padding: EdgeInsets.symmetric(horizontal: 4.0.w),
       child: Text(
         ":",
         style: GoogleFonts.jetBrainsMono(
-          fontSize: 56,
+          fontSize: 56.sp,
           fontWeight: FontWeight.w300,
           color: Colors.white24,
         ),
@@ -1272,7 +1273,7 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -1283,14 +1284,14 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
           children: [
             // Handle bar
             Container(
-              width: 40,
-              height: 4,
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: colorScheme.onSurface.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.w),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // Title
             Text(
@@ -1298,12 +1299,12 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                   ? "Completion QR Code"
                   : "Verification QR Code",
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               widget.isCompletion
                   ? "Ask the seeker to scan this code to complete the job."
@@ -1311,27 +1312,27 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: colorScheme.onSurface.withValues(alpha: 0.6),
-                fontSize: 13,
+                fontSize: 13.sp,
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
 
             if (_isLoading) ...[
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
               const CircularProgressIndicator(),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               const Text("Generating secure code..."),
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
             ] else if (_error != null) ...[
-              const SizedBox(height: 20),
-              Icon(Icons.error_outline, color: colorScheme.error, size: 48),
-              const SizedBox(height: 12),
+              SizedBox(height: 20.h),
+              Icon(Icons.error_outline, color: colorScheme.error, size: 48.sp),
+              SizedBox(height: 12.h),
               Text(
                 "Error: $_error",
                 style: TextStyle(color: colorScheme.error),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               ElevatedButton.icon(
                 onPressed: _generateQR,
                 icon: const Icon(Icons.refresh),
@@ -1342,10 +1343,10 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
               if (_helperProfile != null)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(14),
+                  padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
                     color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.w),
                     border: Border.all(
                       color: colorScheme.primary.withValues(alpha: 0.2),
                     ),
@@ -1362,11 +1363,11 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                           style: TextStyle(
                             color: colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                            fontSize: 18.sp,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1375,40 +1376,40 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                               _helperProfile?['name'] ?? 'Unknown',
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                                 color: colorScheme.onSurface,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2.h),
                             Text(
                               _helperProfile?['phoneNumber'] ?? 'N/A',
                               style: TextStyle(
                                 color: colorScheme.onSurface.withValues(
                                   alpha: 0.6,
                                 ),
-                                fontSize: 13,
+                                fontSize: 13.sp,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.verified_user,
                         color: AppTheme.growthGreen,
-                        size: 24,
+                        size: 24.sp,
                       ),
                     ],
                   ),
                 ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // QR Code
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.w),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.08),
@@ -1420,7 +1421,7 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                 child: QrImageView(
                   data: _qrData!,
                   version: QrVersions.auto,
-                  size: 200.0,
+                  size: 200.0.sp,
                   backgroundColor: Colors.white,
                   eyeStyle: const QrEyeStyle(
                     eyeShape: QrEyeShape.square,
@@ -1433,15 +1434,15 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // Countdown Timer
               _remaining > Duration.zero
                   ? Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 14,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.w,
+                        vertical: 14.h,
                       ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -1455,7 +1456,7 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                                   Colors.orange.withValues(alpha: 0.08),
                                 ],
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.w),
                         border: Border.all(
                           color: _remaining.inSeconds <= 60
                               ? Colors.red.withValues(alpha: 0.4)
@@ -1469,9 +1470,9 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                             color: _remaining.inSeconds <= 60
                                 ? Colors.red
                                 : Colors.amber[800],
-                            size: 22,
+                            size: 22.sp,
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: Text(
                               "Expires in",
@@ -1480,25 +1481,25 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                                     ? Colors.red[700]
                                     : Colors.amber[800],
                                 fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                                fontSize: 14.sp,
                               ),
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 6,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 14.w,
+                              vertical: 6.h,
                             ),
                             decoration: BoxDecoration(
                               color: _remaining.inSeconds <= 60
                                   ? Colors.red.withValues(alpha: 0.15)
                                   : Colors.amber.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10.w),
                             ),
                             child: Text(
                               _formatDuration(_remaining),
                               style: GoogleFonts.jetBrainsMono(
-                                fontSize: 20,
+                                fontSize: 20.sp,
                                 fontWeight: FontWeight.bold,
                                 color: _remaining.inSeconds <= 60
                                     ? Colors.red
@@ -1511,31 +1512,31 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                     )
                   : Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.w),
                         border: Border.all(
                           color: Colors.red.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Column(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.timer_off,
                             color: Colors.red,
-                            size: 32,
+                            size: 32.sp,
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           Text(
                             "Code expired",
                             style: GoogleFonts.inter(
                               color: Colors.red,
                               fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              fontSize: 16.sp,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12.h),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
@@ -1545,11 +1546,11 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryBlue,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 12.h,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(12.w),
                                 ),
                               ),
                             ),
@@ -1559,7 +1560,7 @@ class _QRCodeBottomSheetState extends State<_QRCodeBottomSheet> {
                     ),
             ],
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
           ],
         ),
       ),

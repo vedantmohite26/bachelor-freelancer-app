@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:freelancer/features/search/screens/seeker_finding_helpers_screen.dart';
 import 'package:freelancer/features/search/screens/helper_scanning_gigs_screen.dart';
 
@@ -23,7 +24,7 @@ class LoadingScreensShowcase extends StatelessWidget {
               },
               child: const Text("Seeker: Finding Helpers"),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(

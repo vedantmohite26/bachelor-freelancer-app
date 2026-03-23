@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
@@ -42,7 +43,7 @@ class ActivityScreen extends StatelessWidget {
             indicatorWeight: 3,
             labelStyle: GoogleFonts.inter(
               fontWeight: FontWeight.w600,
-              fontSize: 14,
+              fontSize: 14.sp,
             ),
             tabs: const [
               Tab(text: "Job Updates"),
@@ -83,39 +84,116 @@ class _UpdatesList extends StatelessWidget {
         final notifications = snapshot.data ?? [];
 
         if (notifications.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.notifications_none, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
-                Text("No new activity", style: TextStyle(color: Colors.grey)),
+                Icon(Icons.notifications_none, size: 64.sp, color: Colors.grey),
+                SizedBox(height: 16.h),
+                const Text("No new activity", style: TextStyle(color: Colors.grey)),
               ],
             ),
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: notifications.length,
-          itemBuilder: (context, index) {
-            final notification = notifications[index];
-            final type = notification['type'] ?? 'system';
-            final timestamp =
-                (notification['timestamp'] as Timestamp?)?.toDate() ??
-                DateTime.now();
-            final timeAgo = _formatTimeAgo(timestamp);
+        return Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "${notifications.length} Updates",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Clear All Updates?'),
+                          content: const Text(
+                            'This will permanently delete all your activity updates.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: Text(
+                                'Clear All',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
 
-            return _ActivityItem(
-              icon: _getIconForType(type),
-              iconBgColor: _getColorForType(type).withValues(alpha: 0.1),
-              iconColor: _getColorForType(type),
-              title: notification['title'] ?? 'Notification',
-              subtitle: notification['subtitle'] ?? '',
-              time: timeAgo,
-              isUnread: !(notification['isRead'] ?? true),
-            );
-          },
+                      if (confirm == true) {
+                        try {
+                          await notificationService.deleteAllUserNotifications(
+                            userId,
+                          );
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('All updates cleared'),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error clearing updates: $e'),
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    },
+                    icon: Icon(Icons.delete_sweep, size: 20.sp),
+                    label: const Text("Clear All"),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                itemCount: notifications.length,
+                itemBuilder: (context, index) {
+                  final notification = notifications[index];
+                  final type = notification['type'] ?? 'system';
+                  final timestamp =
+                      (notification['timestamp'] as Timestamp?)?.toDate() ??
+                      DateTime.now();
+                  final timeAgo = _formatTimeAgo(timestamp);
+
+                  return _ActivityItem(
+                    icon: _getIconForType(type),
+                    iconBgColor: _getColorForType(type).withValues(alpha: 0.1),
+                    iconColor: _getColorForType(type),
+                    title: notification['title'] ?? 'Notification',
+                    subtitle: notification['subtitle'] ?? '',
+                    time: timeAgo,
+                    isUnread: !(notification['isRead'] ?? true),
+                  );
+                },
+              ),
+            ),
+          ],
         );
       },
     );
@@ -180,13 +258,13 @@ class _ActivityItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
+      margin: EdgeInsets.only(bottom: 24.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Leading Icon
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: iconBgColor ?? colorScheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
@@ -194,10 +272,10 @@ class _ActivityItem extends StatelessWidget {
             child: Icon(
               icon,
               color: iconColor ?? colorScheme.primary,
-              size: 24,
+              size: 24.sp,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
 
           // Content
           Expanded(
@@ -218,15 +296,15 @@ class _ActivityItem extends StatelessWidget {
                               style: GoogleFonts.inter(
                                 color: colorScheme.onSurface,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 16,
+                                fontSize: 16.sp,
                               ),
                             ),
                           ),
                           if (isUnread) ...[
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8.w),
                             Container(
-                              width: 6,
-                              height: 6,
+                              width: 6.w,
+                              height: 6.h,
                               decoration: const BoxDecoration(
                                 color: AppTheme.primaryBlue,
                                 shape: BoxShape.circle,
@@ -236,7 +314,7 @@ class _ActivityItem extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     if (trailing != null)
                       trailing!
                     else
@@ -244,12 +322,12 @@ class _ActivityItem extends StatelessWidget {
                         time,
                         style: GoogleFonts.inter(
                           color: colorScheme.onSurface.withValues(alpha: 0.5),
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -258,18 +336,18 @@ class _ActivityItem extends StatelessWidget {
                         subtitle,
                         style: GoogleFonts.inter(
                           color: colorScheme.onSurface.withValues(alpha: 0.6),
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           height: 1.4,
                         ),
                       ),
                     ),
                     if (trailing != null) ...[
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Text(
                         time,
                         style: GoogleFonts.inter(
                           color: colorScheme.onSurface.withValues(alpha: 0.5),
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ],
@@ -304,7 +382,7 @@ class _CommunityTab extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       children: [
         // Friend Requests Card
         StreamBuilder<List<Map<String, dynamic>>>(
@@ -322,10 +400,10 @@ class _CommunityTab extends StatelessWidget {
                 );
               },
               leading: Container(
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
                   color: colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                 ),
                 child: Icon(Icons.people, color: colorScheme.primary),
               ),
@@ -344,13 +422,13 @@ class _CommunityTab extends StatelessWidget {
               ),
               trailing: count > 0
                   ? Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 4.h,
                       ),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryBlue,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.w),
                       ),
                       child: Text(
                         count.toString(),
@@ -390,13 +468,13 @@ class _PaymentsList extends StatelessWidget {
         final payments = snapshot.data ?? [];
 
         if (payments.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.payments_outlined, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
-                Text(
+                Icon(Icons.payments_outlined, size: 64.sp, color: Colors.grey),
+                SizedBox(height: 16.h),
+                const Text(
                   "No payment history",
                   style: TextStyle(color: Colors.grey),
                 ),
@@ -406,7 +484,7 @@ class _PaymentsList extends StatelessWidget {
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           itemCount: payments.length,
           itemBuilder: (context, index) {
             final payment = payments[index];
@@ -430,7 +508,7 @@ class _PaymentsList extends StatelessWidget {
                 style: TextStyle(
                   color: isIncoming ? AppTheme.growthGreen : Colors.red,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                 ),
               ),
             );

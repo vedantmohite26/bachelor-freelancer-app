@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/job_service.dart';
@@ -132,13 +133,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Progress
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4.w),
               child: LinearProgressIndicator(
                 value: 0.3,
                 minHeight: 4,
@@ -147,19 +148,19 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Category
             Text(
               "Category",
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             // Main Category Input
             TextField(
@@ -174,15 +175,15 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 filled: true,
                 fillColor: Theme.of(context).cardColor,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                   borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                   borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                   borderSide: const BorderSide(color: AppTheme.primaryBlue),
                 ),
                 prefixIcon: const Icon(
@@ -192,7 +193,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ),
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             // Quick Select Chips
             SingleChildScrollView(
@@ -209,7 +210,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       setState(() {});
                     },
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _CategoryPill(
                     icon: Icons.cleaning_services,
                     label: "Cleaning",
@@ -220,7 +221,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       setState(() {});
                     },
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _CategoryPill(
                     icon: Icons.grass,
                     label: "Yard Work",
@@ -231,7 +232,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       setState(() {});
                     },
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _CategoryPill(
                     icon: Icons.computer,
                     label: "Tech Support",
@@ -247,19 +248,19 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Description
             Text(
               "Description",
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             TextField(
               controller: _descriptionController,
@@ -271,21 +272,21 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 filled: true,
                 fillColor: Theme.of(context).cardColor,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                   borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                   borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                   borderSide: const BorderSide(color: AppTheme.primaryBlue),
                 ),
               ),
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             const Wrap(
               spacing: 8,
@@ -295,19 +296,19 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ],
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // When?
             Text(
               "When?",
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             Row(
               children: [
@@ -328,10 +329,10 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       }
                     },
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.w),
                         border: Border.all(color: Colors.grey.shade200),
                       ),
                       child: Row(
@@ -340,12 +341,12 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                             Icons.calendar_today,
                             color: AppTheme.primaryBlue,
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: Text(
                               DateFormat('MMM d, yyyy').format(_selectedDate),
-                              style: const TextStyle(
-                                fontSize: 16,
+                              style: TextStyle(
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w500,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -356,7 +357,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: GestureDetector(
                     onTap: () async {
@@ -372,10 +373,10 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       }
                     },
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.w),
                         border: Border.all(color: Colors.grey.shade200),
                       ),
                       child: Row(
@@ -384,12 +385,12 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                             Icons.access_time,
                             color: AppTheme.primaryBlue,
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: Text(
                               _selectedTime.format(context),
-                              style: const TextStyle(
-                                fontSize: 16,
+                              style: TextStyle(
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w500,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -403,36 +404,36 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ],
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Helpers Needed
             Text(
               "Helpers Needed",
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.w),
                 border: Border.all(color: Colors.grey.shade200),
               ),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       "Number of helpers",
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16.sp),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -448,27 +449,27 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                           }
                         },
                         icon: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: EdgeInsets.all(4.w),
                           decoration: BoxDecoration(
                             color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(6.w),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.remove,
-                            size: 20,
+                            size: 20.sp,
                             color: AppTheme.primaryBlue,
                           ),
                         ),
                       ),
                       Container(
-                        width: 40,
+                        width: 40.w,
                         alignment: Alignment.center,
                         child: TextField(
                           controller: _helperCountController,
                           textAlign: TextAlign.center,
                           keyboardType: TextInputType.number,
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: TextStyle(
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                           ),
                           decoration: const InputDecoration(
@@ -490,14 +491,14 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                           }
                         },
                         icon: Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: EdgeInsets.all(4.w),
                           decoration: BoxDecoration(
                             color: AppTheme.primaryBlue,
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(6.w),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.add,
-                            size: 20,
+                            size: 20.sp,
                             color: Colors.white,
                           ),
                         ),
@@ -508,18 +509,18 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // Your Offer
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     "Your Offer",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 GestureDetector(
                   onTap: () {
                     setState(() {
@@ -528,7 +529,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   },
                   child: _ToggleChip(label: "Hourly", isSelected: _isHourly),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 GestureDetector(
                   onTap: () {
                     setState(() {
@@ -540,23 +541,23 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               ],
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             TextField(
               controller: _priceController,
               keyboardType: TextInputType.number,
               style: TextStyle(
-                fontSize: 32,
+                fontSize: 32.sp,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
               decoration: InputDecoration(
                 prefixIcon: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   child: Text(
                     "₹",
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 32.sp,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
@@ -564,39 +565,39 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 ),
                 suffixText: _isHourly ? "/hr" : "",
                 suffixStyle: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
                 filled: true,
                 fillColor: Theme.of(context).cardColor,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                   borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                   borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.w),
                   borderSide: const BorderSide(color: AppTheme.primaryBlue),
                 ),
               ),
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
-            const Text(
+            Text(
               "Est. Total: ₹50 - ₹75 (2-3 hrs)",
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey),
             ),
 
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
 
             // Post Button
             SizedBox(
               width: double.infinity,
-              height: 56,
+              height: 56.h,
               child: ElevatedButton(
                 onPressed: _isLoading
                     ? null
@@ -626,7 +627,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   backgroundColor: AppTheme.primaryBlue,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.w),
                   ),
                 ),
                 child: _isLoading
@@ -638,13 +639,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                             _selectedLocation == null
                                 ? "Next: Select Location"
                                 : "Post Task Now",
-                            style: const TextStyle(
-                              fontSize: 16,
+                            style: TextStyle(
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward, size: 20),
+                          SizedBox(width: 8.w),
+                          Icon(Icons.arrow_forward, size: 20.sp),
                         ],
                       ),
               ),
@@ -673,12 +674,12 @@ class _CategoryPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(24.w),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.primaryBlue : Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.w),
           border: Border.all(
             color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade300,
           ),
@@ -689,9 +690,9 @@ class _CategoryPill extends StatelessWidget {
             Icon(
               icon,
               color: isSelected ? Colors.white : Colors.black,
-              size: 20,
+              size: 20.sp,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Text(
               label,
               style: TextStyle(
@@ -718,13 +719,13 @@ class _QuickTagButton extends StatelessWidget {
         // Add tag to description
       },
       style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
         backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.1),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.w)),
       ),
       child: Text(
         label,
-        style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 14),
+        style: TextStyle(color: AppTheme.primaryBlue, fontSize: 14.sp),
       ),
     );
   }
@@ -739,17 +740,17 @@ class _ToggleChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.w),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: isSelected ? Colors.white : Colors.grey.shade700,
           fontWeight: FontWeight.w600,
-          fontSize: 14,
+          fontSize: 14.sp,
         ),
       ),
     );

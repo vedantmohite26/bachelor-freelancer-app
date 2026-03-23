@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/services/user_service.dart';
@@ -83,18 +84,18 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                               child: Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.all(8),
+                                    padding: EdgeInsets.all(8.w),
                                     decoration: BoxDecoration(
                                       color: Theme.of(context).cardColor,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.school,
                                       color: AppTheme.primaryBlue,
-                                      size: 20,
+                                      size: 20.sp,
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: 12.w),
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -102,7 +103,7 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                                       Text(
                                         "Current Location",
                                         style: GoogleFonts.inter(
-                                          fontSize: 12,
+                                          fontSize: 12.sp,
                                           color: Theme.of(
                                             context,
                                           ).textTheme.bodySmall?.color,
@@ -113,16 +114,16 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                                           Text(
                                             _currentLocation,
                                             style: GoogleFonts.inter(
-                                              fontSize: 14,
+                                              fontSize: 14.sp,
                                               fontWeight: FontWeight.w700,
                                               color: Theme.of(
                                                 context,
                                               ).textTheme.bodyLarge?.color,
                                             ),
                                           ),
-                                          const Icon(
+                                          Icon(
                                             Icons.keyboard_arrow_down,
-                                            size: 16,
+                                            size: 16.sp,
                                             color: AppTheme.primaryBlue,
                                           ),
                                         ],
@@ -138,23 +139,17 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                                   Icons.chat_bubble_outline,
                                   onTap: _navigateToMessages,
                                 ),
-                                const SizedBox(width: 12),
-                                _buildIconBtn(
-                                  Icons.notes,
-                                  isOrange: true,
-                                  onTap: _navigateToMyJobs,
-                                ),
                               ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
 
                         // Title
                         Text(
                           "What do you need\nhelp with today?",
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 28,
+                            fontSize: 28.sp,
                             fontWeight: FontWeight.w800,
                             height: 1.2,
                             color: Theme.of(
@@ -170,14 +165,14 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                 // 3. Nearby Helpers Header
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           "Nearby Helpers",
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 18,
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -193,7 +188,7 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                   ),
                 ),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                SliverToBoxAdapter(child: SizedBox(height: 16.h)),
 
                 // 4. Helpers List (Real-time data)
                 StreamBuilder<List<Map<String, dynamic>>>(
@@ -230,9 +225,9 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                         final helperId = helper['id'] as String;
 
                         return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 8.h,
                           ),
                           child: GestureDetector(
                             onTap: () {
@@ -260,7 +255,7 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                   },
                 ),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                SliverToBoxAdapter(child: SizedBox(height: 100.h)),
               ],
             ),
 
@@ -279,14 +274,14 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           shape: BoxShape.circle,
         ),
         child: Icon(
           icon,
-          size: 22,
+          size: 22.sp,
           color: isOrange
               ? AppTheme.coinYellow
               : Theme.of(context).iconTheme.color,
@@ -296,15 +291,6 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
   }
 
   // Navigation methods
-
-  void _navigateToMyJobs() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tap Posted Jobs icon in the bottom navigation'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
 
   void _navigateToMessages() {
     Navigator.push(
@@ -325,27 +311,27 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
               Theme.of(context).cardColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 4,
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.w),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             Text(
               "Select Location",
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             ListTile(
               leading: const Icon(
                 Icons.my_location,
@@ -360,7 +346,7 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                 );
               },
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
           ],
         ),
       ),
@@ -378,35 +364,35 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
               Theme.of(context).cardColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
               child: Container(
-                width: 40,
-                height: 4,
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.w),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             Text(
               "Filter Helpers",
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             const _FilterOption(title: 'Sort By', value: 'Nearest First'),
             const _FilterOption(title: 'Availability', value: 'Available Now'),
             const _FilterOption(title: 'Rating', value: 'All Ratings'),
             const _FilterOption(title: 'Experience', value: 'Any'),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -422,7 +408,7 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                 child: const Text('Apply Filters'),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
           ],
         ),
       ),
@@ -450,10 +436,10 @@ class _HelperCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.w),
         border: Border.all(
           color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
         ),
@@ -481,21 +467,21 @@ class _HelperCard extends StatelessWidget {
                 bottom: 0,
                 right: 0,
                 child: Container(
-                  width: 12,
-                  height: 12,
+                  width: 12.w,
+                  height: 12.h,
                   decoration: BoxDecoration(
                     color: AppTheme.growthGreen, // Online
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Theme.of(context).cardColor,
-                      width: 2,
+                      width: 2.w,
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
 
           // Content
           Expanded(
@@ -506,45 +492,45 @@ class _HelperCard extends StatelessWidget {
                   name,
                   style: GoogleFonts.plusJakartaSans(
                     fontWeight: FontWeight.w700,
-                    fontSize: 16,
+                    fontSize: 16.sp,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   role,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     color: Theme.of(context).textTheme.bodyMedium?.color,
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Row(
                   children: [
                     if (isVerified)
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 4.h,
                         ),
                         decoration: BoxDecoration(
                           color: AppTheme.growthGreen.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(6.w),
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.verified,
-                              size: 12,
+                              size: 12.sp,
                               color: AppTheme.growthGreen,
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4.w),
                             Text(
                               "Verified",
                               style: GoogleFonts.inter(
-                                fontSize: 10,
+                                fontSize: 10.sp,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.growthGreen,
                               ),
@@ -552,17 +538,13 @@ class _HelperCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                    const SizedBox(width: 12),
-                    const Icon(
-                      Icons.star,
-                      size: 14,
-                      color: AppTheme.coinYellow,
-                    ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 12.w),
+                    Icon(Icons.star, size: 14.sp, color: AppTheme.coinYellow),
+                    SizedBox(width: 4.w),
                     Text(
-                      "$rating ($reviewCount)",
+                      "${rating.toStringAsFixed(1)} ($reviewCount)",
                       style: GoogleFonts.inter(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -577,16 +559,16 @@ class _HelperCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.location_on,
-                    size: 14,
+                    size: 14.sp,
                     color: AppTheme.primaryBlue,
                   ),
-                  const SizedBox(width: 2),
+                  SizedBox(width: 2.w),
                   Text(
                     "$distance mi",
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: Theme.of(context).textTheme.bodySmall?.color,
                       fontWeight: FontWeight.w600,
                     ),
@@ -611,14 +593,14 @@ class _FilterOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: 8.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
             style: GoogleFonts.inter(
-              fontSize: 16,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w500,
               color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
@@ -626,7 +608,7 @@ class _FilterOption extends StatelessWidget {
           Text(
             value,
             style: GoogleFonts.inter(
-              fontSize: 16,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w600,
               color: AppTheme.primaryBlue,
             ),

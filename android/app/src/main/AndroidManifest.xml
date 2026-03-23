@@ -20,6 +20,8 @@
     <!-- Notification permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
 
     <!-- Wake lock for background tasks (optional, if needed) -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
@@ -37,7 +39,7 @@
 
     <supports-screens android:resizeable="true" android:smallScreens="true" android:normalScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true" />
 
-    <application android:label="Unnati Freelancer" android:name="${applicationName}" android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true" android:usesCleartextTraffic="true" android:enableOnBackInvokedCallback="true" android:largeHeap="true" android:hardwareAccelerated="true" android:supportsRtl="true" android:resizeableActivity="true">
+    <application android:label="Earnify" android:name="${applicationName}" android:icon="@mipmap/launcher_icon" android:requestLegacyExternalStorage="true" android:usesCleartextTraffic="true" android:enableOnBackInvokedCallback="true" android:largeHeap="true" android:hardwareAccelerated="true" android:supportsRtl="true" android:resizeableActivity="true">
 
         <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize" android:screenOrientation="portrait">
 

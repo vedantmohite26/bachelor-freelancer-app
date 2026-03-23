@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
@@ -57,15 +58,15 @@ class ChatListScreen extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.chat_bubble_outline,
-                    size: 64,
+                    size: 64.sp,
                     color: Theme.of(context).colorScheme.outlineVariant,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     "No messages yet",
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                     ),
                   ),
                 ],
@@ -74,9 +75,9 @@ class ChatListScreen extends StatelessWidget {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             itemCount: chats.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            separatorBuilder: (context, index) => SizedBox(height: 16.h),
             itemBuilder: (context, index) {
               final chat = chats[index];
               // Ideally we pass the name, but for now we'll let ChatScreen fetch it or show generic
@@ -153,10 +154,10 @@ class _ChatListItem extends StatelessWidget {
         final profilePic = user?['profilePic'];
 
         return Container(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
             color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.w),
             boxShadow: [
               BoxShadow(
                 color: colorScheme.shadow.withValues(alpha: 0.02),
@@ -174,7 +175,7 @@ class _ChatListItem extends StatelessWidget {
                 backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.1),
                 fallbackIconColor: AppTheme.primaryBlue,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,14 +189,14 @@ class _ChatListItem extends StatelessWidget {
                         ),
                         Text(
                           time,
-                          style: const TextStyle(
-                            fontSize: 12,
+                          style: TextStyle(
+                            fontSize: 12.sp,
                             color: AppTheme.textLight,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       message,
                       maxLines: 1,

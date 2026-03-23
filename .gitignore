@@ -49,6 +49,7 @@ app.*.map.json
 **/ .env
 **/*.env
 android/app/src/main/res/values/secrets.xml
+admin-dashboard/admin-config.js
 
 # Python
 __pycache__/

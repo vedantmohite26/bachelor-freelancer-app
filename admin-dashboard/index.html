@@ -278,7 +278,9 @@
       measurementId: "REDACTED_MEASUREMENT_ID"
     };
 
-    const app = initializeApp(firebaseConfig);
+    // If an `admin-config.js` was generated from `.env`, use that; otherwise fall back to firebaseConfig
+    const effectiveConfig = (window && window.FIREBASE_CONFIG) ? window.FIREBASE_CONFIG : firebaseConfig;
+    const app = initializeApp(effectiveConfig);
     const db = getFirestore(app);
 
     // Update Firebase status

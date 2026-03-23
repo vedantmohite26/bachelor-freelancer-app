@@ -266,15 +266,16 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, collection, getDocs, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // Firebase config
+    // Firebase config — secrets redacted for public repository
+    // Set these values in your hosting environment or a local config file before deploying.
     const firebaseConfig = {
-      apiKey: "REDACTED_KEY",
+      apiKey: "REDACTED_GOOGLE_API_KEY",
       authDomain: "unnati-freelance.firebaseapp.com",
       projectId: "unnati-freelance",
       storageBucket: "unnati-freelance.firebasestorage.app",
       messagingSenderId: "968875845819",
-      appId: "1:968875845819:web:2548d643fdf1d8e26da19e",
-      measurementId: "G-2QY2BC44GJ"
+      appId: "REDACTED_FIREBASE_APP_ID",
+      measurementId: "REDACTED_MEASUREMENT_ID"
     };
 
     const app = initializeApp(firebaseConfig);

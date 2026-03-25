@@ -2,9 +2,39 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from huggingface_hub import InferenceClient
 import os
+import hashlib
+import json
+import re
+import threading
+from collections import OrderedDict
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Simple Thread-safe LRU Cache
+class LRUCache:
+    def __init__(self, capacity: int = 100):
+        self.cache = OrderedDict()
+        self.capacity = capacity
+        self.lock = threading.Lock()
+
+    def get(self, key: str):
+        with self.lock:
+            if key not in self.cache:
+                return None
+            self.cache.move_to_end(key)
+            return self.cache[key]
+
+    def put(self, key: str, value: str):
+        with self.lock:
+            if key in self.cache:
+                self.cache.move_to_end(key)
+            self.cache[key] = value
+            if len(self.cache) > self.capacity:
+                self.cache.popitem(last=False)
+
+# Global Cache Instance
+ai_cache = LRUCache(capacity=100)
 
 app = FastAPI()
 
@@ -24,10 +54,30 @@ class FinanceRequest(BaseModel):
 def home():
     return {"status": "online", "message": "Financial Assistant Backend is Running"}
 
+def get_cache_key(request: FinanceRequest):
+    # Normalize timestamps to increase cache hit rate
+    # Pattern: "System Date/Time: YYYY-MM-DD HH:MM" -> "System Date/Time: YYYY-MM-DD HH"
+    normalized_expenses = re.sub(
+        r"(System Date/Time: \d{4}-\d{1,2}-\d{1,2} \d{1,2}):\d+",
+        r"\1:00",
+        request.expenses
+    )
+    # Using request.model_dump() for consistent serialization
+    request_data = request.model_dump()
+    request_data['expenses'] = normalized_expenses
+    return hashlib.md5(json.dumps(request_data, sort_keys=True).encode()).hexdigest()
+
 @app.post("/finance-ai")
 def finance_ai(request: FinanceRequest):
     print(f"Received request: {request.message}")
     print(f"App Data: {request.app_data}")  # Debug print
+
+    # Check cache
+    cache_key = get_cache_key(request)
+    cached_response = ai_cache.get(cache_key)
+    if cached_response:
+        print(f"Cache hit for key: {cache_key}")
+        return cached_response
     
     # Format history for context
     history_context = ""
@@ -46,12 +96,17 @@ def finance_ai(request: FinanceRequest):
     ]
 
     try:
+        if not HF_API_KEY:
+            return {"error": "Error: HF_API_KEY is missing."}
+
         response = client.chat_completion(
             messages,
             max_tokens=512,
             stream=False
         )
-        return response.choices[0].message.content
+        ai_response = response.choices[0].message.content
+        ai_cache.put(cache_key, ai_response)
+        return ai_response
     except Exception as e:
         return {"error": f"Error: {str(e)}"}
 

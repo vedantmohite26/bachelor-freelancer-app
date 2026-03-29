@@ -131,23 +131,30 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
                 );
               }
 
+              final now = DateTime.now();
+              final metrics = _DashboardMetrics(
+                transactions: transactions,
+                now: now,
+                selectedDate: _selectedDate,
+              );
+
               return SingleChildScrollView(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Column(
                   children: [
-                    _buildTopSummaryCard(budget, transactions),
+                    _buildTopSummaryCard(budget),
                     SizedBox(height: 16.h),
-                    _buildSmartDailyBudgetCard(budget, transactions),
+                    _buildSmartDailyBudgetCard(budget, metrics, now),
                     SizedBox(height: 16.h),
-                    _buildHealthBarCard(budget, transactions),
+                    _buildHealthBarCard(budget, metrics),
                     SizedBox(height: 24.h),
-                    _buildDailySpendingTrend(transactions),
+                    _buildDailySpendingTrend(metrics),
                     SizedBox(height: 24.h),
-                    _buildIncomeSpentSummary(budget, transactions),
+                    _buildIncomeSpentSummary(budget, metrics),
                     SizedBox(height: 24.h),
-                    _buildTopCategories(transactions),
+                    _buildTopCategories(metrics),
                     SizedBox(height: 32.h),
-                    _buildDailyExplorer(transactions),
+                    _buildDailyExplorer(metrics),
                     SizedBox(height: 100.h), // Space for FAB
                   ],
                 ),
@@ -160,10 +167,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
     );
   }
 
-  Widget _buildTopSummaryCard(
-    Budget? budget,
-    List<FinanceTransaction> transactions,
-  ) {
+  Widget _buildTopSummaryCard(Budget? budget) {
     final monthlyIncome = budget?.monthlyIncome ?? 0.0;
     final recurringExpenses = budget?.recurringExpenses ?? 0.0;
 
@@ -376,9 +380,9 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
 
   Widget _buildSmartDailyBudgetCard(
     Budget? budget,
-    List<FinanceTransaction> transactions,
+    _DashboardMetrics metrics,
+    DateTime now,
   ) {
-    final now = DateTime.now();
     final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
     final remainingDays = daysInMonth - now.day + 1;
     final elapsedDays = now.day;
@@ -393,26 +397,9 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
     final maxSpendable = monthlyLimit - monthlySavingsGoal;
 
     // 3. Spent So Far (Non-recurring only)
-    final spentThisMonth = transactions
-        .where(
-          (tx) =>
-              tx.type == TransactionType.expense &&
-              tx.date.month == now.month &&
-              tx.date.year == now.year &&
-              !tx.isRecurring,
-        )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+    final spentThisMonth = metrics.spentThisMonth;
 
-    final spentToday = transactions
-        .where(
-          (tx) =>
-              tx.type == TransactionType.expense &&
-              tx.date.year == now.year &&
-              tx.date.month == now.month &&
-              tx.date.day == now.day &&
-              !tx.isRecurring,
-        )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+    final spentToday = metrics.spentToday;
 
     // 4. Remaining Spendable
     final remainingSpendable = maxSpendable - spentThisMonth;
@@ -752,26 +739,14 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
     );
   }
 
-  Widget _buildHealthBarCard(
-    Budget? budget,
-    List<FinanceTransaction> transactions,
-  ) {
-    final now = DateTime.now();
+  Widget _buildHealthBarCard(Budget? budget, _DashboardMetrics metrics) {
     final monthlyLimit = budget?.monthlyLimit ?? 18000.0;
     final savingsTargetPercent = budget?.savingsTargetPercent ?? 30.0;
 
     final goalSavings = (monthlyLimit * savingsTargetPercent / 100);
     final recurringExpenses = budget?.recurringExpenses ?? 0.0;
 
-    final spentThisMonthNonRecurring = transactions
-        .where(
-          (tx) =>
-              tx.type == TransactionType.expense &&
-              tx.date.month == now.month &&
-              tx.date.year == now.year &&
-              !tx.isRecurring,
-        )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+    final spentThisMonthNonRecurring = metrics.spentThisMonth;
 
     final totalIncome =
         budget?.monthlyIncome ?? (recurringExpenses + monthlyLimit);
@@ -945,21 +920,9 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
     );
   }
 
-  Widget _buildDailySpendingTrend(List<FinanceTransaction> transactions) {
+  Widget _buildDailySpendingTrend(_DashboardMetrics metrics) {
     final now = DateTime.now();
-    final List<double> dailySpending = List.generate(7, (index) {
-      final date = now.subtract(Duration(days: 6 - index));
-      return transactions
-          .where(
-            (tx) =>
-                tx.type == TransactionType.expense &&
-                tx.date.day == date.day &&
-                tx.date.month == date.month &&
-                tx.date.year == date.year &&
-                !tx.isRecurring,
-          )
-          .fold(0.0, (sum, tx) => sum + tx.amount);
-    });
+    final List<double> dailySpending = metrics.dailySpendingTrend;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1047,33 +1010,14 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
     );
   }
 
-  Widget _buildIncomeSpentSummary(
-    Budget? budget,
-    List<FinanceTransaction> transactions,
-  ) {
-    final now = DateTime.now();
+  Widget _buildIncomeSpentSummary(Budget? budget, _DashboardMetrics metrics) {
     final monthlyLimit = budget?.monthlyLimit ?? 0.0;
 
     // Total income this month (including app earnings)
-    final income = transactions
-        .where(
-          (tx) =>
-              tx.type == TransactionType.income &&
-              tx.date.month == now.month &&
-              tx.date.year == now.year,
-        )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+    final income = metrics.incomeThisMonth;
 
     // Total spent this month (non-recurring)
-    final spent = transactions
-        .where(
-          (tx) =>
-              tx.type == TransactionType.expense &&
-              tx.date.month == now.month &&
-              tx.date.year == now.year &&
-              !tx.isRecurring,
-        )
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+    final spent = metrics.spentThisMonth;
 
     final availableBudget = (monthlyLimit + income) - spent;
 
@@ -1174,13 +1118,8 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
     );
   }
 
-  Widget _buildTopCategories(List<FinanceTransaction> transactions) {
-    final Map<String, double> categories = {};
-    for (var tx in transactions.where(
-      (tx) => tx.type == TransactionType.expense,
-    )) {
-      categories[tx.category] = (categories[tx.category] ?? 0.0) + tx.amount;
-    }
+  Widget _buildTopCategories(_DashboardMetrics metrics) {
+    final Map<String, double> categories = metrics.categoryTotals;
     final sortedCategories = categories.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final top3 = sortedCategories.take(3).toList();
@@ -1279,7 +1218,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
     );
   }
 
-  Widget _buildDailyExplorer(List<FinanceTransaction> transactions) {
+  Widget _buildDailyExplorer(_DashboardMetrics metrics) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1331,7 +1270,7 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
         ),
         SizedBox(height: 8.h),
         _buildDateScroller(),
-        _buildDailyTransactions(transactions),
+        _buildDailyTransactions(metrics),
       ],
     );
   }
@@ -1407,15 +1346,8 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
     );
   }
 
-  Widget _buildDailyTransactions(List<FinanceTransaction> transactions) {
-    final dailyTx = transactions
-        .where(
-          (tx) =>
-              tx.date.day == _selectedDate.day &&
-              tx.date.month == _selectedDate.month &&
-              tx.date.year == _selectedDate.year,
-        )
-        .toList();
+  Widget _buildDailyTransactions(_DashboardMetrics metrics) {
+    final dailyTx = metrics.selectedDateTransactions;
 
     if (dailyTx.isEmpty) {
       return Center(
@@ -1509,6 +1441,91 @@ class _FinanceDashboardScreenState extends State<FinanceDashboardScreen> {
         );
       },
       child: const Icon(Icons.add),
+    );
+  }
+}
+
+class _DashboardMetrics {
+  final double spentThisMonth;
+  final double spentToday;
+  final double incomeThisMonth;
+  final List<double> dailySpendingTrend;
+  final Map<String, double> categoryTotals;
+  final List<FinanceTransaction> selectedDateTransactions;
+
+  _DashboardMetrics._({
+    required this.spentThisMonth,
+    required this.spentToday,
+    required this.incomeThisMonth,
+    required this.dailySpendingTrend,
+    required this.categoryTotals,
+    required this.selectedDateTransactions,
+  });
+
+  factory _DashboardMetrics({
+    required List<FinanceTransaction> transactions,
+    required DateTime now,
+    required DateTime selectedDate,
+  }) {
+    double spentThisMonth = 0.0;
+    double spentToday = 0.0;
+    double incomeThisMonth = 0.0;
+    final List<double> dailySpendingTrend = List.generate(7, (_) => 0.0);
+    final Map<String, double> categoryTotals = {};
+    final List<FinanceTransaction> selectedDateTransactions = [];
+
+    // Reset date parts for accurate comparison
+    final today = DateTime(now.year, now.month, now.day);
+    final weekAgo = today.subtract(const Duration(days: 6));
+
+    for (final tx in transactions) {
+      final txDate = DateTime(tx.date.year, tx.date.month, tx.date.day);
+      final isSameMonth = tx.date.year == now.year && tx.date.month == now.month;
+
+      // 1. Monthly & Daily Totals (Non-recurring expenses)
+      if (tx.type == TransactionType.expense && !tx.isRecurring) {
+        if (isSameMonth) {
+          spentThisMonth += tx.amount;
+          if (txDate.isAtSameMomentAs(today)) {
+            spentToday += tx.amount;
+          }
+        }
+
+        // 2. Daily Spending Trend (Last 7 days)
+        if (!txDate.isBefore(weekAgo) && !txDate.isAfter(today)) {
+          final difference = today.difference(txDate).inDays;
+          if (difference >= 0 && difference < 7) {
+            dailySpendingTrend[6 - difference] += tx.amount;
+          }
+        }
+      }
+
+      // 3. Monthly Income
+      if (tx.type == TransactionType.income && isSameMonth) {
+        incomeThisMonth += tx.amount;
+      }
+
+      // 4. Category Totals (All expenses)
+      if (tx.type == TransactionType.expense) {
+        categoryTotals[tx.category] =
+            (categoryTotals[tx.category] ?? 0.0) + tx.amount;
+      }
+
+      // 5. Selected Date Transactions
+      if (tx.date.year == selectedDate.year &&
+          tx.date.month == selectedDate.month &&
+          tx.date.day == selectedDate.day) {
+        selectedDateTransactions.add(tx);
+      }
+    }
+
+    return _DashboardMetrics._(
+      spentThisMonth: spentThisMonth,
+      spentToday: spentToday,
+      incomeThisMonth: incomeThisMonth,
+      dailySpendingTrend: dailySpendingTrend,
+      categoryTotals: categoryTotals,
+      selectedDateTransactions: selectedDateTransactions,
     );
   }
 }

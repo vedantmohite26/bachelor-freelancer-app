@@ -1,0 +1,3 @@
+## 2024-05-22 - [Optimized Helper Reviews Screen]
+**Learning:** Found the `shrinkWrap: true` + `SingleChildScrollView` anti-pattern in `HelperReviewsScreen`. This pattern disables virtualization for lists, forcing Flutter to build all items immediately (O(N)), which degrades performance as the list grows.
+**Action:** Replace `SingleChildScrollView` and `ListView(shrinkWrap: true)` with `CustomScrollView` and `Slivers` (e.g., `SliverList`) to enable proper virtualization and lazy loading (O(visible)). Wrap non-sliver components in `SliverToBoxAdapter`. Use `SliverFillRemaining` for centered states (loading/error/empty) inside the scroll view.

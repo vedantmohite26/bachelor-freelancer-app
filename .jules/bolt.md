@@ -1,0 +1,3 @@
+## 2024-05-22 - [Refactor `HelperReviewsScreen` for UI Virtualization]
+**Learning:** Using `SingleChildScrollView` with a `shrinkWrap: true` `ListView` is an O(N) complexity anti-pattern that builds all list items simultaneously. For screens with potentially long lists like reviews, this leads to significant initial build times and memory overhead.
+**Action:** Replace `SingleChildScrollView` + `shrinkWrap: true` `ListView` with `CustomScrollView` and `SliverList`. This enables UI virtualization (O(visible) complexity), which is especially critical when list items (like `ReviewCard`) contain expensive children such as `FutureBuilder` or `CachedNetworkAvatar`.

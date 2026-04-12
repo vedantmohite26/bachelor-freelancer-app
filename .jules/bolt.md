@@ -1,0 +1,3 @@
+## 2024-05-24 - Optimizing Long Lists with Virtualization and Service Caching
+**Learning:** The `shrinkWrap: true` pattern in Flutter is a common bottleneck that forces the entire list to render immediately (O(N)), which degrades performance as data grows. Combining UI virtualization (`SliverList`) with service-layer caching (`Map` in `UserService`) provides a powerful two-pronged boost by reducing both widget build time and redundant network/IPC overhead.
+**Action:** Always prefer `CustomScrollView` + `SliverList` for dynamic lists. When a list item performs its own data fetching (e.g., fetching a reviewer's profile in a `ReviewCard`), implement in-memory caching in the underlying service to mitigate the N+1 problem.

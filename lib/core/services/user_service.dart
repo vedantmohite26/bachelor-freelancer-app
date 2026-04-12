@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // In-memory cache to prevent redundant Firestore fetches
+  // Key: userId, Value: Profile Data
+  final Map<String, Map<String, dynamic>> _userCache = {};
+
   // Create user profile with search optimization and email uniqueness enforcement
   Future<void> createUserProfile({
     required String userId,
@@ -55,12 +59,24 @@ class UserService {
     await batch.commit();
   }
 
-  // Get user profile
+  // Get user profile with caching to mitigate N+1 fetch issues in lists
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     if (userId.isEmpty) return null;
+
+    // Return from cache if available
+    if (_userCache.containsKey(userId)) {
+      return _userCache[userId];
+    }
+
     final doc = await _firestore.collection('users').doc(userId).get();
     if (!doc.exists) return null;
-    return {...doc.data()!, 'id': doc.id};
+
+    final profile = {...doc.data()!, 'id': doc.id};
+
+    // Store in cache
+    _userCache[userId] = profile;
+
+    return profile;
   }
 
   // Get user profile stream
@@ -194,7 +210,7 @@ class UserService {
     });
   }
 
-  // Update user profile
+  // Update user profile and clear cache
   Future<void> updateProfile(
     String userId,
     Map<String, dynamic> updates,
@@ -203,6 +219,9 @@ class UserService {
       ...updates,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    // Invalidate cache entry to ensure consistency
+    _userCache.remove(userId);
   }
 
   // Reset daily earnings (should be called at midnight)

@@ -1,0 +1,3 @@
+## 2026-04-18 - [In-memory Caching for User Profiles]
+**Learning:** Adding a basic in-memory cache to `UserService.getUserProfile` significantly reduces N+1 Firestore fetch issues in lists (like reviews or leaderboards) where the same user's profile is requested multiple times. However, a raw `Map` cache leads to stale data and memory leaks.
+**Action:** Always implement caches with a TTL (Time-to-Live) and a size limit (e.g., 100 entries) in mobile apps. Ensure all local update methods invalidate the cache for consistency, while accepting that cross-device updates will eventually sync after the TTL expires.

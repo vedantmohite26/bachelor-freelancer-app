@@ -39,9 +39,10 @@ class ReviewCard extends StatelessWidget {
 
     final dateStr = DateFormat('MMM d, yyyy').format(date);
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(16.w),
+    return RepaintBoundary(
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16.h),
+        padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16.w),
@@ -159,6 +160,6 @@ class ReviewCard extends StatelessWidget {
           ],
         ],
       ),
-    );
+    ));
   }
 }

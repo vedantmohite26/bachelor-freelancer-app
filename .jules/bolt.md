@@ -1,0 +1,3 @@
+## 2026-02-21 - [Optimized Review List Performance and Added User Profile Caching]
+**Learning:** The `shrinkWrap: true` anti-pattern in `ListView` combined with `SingleChildScrollView` causes O(N) widget building and prevents virtualization, which is a major performance bottleneck for long lists like reviews or transactions. Additionally, N+1 Firestore fetch patterns in list items (e.g., fetching a user profile for each review) can be significantly mitigated using a simple in-memory cache with TTL.
+**Action:** Always prefer `CustomScrollView` with `SliverList` for dynamic lists to enable virtualization. Implement in-memory caching for frequently accessed, relatively static data like user profiles to reduce redundant network calls.

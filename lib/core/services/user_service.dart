@@ -1,7 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+class _CachedUser {
+  final Map<String, dynamic> data;
+  final DateTime expiry;
+
+  _CachedUser(this.data, this.expiry);
+
+  bool get isExpired => DateTime.now().isAfter(expiry);
+}
+
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // In-memory cache for user profiles to mitigate N+1 fetch performance issues
+  final Map<String, _CachedUser> _userCache = {};
+  static const _cacheDuration = Duration(minutes: 5);
 
   // Create user profile with search optimization and email uniqueness enforcement
   Future<void> createUserProfile({
@@ -55,12 +68,28 @@ class UserService {
     await batch.commit();
   }
 
-  // Get user profile
+  // Get user profile - Optimized with in-memory caching
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     if (userId.isEmpty) return null;
+
+    // Check cache first
+    final cached = _userCache[userId];
+    if (cached != null && !cached.isExpired) {
+      return cached.data;
+    }
+
     final doc = await _firestore.collection('users').doc(userId).get();
     if (!doc.exists) return null;
-    return {...doc.data()!, 'id': doc.id};
+
+    final userData = {...doc.data()!, 'id': doc.id};
+
+    // Store in cache
+    _userCache[userId] = _CachedUser(
+      userData,
+      DateTime.now().add(_cacheDuration),
+    );
+
+    return userData;
   }
 
   // Get user profile stream
@@ -74,6 +103,7 @@ class UserService {
 
   // Update online status
   Future<void> updateOnlineStatus(String userId, bool isOnline) async {
+    _userCache.remove(userId); // Invalidate cache
     await _firestore.collection('users').doc(userId).update({
       'isOnline': isOnline,
       'lastSeen': FieldValue.serverTimestamp(),
@@ -187,6 +217,7 @@ class UserService {
 
   // Update user skills with search optimization
   Future<void> updateSkills(String userId, List<String> skills) async {
+    _userCache.remove(userId); // Invalidate cache
     final skillsLower = skills.map((s) => s.toLowerCase()).toList();
     await _firestore.collection('users').doc(userId).update({
       'skills': skills,
@@ -199,6 +230,7 @@ class UserService {
     String userId,
     Map<String, dynamic> updates,
   ) async {
+    _userCache.remove(userId); // Invalidate cache
     await _firestore.collection('users').doc(userId).update({
       ...updates,
       'updatedAt': FieldValue.serverTimestamp(),
@@ -207,6 +239,7 @@ class UserService {
 
   // Reset daily earnings (should be called at midnight)
   Future<void> resetDailyEarnings(String userId) async {
+    _userCache.remove(userId); // Invalidate cache
     await _firestore.collection('users').doc(userId).update({
       'todaysEarnings': 0.0,
     });
@@ -217,6 +250,7 @@ class UserService {
     String userId,
     Map<String, bool> settings,
   ) async {
+    _userCache.remove(userId); // Invalidate cache
     await _firestore.collection('users').doc(userId).update({
       'safetySettings': settings,
     });
@@ -227,6 +261,7 @@ class UserService {
     String userId,
     Map<String, String> contact,
   ) async {
+    _userCache.remove(userId); // Invalidate cache
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayUnion([contact]),
     });
@@ -237,6 +272,7 @@ class UserService {
     String userId,
     Map<String, String> contact,
   ) async {
+    _userCache.remove(userId); // Invalidate cache
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayRemove([contact]),
     });

@@ -1,0 +1,3 @@
+## 2026-04-21 - Replacing shrinkWrap: true with CustomScrollView for Virtualization
+**Learning:** Using `shrinkWrap: true` on `ListView` inside a `SingleChildScrollView` is a common performance anti-pattern in Flutter. It disables list virtualization, forcing the framework to layout and paint all items at once (O(N)), which degrades performance and increases memory usage as the list grows.
+**Action:** Always prefer `CustomScrollView` with `SliverList` or `SliverFixedExtentList` for lists within a scrollable view to maintain virtualization (O(visible)). Use `SliverToBoxAdapter` for non-sliver content and `SliverFillRemaining(hasScrollBody: false, ...)` for centered placeholders (loading/empty states).

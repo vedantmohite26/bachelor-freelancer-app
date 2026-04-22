@@ -114,34 +114,40 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           return _buildPlaceholder("No helpers found yet.");
         }
 
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 20.h),
-              // Podium (Top 3)
-              if (leaderboard.isNotEmpty) _buildPodium(leaderboard),
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
 
-              SizedBox(height: 20.h),
+            // 1. Podium (Top 3)
+            if (leaderboard.isNotEmpty)
+              SliverToBoxAdapter(child: _buildPodium(leaderboard)),
 
-              // List (Rank 4+)
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20.w,
-                  vertical: 20.h,
-                ),
+            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+
+            // 2. List (Rank 4+) Header & Container Background
+            SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.only(top: 20.h),
                 decoration: BoxDecoration(
-                  // Rounded top corners
                   color: theme.colorScheme.surfaceContainerHigh,
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(30),
                   ),
                 ),
+              ),
+            ),
+
+            // 3. Virtualised Ranking List
+            SliverFillRemaining(
+              hasScrollBody: true,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHigh,
+                ),
                 child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: leaderboard.length > 3
-                      ? leaderboard.length - 3
-                      : 0,
+                  padding: EdgeInsets.only(bottom: 20.h),
+                  itemCount: leaderboard.length > 3 ? leaderboard.length - 3 : 0,
                   itemBuilder: (context, index) {
                     final user = leaderboard[index + 3];
                     return RepaintBoundary(
@@ -160,8 +166,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   },
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );

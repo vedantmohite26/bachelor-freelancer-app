@@ -1,0 +1,3 @@
+## 2026-06-18 - Virtualization of Helper Reviews List
+**Learning:** Found that `HelperReviewsScreen` utilized the `shrinkWrap: true` and `NeverScrollableScrollPhysics()` anti-pattern within a `SingleChildScrollView`. This forces Flutter to build and layout the entire list of reviews at once, leading to O(N) performance instead of O(visible) virtualization.
+**Action:** Refactored the screen to use `CustomScrollView` with `SliverToBoxAdapter` for headers and `SliverList` for the review list. This ensures only visible items are built, significantly improving performance for long lists. Similar patterns were identified in `wallet_screen.dart`, `leaderboard_screen.dart`, and `safety_center_screen.dart` for future optimization.

@@ -5,7 +5,7 @@ import 'package:freelancer/core/services/rating_service.dart';
 import 'package:freelancer/features/ratings/widgets/review_card.dart';
 import 'package:freelancer/features/ratings/widgets/rating_summary_card.dart';
 
-class HelperReviewsScreen extends StatelessWidget {
+class HelperReviewsScreen extends StatefulWidget {
   final String helperId;
   final double averageRating;
   final int reviewCount;
@@ -18,8 +18,35 @@ class HelperReviewsScreen extends StatelessWidget {
   });
 
   @override
+  State<HelperReviewsScreen> createState() => _HelperReviewsScreenState();
+}
+
+class _HelperReviewsScreenState extends State<HelperReviewsScreen> {
+  late Stream<List<Map<String, dynamic>>> _reviewsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReviews();
+  }
+
+  @override
+  void didUpdateWidget(HelperReviewsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.helperId != widget.helperId) {
+      _loadReviews();
+    }
+  }
+
+  void _loadReviews() {
+    _reviewsStream = Provider.of<RatingService>(
+      context,
+      listen: false,
+    ).getHelperRatings(widget.helperId);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final ratingService = Provider.of<RatingService>(context, listen: false);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -30,62 +57,50 @@ class HelperReviewsScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Summary Section
-            RatingSummaryCard(
-              helperId: helperId,
-              averageRating: averageRating,
-              reviewCount: reviewCount,
-            ),
-            Divider(height: 1.h),
-            // Reviews List
-            StreamBuilder<List<Map<String, dynamic>>>(
-              stream: ratingService.getHelperRatings(helperId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.w),
-                      child: const CircularProgressIndicator(),
-                    ),
-                  );
-                }
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: _reviewsStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.w),
-                      child: const Text('Error loading reviews'),
-                    ),
-                  );
-                }
+          if (snapshot.hasError) {
+            return const Center(child: Text('Error loading reviews'));
+          }
 
-                final reviews = snapshot.data ?? [];
+          final reviews = snapshot.data ?? [];
 
-                if (reviews.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.w),
-                      child: const Text('No reviews found'),
-                    ),
-                  );
-                }
+          return CustomScrollView(
+            slivers: [
+              // Summary Section
+              SliverToBoxAdapter(
+                child: RatingSummaryCard(
+                  helperId: widget.helperId,
+                  averageRating: widget.averageRating,
+                  reviewCount: widget.reviewCount,
+                ),
+              ),
+              SliverToBoxAdapter(child: Divider(height: 1.h)),
 
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+              // Reviews List (Virtualized)
+              if (reviews.isEmpty)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: Text('No reviews found')),
+                )
+              else
+                SliverPadding(
                   padding: EdgeInsets.all(16.w),
-                  itemCount: reviews.length,
-                  itemBuilder: (context, index) {
-                    return ReviewCard(review: reviews[index]);
-                  },
-                );
-              },
-            ),
-          ],
-        ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => ReviewCard(review: reviews[index]),
+                      childCount: reviews.length,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -15,9 +15,13 @@ class WalletScreen extends StatefulWidget {
 }
 
 class _WalletScreenState extends State<WalletScreen> {
+  late final PageController _pageController;
+
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(viewportFraction: 0.9);
+
     // Listen for auth changes to init wallet
     final authService = Provider.of<AuthService>(context, listen: false);
 
@@ -49,12 +53,28 @@ class _WalletScreenState extends State<WalletScreen> {
   void dispose() {
     final authService = Provider.of<AuthService>(context, listen: false);
     authService.removeListener(_authListener);
+    _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
+    // Bolt Optimization: Use context.select to narrow rebuild scope.
+    // This ensures WalletScreen only rebuilds when relevant wallet data changes.
+    final walletData = context.select<WalletService, Map<String, dynamic>>(
+      (wallet) => {
+        'balance': wallet.balance,
+        'coins': wallet.coins,
+        'transactions': wallet.transactions,
+      },
+    );
+
+    final double balance = walletData['balance'];
+    final int coins = walletData['coins'];
+    final List<Map<String, dynamic>> transactions = walletData['transactions'];
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
@@ -79,95 +99,109 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(24.w),
-        child: Column(
-          children: [
-            // 1. Balance Cards
-            SizedBox(
-              height: 180.h,
-              child: Consumer<WalletService>(
-                builder: (context, wallet, child) {
-                  return PageView(
-                    controller: PageController(viewportFraction: 0.9),
-                    padEnds: false,
+      // Bolt Optimization: Replaced SingleChildScrollView with CustomScrollView
+      // to enable virtualization for the transaction list.
+      // Expected Impact: Reduces initial build time from O(N) to O(visible)
+      // and significantly lowers memory usage for long transaction histories.
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(24.w, 24.w, 24.w, 0),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  // 1. Balance Cards
+                  SizedBox(
+                    height: 180.h,
+                    child: PageView(
+                      controller: _pageController,
+                      padEnds: false,
+                      children: [
+                        _BalanceCard(
+                          title: "Earnings (Cash)",
+                          amount: "₹${balance.toStringAsFixed(2)}",
+                          color: AppTheme.growthGreen,
+                          icon: Icons.attach_money,
+                          buttonText: "Withdraw",
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Withdrawal feature coming soon!'),
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(width: 16.w),
+                        _BalanceCard(
+                          title: "Student Coins",
+                          amount: "$coins C",
+                          color: AppTheme.coinYellow,
+                          icon: Icons.monetization_on_rounded, // Coin icon
+                          buttonText: "Spend in Shop",
+                          textColor: Colors.black, // Better contrast on yellow
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CoinShopScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 32.h),
+
+                  // 2. Recent Activity Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _BalanceCard(
-                        title: "Earnings (Cash)",
-                        amount: "₹${wallet.balance.toStringAsFixed(2)}",
-                        color: AppTheme.growthGreen,
-                        icon: Icons.attach_money,
-                        buttonText: "Withdraw",
-                        onTap: () {
+                      Text(
+                        "Recent Activity",
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      TextButton(
+                        onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Withdrawal feature coming soon!'),
+                              content:
+                                  Text('Full transaction history coming soon!'),
                             ),
                           );
                         },
-                      ),
-                      SizedBox(width: 16.w),
-                      _BalanceCard(
-                        title: "Student Coins",
-                        amount: "${wallet.coins} C",
-                        color: AppTheme.coinYellow,
-                        icon: Icons.monetization_on_rounded, // Coin icon
-                        buttonText: "Spend in Shop",
-                        textColor: Colors.black, // Better contrast on yellow
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const CoinShopScreen(),
-                            ),
-                          );
-                        },
+                        child: const Text("See All"),
                       ),
                     ],
-                  );
-                },
+                  ),
+                  SizedBox(height: 8.h),
+                ],
               ),
             ),
-            SizedBox(height: 32.h),
-
-            // 2. Recent Activity Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Recent Activity",
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+          ),
+          if (transactions.isEmpty)
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              sliver: SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0.w),
+                  child: const Text("No recent transactions"),
                 ),
-                TextButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Full transaction history coming soon!'),
-                      ),
-                    );
-                  },
-                  child: const Text("See All"),
-                ),
-              ],
-            ),
-            SizedBox(height: 8.h),
-
-            Consumer<WalletService>(
-              builder: (context, wallet, child) {
-                if (wallet.transactions.isEmpty) {
-                  return Padding(
-                    padding: EdgeInsets.all(16.0.w),
-                    child: const Text("No recent transactions"),
-                  );
-                }
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: wallet.transactions.length,
-                  itemBuilder: (context, index) {
-                    final txn = wallet.transactions[index];
+              ),
+            )
+          else
+            // Bolt Optimization: Replaced shrink-wrapped ListView with SliverList.
+            // This enables virtualization where items are built/rendered only when visible.
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 24.w),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final txn = transactions[index];
                     final amount = (txn['amount'] as num).toDouble();
                     final isCoin = txn['isCoin'] as bool? ?? false;
                     final isPositive = amount > 0;
@@ -181,11 +215,11 @@ class _WalletScreenState extends State<WalletScreen> {
                       isCoin: isCoin,
                     );
                   },
-                );
-              },
+                  childCount: transactions.length,
+                ),
+              ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

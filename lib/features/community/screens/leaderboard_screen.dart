@@ -114,37 +114,37 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           return _buildPlaceholder("No helpers found yet.");
         }
 
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 20.h),
-              // Podium (Top 3)
-              if (leaderboard.isNotEmpty) _buildPodium(leaderboard),
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+            // Podium (Top 3)
+            if (leaderboard.isNotEmpty)
+              SliverToBoxAdapter(child: _buildPodium(leaderboard)),
 
-              SizedBox(height: 20.h),
+            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
 
-              // List (Rank 4+)
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20.w,
-                  vertical: 20.h,
-                ),
+            // List (Rank 4+) Header
+            SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.only(top: 20.h),
                 decoration: BoxDecoration(
-                  // Rounded top corners
                   color: theme.colorScheme.surfaceContainerHigh,
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(30),
                   ),
                 ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: leaderboard.length > 3
-                      ? leaderboard.length - 3
-                      : 0,
-                  itemBuilder: (context, index) {
-                    final user = leaderboard[index + 3];
-                    return RepaintBoundary(
+              ),
+            ),
+
+            // List Items
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final user = leaderboard[index + 3];
+                  return Container(
+                    color: theme.colorScheme.surfaceContainerHigh,
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: RepaintBoundary(
                       child: _RankingCard(
                         rank: index + 4,
                         name: user['name'] ?? 'User',
@@ -156,12 +156,19 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                               listen: false,
                             ).user?.uid,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
+                childCount: leaderboard.length > 3 ? leaderboard.length - 3 : 0,
               ),
-            ],
-          ),
+            ),
+
+            // Background extension for short lists
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Container(color: theme.colorScheme.surfaceContainerHigh),
+            ),
+          ],
         );
       },
     );

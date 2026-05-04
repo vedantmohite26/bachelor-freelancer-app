@@ -1,0 +1,3 @@
+## 2026-06-25 - Virtualized Leaderboard List
+**Learning:** The `shrinkWrap: true` and `NeverScrollableScrollPhysics` anti-pattern was used in the `LeaderboardScreen` to embed a `ListView` inside a `SingleChildScrollView`. This disables `ListView`'s built-in virtualization, forcing all items to be built and laid out at once, which leads to O(N) performance instead of O(visible).
+**Action:** Replaced `SingleChildScrollView` with `CustomScrollView` and the nested `ListView` with `SliverList`. This restores virtualization and ensures consistent performance regardless of list size. Used `SliverToBoxAdapter` and `SliverFillRemaining` to maintain the complex background decorations of the original design.

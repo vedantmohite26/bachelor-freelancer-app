@@ -39,125 +39,127 @@ class ReviewCard extends StatelessWidget {
 
     final dateStr = DateFormat('MMM d, yyyy').format(date);
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16.w),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return RepaintBoundary(
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(16.w),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: FutureBuilder<Map<String, dynamic>?>(
-                  future: userService.getUserProfile(seekerId),
-                  builder: (context, snapshot) {
-                    final user = snapshot.data;
-                    final name = user?['name'] ?? 'Verified User';
-                    final photoUrl = user?['photoUrl'] as String?;
-
-                    return Row(
-                      children: [
-                        CachedNetworkAvatar(
-                          imageUrl: photoUrl,
-                          radius: 20,
-                          backgroundColor: colorScheme.primaryContainer,
-                          fallbackIconColor: colorScheme.onPrimaryContainer,
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                name,
-                                style: textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                dateStr,
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFBBF24).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.w),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.star, size: 14.sp, color: const Color(0xFFFBBF24)),
-                    SizedBox(width: 4.w),
-                    Text(
-                      overallRating.toStringAsFixed(1),
-                      style: textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFD97706),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (tags.isNotEmpty) ...[
-            SizedBox(height: 12.h),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: tags
-                  .map(
-                    (tag) => Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 8.w,
-                        vertical: 4.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.secondaryContainer.withValues(
-                          alpha: 0.5,
-                        ),
-                        borderRadius: BorderRadius.circular(6.w),
-                      ),
-                      child: Text(
-                        tag,
-                        style: textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onSecondaryContainer,
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
-          if (feedback != null && feedback.isNotEmpty) ...[
-            SizedBox(height: 12.h),
-            Text(feedback, style: textTheme.bodyMedium),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: FutureBuilder<Map<String, dynamic>?>(
+                    future: userService.getUserProfile(seekerId),
+                    builder: (context, snapshot) {
+                      final user = snapshot.data;
+                      final name = user?['name'] ?? 'Verified User';
+                      final photoUrl = user?['photoUrl'] as String?;
+
+                      return Row(
+                        children: [
+                          CachedNetworkAvatar(
+                            imageUrl: photoUrl,
+                            radius: 20,
+                            backgroundColor: colorScheme.primaryContainer,
+                            fallbackIconColor: colorScheme.onPrimaryContainer,
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name,
+                                  style: textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  dateStr,
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFBBF24).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.w),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.star, size: 14.sp, color: const Color(0xFFFBBF24)),
+                      SizedBox(width: 4.w),
+                      Text(
+                        overallRating.toStringAsFixed(1),
+                        style: textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFD97706),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (tags.isNotEmpty) ...[
+              SizedBox(height: 12.h),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: tags
+                    .map(
+                      (tag) => Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 4.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.secondaryContainer.withValues(
+                            alpha: 0.5,
+                          ),
+                          borderRadius: BorderRadius.circular(6.w),
+                        ),
+                        child: Text(
+                          tag,
+                          style: textTheme.labelSmall?.copyWith(
+                            color: colorScheme.onSecondaryContainer,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+            if (feedback != null && feedback.isNotEmpty) ...[
+              SizedBox(height: 12.h),
+              Text(feedback, style: textTheme.bodyMedium),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

@@ -1,0 +1,3 @@
+## 2026-06-25 - Virtualize Helper Reviews List
+**Learning:** Large lists like helper reviews were being rendered all at once (O(N)) due to the `SingleChildScrollView` + `ListView.builder(shrinkWrap: true)` anti-pattern. This disables Flutter's built-in virtualization. Replacing this with `CustomScrollView` and `SliverList` enables O(visible) rendering, which is critical for performance as the number of reviews grows.
+**Action:** Always prefer `CustomScrollView` and `SliverList`/`SliverGrid` for lists that may grow large. When using `StreamBuilder` inside `CustomScrollView`, ensure it returns sliver-compatible widgets like `SliverList` or `SliverFillRemaining`.

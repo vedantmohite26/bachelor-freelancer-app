@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class RatingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  /// In-memory cache for rating distribution futures to prevent redundant Firestore
+  /// fetches during builds (e.g., in Profile or Review screens).
+  final Map<String, Future<Map<int, int>>> _distributionCache = {};
+
   // Submit rating with validation
   Future<void> submitRating({
     required String helperId,
@@ -85,6 +89,8 @@ class RatingService {
       'rating': avgRating,
       'reviewCount': reviewCount,
     });
+
+    _distributionCache.remove(helperId);
   }
 
   // Get ratings for a helper
@@ -102,20 +108,28 @@ class RatingService {
   }
 
   // Get rating distribution (for profile page)
-  Future<Map<int, int>> getRatingDistribution(String helperId) async {
-    final ratingsSnapshot = await _firestore
-        .collection('ratings')
-        .where('helperId', isEqualTo: helperId)
-        .get();
-
-    final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
-
-    for (final doc in ratingsSnapshot.docs) {
-      final rating = (doc.data()['overallRating'] as num).toInt();
-      distribution[rating] = (distribution[rating] ?? 0) + 1;
+  Future<Map<int, int>> getRatingDistribution(String helperId) {
+    if (_distributionCache.containsKey(helperId)) {
+      return _distributionCache[helperId]!;
     }
 
-    return distribution;
+    final future = _firestore
+        .collection('ratings')
+        .where('helperId', isEqualTo: helperId)
+        .get()
+        .then((ratingsSnapshot) {
+          final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+
+          for (final doc in ratingsSnapshot.docs) {
+            final rating = (doc.data()['overallRating'] as num).toInt();
+            distribution[rating] = (distribution[rating] ?? 0) + 1;
+          }
+
+          return distribution;
+        });
+
+    _distributionCache[helperId] = future;
+    return future;
   }
 
   // Check if user already rated this job

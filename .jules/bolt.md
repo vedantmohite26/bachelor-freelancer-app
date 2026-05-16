@@ -1,0 +1,3 @@
+## 2026-06-25 - [Virtualization & Caching]
+**Learning:** The `shrinkWrap: true` anti-pattern in Flutter `ListView` disables virtualization, leading to O(N) rendering complexity. This is particularly problematic in screens like `HelperReviewsScreen` where many items (reviews) might exist. Additionally, redundant Firestore fetches in widgets like `ReviewCard` and `RatingSummaryCard` cause UI flickering and "cache stampedes".
+**Action:** Always prefer `CustomScrollView` with `SliverList` for large or dynamic lists to ensure O(visible) performance. Implement in-memory `Future` caching in services (e.g., `UserService`, `RatingService`) for frequently accessed data to eliminate redundant network requests and improve UI stability.

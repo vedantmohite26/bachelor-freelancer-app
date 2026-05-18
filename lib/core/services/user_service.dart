@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // In-memory cache for user profiles to avoid redundant Firestore fetches
+  final Map<String, Future<Map<String, dynamic>?>> _profileCache = {};
+
   // Create user profile with search optimization and email uniqueness enforcement
   Future<void> createUserProfile({
     required String userId,
@@ -53,14 +56,33 @@ class UserService {
 
     // Commit the batch
     await batch.commit();
+
+    // Invalidate cache for this user
+    _profileCache.remove(userId);
   }
 
-  // Get user profile
-  Future<Map<String, dynamic>?> getUserProfile(String userId) async {
-    if (userId.isEmpty) return null;
-    final doc = await _firestore.collection('users').doc(userId).get();
-    if (!doc.exists) return null;
-    return {...doc.data()!, 'id': doc.id};
+  // Get user profile (with in-memory Future caching)
+  Future<Map<String, dynamic>?> getUserProfile(String userId) {
+    if (userId.isEmpty) return Future.value(null);
+
+    // Return from cache if available to avoid redundant Firestore calls
+    if (_profileCache.containsKey(userId)) {
+      return _profileCache[userId]!;
+    }
+
+    // Cache the Future itself to prevent "cache stampede" if multiple
+    // widgets request the same profile simultaneously
+    final profileFuture = _firestore
+        .collection('users')
+        .doc(userId)
+        .get()
+        .then((doc) {
+          if (!doc.exists) return null;
+          return {...doc.data()!, 'id': doc.id};
+        });
+
+    _profileCache[userId] = profileFuture;
+    return profileFuture;
   }
 
   // Get user profile stream
@@ -192,6 +214,9 @@ class UserService {
       'skills': skills,
       'skillsLower': skillsLower, // For optimized search
     });
+
+    // Invalidate cache
+    _profileCache.remove(userId);
   }
 
   // Update user profile
@@ -203,6 +228,9 @@ class UserService {
       ...updates,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    // Invalidate cache to ensure next fetch gets fresh data
+    _profileCache.remove(userId);
   }
 
   // Reset daily earnings (should be called at midnight)
@@ -210,6 +238,9 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'todaysEarnings': 0.0,
     });
+
+    // Invalidate cache
+    _profileCache.remove(userId);
   }
 
   // Update safety settings
@@ -220,6 +251,9 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'safetySettings': settings,
     });
+
+    // Invalidate cache
+    _profileCache.remove(userId);
   }
 
   // Add a trusted contact
@@ -230,6 +264,9 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayUnion([contact]),
     });
+
+    // Invalidate cache
+    _profileCache.remove(userId);
   }
 
   // Remove a trusted contact
@@ -240,5 +277,8 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayRemove([contact]),
     });
+
+    // Invalidate cache
+    _profileCache.remove(userId);
   }
 }

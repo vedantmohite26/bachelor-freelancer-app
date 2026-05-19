@@ -1,0 +1,3 @@
+## 2026-06-25 - Virtualization vs. ShrinkWrap
+**Learning:** Using `ListView(shrinkWrap: true)` inside a `SingleChildScrollView` is a common performance anti-pattern in this codebase. It disables virtualization and forces O(N) layout/build time for the entire list, which is particularly harmful for Firestore-backed lists like reviews or transactions that can grow large.
+**Action:** Always prefer `CustomScrollView` with `SliverList` or `SliverFixedExtentList` to maintain virtualization. Use `SliverToBoxAdapter` for non-list headers and `SliverFillRemaining` for centered status indicators (loading/error/empty).

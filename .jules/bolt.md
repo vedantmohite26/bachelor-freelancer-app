@@ -1,0 +1,3 @@
+## 2026-06-15 - Service-level Future Caching for Firestore
+**Learning:** Redundant Firestore calls were happening in screens like `HelperReviewsScreen` because multiple widgets (e.g., `ReviewCard`, `RatingSummaryCard`) would independently request user profiles or rating distributions. Caching the `Future` itself in the service layer implements Request Coalescing, ensuring that simultaneous requests share the same network call.
+**Action:** Always prefer caching the `Future` in service classes for semi-static data that might be requested by multiple UI components simultaneously. Ensure invalidation logic is added to all relevant update methods.

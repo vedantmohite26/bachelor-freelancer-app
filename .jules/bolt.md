@@ -1,0 +1,3 @@
+## 2026-06-25 - [Anti-pattern] Nested Scroll with shrinkWrap: true
+**Learning:** Using `SingleChildScrollView` with a nested `ListView.builder(shrinkWrap: true, physics: NeverScrollableScrollPhysics())` is a performance anti-pattern in Flutter. It forces the `ListView` to calculate the height of all its items at once, effectively disabling virtualization. For large lists (like reviews), this leads to O(N) build time and high memory usage.
+**Action:** Always prefer `CustomScrollView` with slivers (`SliverList`, `SliverGrid`, etc.) to maintain virtualization (O(visible) rendering) while allowing multiple scrollable sections.

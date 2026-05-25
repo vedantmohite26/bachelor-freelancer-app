@@ -1,0 +1,3 @@
+## 2026-06-21 - Virtualizing the Leaderboard List
+**Learning:** The `shrinkWrap: true` anti-pattern in Flutter's `ListView` (especially when nested inside `SingleChildScrollView`) disables virtualization, leading to O(N) rendering complexity. This is particularly problematic for dynamic lists like leaderboards where the dataset size can increase, impacting scroll performance and initial build times.
+**Action:** Transition nested scrollable layouts to a single `CustomScrollView`. Wrap fixed elements in `SliverToBoxAdapter` and dynamic lists in `SliverList`. Use `DecoratedSliver` and `SliverPadding` to preserve original `Container` styling and internal padding without sacrificing the performance benefits of virtualization (O(visible)).

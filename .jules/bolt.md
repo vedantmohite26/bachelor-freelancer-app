@@ -1,0 +1,3 @@
+## 2026-06-15 - [Refactoring to CustomScrollView for Virtualization]
+**Learning:** Replacing `SingleChildScrollView` + `Column` + `ListView(shrinkWrap: true)` with `CustomScrollView` and `SliverList` is essential for performance in screens with potentially large dynamic lists. The `shrinkWrap: true` property forces immediate layout of all items, which is O(N), while `SliverList` provides O(visible) performance through virtualization.
+**Action:** Always check for `shrinkWrap: true` in long lists and refactor to slivers. Wrap non-sliver widgets in `SliverToBoxAdapter` and use `SliverFillRemaining` for centered placeholders.

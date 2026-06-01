@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class RatingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // In-memory cache for rating distribution futures to prevent redundant network calls
+  // and expensive recalculations during UI rendering.
+  final Map<String, Future<Map<int, int>>> _distributionCache = {};
+
   // Submit rating with validation
   Future<void> submitRating({
     required String helperId,
@@ -61,6 +65,9 @@ class RatingService {
 
     // Update helper's average rating
     await _updateHelperRating(helperId);
+
+    // Invalidate distribution cache
+    _distributionCache.remove(helperId);
   }
 
   // Update helper's average rating
@@ -101,21 +108,36 @@ class RatingService {
         );
   }
 
-  // Get rating distribution (for profile page)
+  // Get rating distribution with in-memory Future caching
   Future<Map<int, int>> getRatingDistribution(String helperId) async {
-    final ratingsSnapshot = await _firestore
-        .collection('ratings')
-        .where('helperId', isEqualTo: helperId)
-        .get();
+    if (helperId.isEmpty) return {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
 
-    final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
-
-    for (final doc in ratingsSnapshot.docs) {
-      final rating = (doc.data()['overallRating'] as num).toInt();
-      distribution[rating] = (distribution[rating] ?? 0) + 1;
+    // Return from cache if available
+    if (_distributionCache.containsKey(helperId)) {
+      return _distributionCache[helperId]!;
     }
 
-    return distribution;
+    // Otherwise, calculate and cache the Future
+    final future = _firestore
+        .collection('ratings')
+        .where('helperId', isEqualTo: helperId)
+        .get()
+        .then((snapshot) {
+          final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+          for (final doc in snapshot.docs) {
+            final rating = (doc.data()['overallRating'] as num).toInt();
+            distribution[rating] = (distribution[rating] ?? 0) + 1;
+          }
+          return distribution;
+        })
+        .catchError((e) {
+          // If the request fails, remove from cache so it can be retried
+          _distributionCache.remove(helperId);
+          throw e;
+        });
+
+    _distributionCache[helperId] = future;
+    return future;
   }
 
   // Check if user already rated this job

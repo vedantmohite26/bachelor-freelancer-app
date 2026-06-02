@@ -1,0 +1,3 @@
+## 2026-06-15 - [Virtualization and Caching in Review System]
+**Learning:** The review system had two major bottlenecks: O(N) rendering in lists using `shrinkWrap: true` and redundant Firestore fetches for user profiles in each list item. Replacing `SingleChildScrollView` + `ListView` with `CustomScrollView` + `SliverList` enables virtualization (O(visible)). Implementing in-memory `Future` caching (request collapsing) in the service layer eliminates redundant network calls.
+**Action:** Always prefer `CustomScrollView` over `shrinkWrap: true` for lists of unknown length. Implement `Future` caching in services for frequently accessed, immutable, or slow-changing data to prevent "cache stampedes" in the UI.

@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class RatingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // In-memory cache for rating distributions to avoid redundant Firestore fetches.
+  // We store the Future itself to handle concurrent requests (cache stampede).
+  final Map<String, Future<Map<int, int>>> _distributionCache = {};
+
   // Submit rating with validation
   Future<void> submitRating({
     required String helperId,
@@ -59,6 +63,9 @@ class RatingService {
       'createdAt': FieldValue.serverTimestamp(),
     });
 
+    // Invalidate distribution cache
+    _distributionCache.remove(helperId);
+
     // Update helper's average rating
     await _updateHelperRating(helperId);
   }
@@ -101,21 +108,36 @@ class RatingService {
         );
   }
 
-  // Get rating distribution (for profile page)
-  Future<Map<int, int>> getRatingDistribution(String helperId) async {
-    final ratingsSnapshot = await _firestore
-        .collection('ratings')
-        .where('helperId', isEqualTo: helperId)
-        .get();
+  // Get rating distribution - Optimized with in-memory Future caching
+  Future<Map<int, int>> getRatingDistribution(String helperId) {
+    if (helperId.isEmpty) return Future.value({5: 0, 4: 0, 3: 0, 2: 0, 1: 0});
 
-    final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
-
-    for (final doc in ratingsSnapshot.docs) {
-      final rating = (doc.data()['overallRating'] as num).toInt();
-      distribution[rating] = (distribution[rating] ?? 0) + 1;
+    // Return cached future if it exists
+    if (_distributionCache.containsKey(helperId)) {
+      return _distributionCache[helperId]!;
     }
 
-    return distribution;
+    // Create a new future and cache it
+    final future = _firestore
+        .collection('ratings')
+        .where('helperId', isEqualTo: helperId)
+        .get()
+        .then((snapshot) {
+          final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+          for (final doc in snapshot.docs) {
+            final rating = (doc.data()['overallRating'] as num).toInt();
+            distribution[rating] = (distribution[rating] ?? 0) + 1;
+          }
+          return distribution;
+        })
+        .catchError((error) {
+          // If the fetch fails, remove from cache so it can be retried
+          _distributionCache.remove(helperId);
+          throw error;
+        });
+
+    _distributionCache[helperId] = future;
+    return future;
   }
 
   // Check if user already rated this job

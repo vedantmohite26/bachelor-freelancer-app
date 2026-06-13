@@ -1,0 +1,3 @@
+## 2026-06-15 - Future Caching and List Virtualization
+**Learning:** Found that `ReviewCard` and `RatingSummaryCard` were performing redundant Firestore fetches on every rebuild. Additionally, the `shrinkWrap: true` anti-pattern was disabling list virtualization in `HelperReviewsScreen`, causing O(N) rendering. Implementing in-memory `Future` caching in services (storing the `Future` instead of the result) effectively prevents "cache stampede" where multiple widgets request the same data simultaneously.
+**Action:** Always prefer `CustomScrollView` with `SliverList` for dynamic content to ensure O(visible) performance. Use `Future` caching in services for frequently accessed, slow-changing Firestore documents like user profiles.

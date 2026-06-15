@@ -30,62 +30,55 @@ class HelperReviewsScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Summary Section
-            RatingSummaryCard(
-              helperId: helperId,
-              averageRating: averageRating,
-              reviewCount: reviewCount,
-            ),
-            Divider(height: 1.h),
-            // Reviews List
-            StreamBuilder<List<Map<String, dynamic>>>(
-              stream: ratingService.getHelperRatings(helperId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.w),
-                      child: const CircularProgressIndicator(),
-                    ),
-                  );
-                }
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: ratingService.getHelperRatings(helperId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.w),
-                      child: const Text('Error loading reviews'),
-                    ),
-                  );
-                }
+          if (snapshot.hasError) {
+            return const Center(child: Text('Error loading reviews'));
+          }
 
-                final reviews = snapshot.data ?? [];
+          final reviews = snapshot.data ?? [];
 
-                if (reviews.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.w),
-                      child: const Text('No reviews found'),
-                    ),
-                  );
-                }
+          // OPTIMIZATION: Using CustomScrollView with SliverList for virtualization.
+          // This replaces the SingleChildScrollView + Column + ListView(shrinkWrap: true) anti-pattern.
+          // Rendering performance is now O(visible items) instead of O(total items).
+          return CustomScrollView(
+            slivers: [
+              // Summary Section
+              SliverToBoxAdapter(
+                child: RatingSummaryCard(
+                  helperId: helperId,
+                  averageRating: averageRating,
+                  reviewCount: reviewCount,
+                ),
+              ),
+              SliverToBoxAdapter(child: Divider(height: 1.h)),
 
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+              // Reviews List
+              if (reviews.isEmpty)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: Text('No reviews found')),
+                )
+              else
+                SliverPadding(
                   padding: EdgeInsets.all(16.w),
-                  itemCount: reviews.length,
-                  itemBuilder: (context, index) {
-                    return ReviewCard(review: reviews[index]);
-                  },
-                );
-              },
-            ),
-          ],
-        ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return ReviewCard(review: reviews[index]);
+                      },
+                      childCount: reviews.length,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -114,21 +114,28 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           return _buildPlaceholder("No helpers found yet.");
         }
 
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 20.h),
-              // Podium (Top 3)
-              if (leaderboard.isNotEmpty) _buildPodium(leaderboard),
+        // Performance: Fetch currentUserId once outside itemBuilder
+        final currentUserId =
+            Provider.of<AuthService>(context, listen: false).user?.uid;
 
-              SizedBox(height: 20.h),
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
 
-              // List (Rank 4+)
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20.w,
-                  vertical: 20.h,
-                ),
+            // Podium (Top 3)
+            if (leaderboard.isNotEmpty)
+              SliverToBoxAdapter(child: _buildPodium(leaderboard)),
+
+            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+
+            // Virtualized List (Rank 4+)
+            // Using DecoratedSliver and SliverPadding to maintain virtualization
+            SliverPadding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 20.w,
+                vertical: 20.h,
+              ),
+              sliver: DecoratedSliver(
                 decoration: BoxDecoration(
                   // Rounded top corners
                   color: theme.colorScheme.surfaceContainerHigh,
@@ -136,12 +143,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                     top: Radius.circular(30),
                   ),
                 ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: leaderboard.length > 3
-                      ? leaderboard.length - 3
-                      : 0,
+                sliver: SliverList.builder(
+                  itemCount:
+                      leaderboard.length > 3 ? leaderboard.length - 3 : 0,
                   itemBuilder: (context, index) {
                     final user = leaderboard[index + 3];
                     return RepaintBoundary(
@@ -149,19 +153,16 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                         rank: index + 4,
                         name: user['name'] ?? 'User',
                         points: "${user['points']} pts",
-                        isCurrentUser:
-                            user['id'] ==
-                            Provider.of<AuthService>(
-                              context,
-                              listen: false,
-                            ).user?.uid,
+                        isCurrentUser: user['id'] == currentUserId,
                       ),
                     );
                   },
                 ),
               ),
-            ],
-          ),
+            ),
+            // Bottom padding for scrollability
+            SliverToBoxAdapter(child: SizedBox(height: 40.h)),
+          ],
         );
       },
     );

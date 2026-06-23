@@ -73,8 +73,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => WalletService()),
         Provider(create: (_) => FirestoreService()),
         Provider(create: (_) => JobService()),
-        Provider(create: (_) => UserService()),
-        Provider(create: (_) => RatingService()),
+        Provider(create: (context) => UserService()),
+        ProxyProvider<UserService, RatingService>(
+          update: (context, userService, previous) =>
+              RatingService(userService: userService),
+        ),
         Provider(create: (_) => LeaderboardService()),
         Provider(create: (_) => LocationService()),
         Provider(create: (_) => NotificationService()),

@@ -30,61 +30,70 @@ class HelperReviewsScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Summary Section
-            RatingSummaryCard(
-              helperId: helperId,
-              averageRating: averageRating,
-              reviewCount: reviewCount,
-            ),
-            Divider(height: 1.h),
-            // Reviews List
-            StreamBuilder<List<Map<String, dynamic>>>(
-              stream: ratingService.getHelperRatings(helperId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.w),
-                      child: const CircularProgressIndicator(),
-                    ),
-                  );
-                }
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: ratingService.getHelperRatings(helperId),
+        builder: (context, snapshot) {
+          return CustomScrollView(
+            slivers: [
+              // Summary Section
+              SliverToBoxAdapter(
+                child: RatingSummaryCard(
+                  helperId: helperId,
+                  averageRating: averageRating,
+                  reviewCount: reviewCount,
+                ),
+              ),
+              SliverToBoxAdapter(child: Divider(height: 1.h)),
 
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.w),
-                      child: const Text('Error loading reviews'),
-                    ),
-                  );
-                }
+              // Reviews List (Virtualized)
+              _buildReviewsSliver(context, snapshot),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
-                final reviews = snapshot.data ?? [];
+  Widget _buildReviewsSliver(
+    BuildContext context,
+    AsyncSnapshot<List<Map<String, dynamic>>> snapshot,
+  ) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(32.w),
+            child: const CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
 
-                if (reviews.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.w),
-                      child: const Text('No reviews found'),
-                    ),
-                  );
-                }
+    if (snapshot.hasError) {
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(child: Text('Error loading reviews')),
+      );
+    }
 
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.all(16.w),
-                  itemCount: reviews.length,
-                  itemBuilder: (context, index) {
-                    return ReviewCard(review: reviews[index]);
-                  },
-                );
-              },
-            ),
-          ],
+    final reviews = snapshot.data ?? [];
+
+    if (reviews.isEmpty) {
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(child: Text('No reviews found')),
+      );
+    }
+
+    // Bolt Optimization: Replaced shrinkWrap ListView with SliverList for proper virtualization.
+    // This ensures only visible reviews are rendered, significantly reducing memory and build time for long lists.
+    return SliverPadding(
+      padding: EdgeInsets.all(16.w),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => ReviewCard(review: reviews[index]),
+          childCount: reviews.length,
         ),
       ),
     );

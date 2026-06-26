@@ -102,6 +102,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
   Widget _buildGlobalLeaderboard() {
     final theme = Theme.of(context);
+    // Bolt: Fetch currentUserId once outside the builder to avoid redundant lookups
+    final currentUserId = Provider.of<AuthService>(context, listen: false).user?.uid;
+
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _leaderboardStream,
       builder: (context, snapshot) {
@@ -114,54 +117,50 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
           return _buildPlaceholder("No helpers found yet.");
         }
 
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 20.h),
-              // Podium (Top 3)
-              if (leaderboard.isNotEmpty) _buildPodium(leaderboard),
+        // Bolt: Replaced SingleChildScrollView + Column + ListView(shrinkWrap: true)
+        // with CustomScrollView + SliverList to enable virtualization for better performance.
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
 
-              SizedBox(height: 20.h),
+            // Podium (Top 3)
+            if (leaderboard.isNotEmpty)
+              SliverToBoxAdapter(child: _buildPodium(leaderboard)),
 
-              // List (Rank 4+)
-              Container(
+            SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+
+            // List (Rank 4+) - Using DecoratedSliver for the background styling
+            DecoratedSliver(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHigh,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
+              ),
+              sliver: SliverPadding(
                 padding: EdgeInsets.symmetric(
                   horizontal: 20.w,
                   vertical: 20.h,
                 ),
-                decoration: BoxDecoration(
-                  // Rounded top corners
-                  color: theme.colorScheme.surfaceContainerHigh,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(30),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final user = leaderboard[index + 3];
+                      return RepaintBoundary(
+                        child: _RankingCard(
+                          rank: index + 4,
+                          name: user['name'] ?? 'User',
+                          points: "${user['points']} pts",
+                          isCurrentUser: user['id'] == currentUserId,
+                        ),
+                      );
+                    },
+                    childCount: leaderboard.length > 3 ? leaderboard.length - 3 : 0,
                   ),
                 ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: leaderboard.length > 3
-                      ? leaderboard.length - 3
-                      : 0,
-                  itemBuilder: (context, index) {
-                    final user = leaderboard[index + 3];
-                    return RepaintBoundary(
-                      child: _RankingCard(
-                        rank: index + 4,
-                        name: user['name'] ?? 'User',
-                        points: "${user['points']} pts",
-                        isCurrentUser:
-                            user['id'] ==
-                            Provider.of<AuthService>(
-                              context,
-                              listen: false,
-                            ).user?.uid,
-                      ),
-                    );
-                  },
-                ),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );

@@ -1,7 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:freelancer/core/services/user_service.dart';
+
 class RatingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final UserService? userService;
+
+  RatingService({this.userService});
+
+  // In-memory cache for rating distributions to avoid redundant aggregation queries
+  final Map<String, Future<Map<int, int>>> _distributionCache = {};
+
+  // Invalidate distribution cache for a helper
+  void _invalidateDistributionCache(String helperId) {
+    _distributionCache.remove(helperId);
+  }
 
   // Submit rating with validation
   Future<void> submitRating({
@@ -60,6 +73,7 @@ class RatingService {
     });
 
     // Update helper's average rating
+    _invalidateDistributionCache(helperId);
     await _updateHelperRating(helperId);
   }
 
@@ -85,6 +99,7 @@ class RatingService {
       'rating': avgRating,
       'reviewCount': reviewCount,
     });
+    userService?.invalidateCache(helperId);
   }
 
   // Get ratings for a helper
@@ -103,6 +118,29 @@ class RatingService {
 
   // Get rating distribution (for profile page)
   Future<Map<int, int>> getRatingDistribution(String helperId) async {
+    if (helperId.isEmpty) return {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+
+    // Return cached Future if it exists
+    if (_distributionCache.containsKey(helperId)) {
+      return _distributionCache[helperId]!;
+    }
+
+    // Basic cache eviction
+    if (_distributionCache.length >= 100) {
+      _distributionCache.clear();
+    }
+
+    final future = _fetchRatingDistribution(helperId);
+    _distributionCache[helperId] = future;
+
+    return future.catchError((e) {
+      _distributionCache.remove(helperId);
+      throw e;
+    });
+  }
+
+  // Internal helper to fetch distribution from Firestore
+  Future<Map<int, int>> _fetchRatingDistribution(String helperId) async {
     final ratingsSnapshot = await _firestore
         .collection('ratings')
         .where('helperId', isEqualTo: helperId)

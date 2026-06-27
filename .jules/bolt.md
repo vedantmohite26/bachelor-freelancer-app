@@ -1,0 +1,4 @@
+## 2026-06-20 - In-memory Future Caching for Firestore Services
+**Learning:** In Flutter apps with many concurrent UI components (like `ReviewCard` in a list), redundant Firestore fetches for the same document (e.g., user profiles) create a significant performance bottleneck and increase costs. Implementing an in-memory cache that stores the `Future` itself rather than the resolved value allows multiple concurrent callers to "latch on" to the same request, effectively eliminating the 'cache stampede' problem and reducing network latency to zero for subsequent reads.
+
+**Action:** When identifying high-frequency read patterns for the same resource across different widgets, implement a `Map<String, Future<T>>` cache in the service layer. Ensure the cache is invalidated during write operations and includes error handling to remove failed futures so they can be retried.

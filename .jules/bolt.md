@@ -1,0 +1,3 @@
+## 2026-06-25 - Virtualization in CustomScrollView
+**Learning:** Wrapping a `StreamBuilder` around a `CustomScrollView` (or vice versa) and using `SliverFillRemaining` for non-scrollable states (loading, error, empty) allows for a fully virtualized list while maintaining a consistent UI for headers and placeholders. The `shrinkWrap: true` anti-pattern in nested scroll views is a major performance killer as it forces all items to be built immediately.
+**Action:** Always prefer `CustomScrollView` with `Slivers` over nested `ListView(shrinkWrap: true)` for lists of unknown or potentially large size.

@@ -3,6 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // In-memory cache for user profiles to avoid redundant Firestore fetches
+  // We store the Future itself to allow concurrent callers to share the same request
+  final Map<String, Future<Map<String, dynamic>?>> _profileCache = {};
+  static const int _maxCacheSize = 100;
+
+  // Invalidate cache for a specific user
+  void invalidateCache(String userId) {
+    _profileCache.remove(userId);
+  }
+
   // Create user profile with search optimization and email uniqueness enforcement
   Future<void> createUserProfile({
     required String userId,
@@ -53,14 +63,37 @@ class UserService {
 
     // Commit the batch
     await batch.commit();
+
+    // Invalidate cache after creation
+    invalidateCache(userId);
   }
 
-  // Get user profile
+  // Get user profile with in-memory caching
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     if (userId.isEmpty) return null;
-    final doc = await _firestore.collection('users').doc(userId).get();
-    if (!doc.exists) return null;
-    return {...doc.data()!, 'id': doc.id};
+
+    // Check cache first
+    if (_profileCache.containsKey(userId)) {
+      return _profileCache[userId]!;
+    }
+
+    // If cache is full, remove first entry (basic LRU-like behavior)
+    if (_profileCache.length >= _maxCacheSize) {
+      _profileCache.remove(_profileCache.keys.first);
+    }
+
+    // Fetch and cache the Future
+    final future = _firestore.collection('users').doc(userId).get().then((doc) {
+      if (!doc.exists) return null;
+      return {...doc.data()!, 'id': doc.id};
+    }).catchError((error) {
+      // Remove from cache on error so next attempt can retry
+      invalidateCache(userId);
+      throw error;
+    });
+
+    _profileCache[userId] = future;
+    return future;
   }
 
   // Get user profile stream
@@ -192,6 +225,7 @@ class UserService {
       'skills': skills,
       'skillsLower': skillsLower, // For optimized search
     });
+    invalidateCache(userId);
   }
 
   // Update user profile
@@ -203,6 +237,7 @@ class UserService {
       ...updates,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    invalidateCache(userId);
   }
 
   // Reset daily earnings (should be called at midnight)
@@ -210,6 +245,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'todaysEarnings': 0.0,
     });
+    invalidateCache(userId);
   }
 
   // Update safety settings
@@ -220,6 +256,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'safetySettings': settings,
     });
+    invalidateCache(userId);
   }
 
   // Add a trusted contact
@@ -230,6 +267,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayUnion([contact]),
     });
+    invalidateCache(userId);
   }
 
   // Remove a trusted contact
@@ -240,5 +278,6 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayRemove([contact]),
     });
+    invalidateCache(userId);
   }
 }

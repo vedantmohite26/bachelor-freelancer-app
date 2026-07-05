@@ -1,7 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:freelancer/core/services/user_service.dart';
 
 class RatingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final UserService? _userService;
+
+  RatingService([this._userService]);
+
+  // In-memory cache for rating distributions
+  final Map<String, Future<Map<int, int>>> _distributionCache = {};
+
+  // Invalidate cache for a specific helper
+  void _invalidateCache(String helperId) {
+    _distributionCache.remove(helperId);
+    // Also invalidate the user profile cache since rating/reviewCount changed
+    _userService?.invalidateCache(helperId);
+  }
 
   // Submit rating with validation
   Future<void> submitRating({
@@ -61,6 +75,9 @@ class RatingService {
 
     // Update helper's average rating
     await _updateHelperRating(helperId);
+
+    // Invalidate caches
+    _invalidateCache(helperId);
   }
 
   // Update helper's average rating
@@ -101,21 +118,43 @@ class RatingService {
         );
   }
 
-  // Get rating distribution (for profile page)
-  Future<Map<int, int>> getRatingDistribution(String helperId) async {
-    final ratingsSnapshot = await _firestore
-        .collection('ratings')
-        .where('helperId', isEqualTo: helperId)
-        .get();
+  // Get rating distribution with in-memory caching
+  Future<Map<int, int>> getRatingDistribution(String helperId) {
+    if (helperId.isEmpty) return Future.value({5: 0, 4: 0, 3: 0, 2: 0, 1: 0});
 
-    final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
-
-    for (final doc in ratingsSnapshot.docs) {
-      final rating = (doc.data()['overallRating'] as num).toInt();
-      distribution[rating] = (distribution[rating] ?? 0) + 1;
+    // Check cache first
+    if (_distributionCache.containsKey(helperId)) {
+      return _distributionCache[helperId]!;
     }
 
-    return distribution;
+    // Fetch from Firestore and cache the Future
+    final future = _firestore
+        .collection('ratings')
+        .where('helperId', isEqualTo: helperId)
+        .get()
+        .then((snapshot) {
+          final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+
+          for (final doc in snapshot.docs) {
+            final rating = (doc.data()['overallRating'] as num).toInt();
+            distribution[rating] = (distribution[rating] ?? 0) + 1;
+          }
+
+          return distribution;
+        })
+        .catchError((error) {
+          // Remove from cache on error
+          _distributionCache.remove(helperId);
+          throw error;
+        });
+
+    // Limit cache size to 100 entries
+    if (_distributionCache.length >= 100) {
+      _distributionCache.remove(_distributionCache.keys.first);
+    }
+
+    _distributionCache[helperId] = future;
+    return future;
   }
 
   // Check if user already rated this job

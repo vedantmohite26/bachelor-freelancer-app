@@ -1,0 +1,3 @@
+## 2026-06-19 - In-memory Future Caching for Firestore Services
+**Learning:** In a Flutter app using `Provider` and `FutureBuilder`/`StreamBuilder`, Firestore calls inside `build` methods (or in widgets that are frequently rebuilt) can lead to redundant network traffic and "cache stampedes" if not handled at the service level. Caching the `Future` instead of the result allows multiple concurrent callers to wait for the same underlying request.
+**Action:** Always implement a `Map<String, Future<T>>` cache in services for frequently accessed documents, and ensure proper invalidation during write operations.

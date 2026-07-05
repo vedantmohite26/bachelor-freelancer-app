@@ -74,7 +74,9 @@ class MyApp extends StatelessWidget {
         Provider(create: (_) => FirestoreService()),
         Provider(create: (_) => JobService()),
         Provider(create: (_) => UserService()),
-        Provider(create: (_) => RatingService()),
+        ProxyProvider<UserService, RatingService>(
+          update: (_, userService, _) => RatingService(userService),
+        ),
         Provider(create: (_) => LeaderboardService()),
         Provider(create: (_) => LocationService()),
         Provider(create: (_) => NotificationService()),

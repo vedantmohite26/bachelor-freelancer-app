@@ -3,6 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // In-memory cache for user profiles to reduce Firestore reads
+  // We store the Future itself to handle concurrent requests efficiently
+  final Map<String, Future<Map<String, dynamic>?>> _profileCache = {};
+
+  // Clear specific user from cache
+  void invalidateCache(String userId) {
+    _profileCache.remove(userId);
+  }
+
   // Create user profile with search optimization and email uniqueness enforcement
   Future<void> createUserProfile({
     required String userId,
@@ -53,14 +62,37 @@ class UserService {
 
     // Commit the batch
     await batch.commit();
+
+    // Invalidate cache after creation
+    invalidateCache(userId);
   }
 
-  // Get user profile
+  // Get user profile with in-memory Future caching
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     if (userId.isEmpty) return null;
-    final doc = await _firestore.collection('users').doc(userId).get();
-    if (!doc.exists) return null;
-    return {...doc.data()!, 'id': doc.id};
+
+    // Return from cache if available
+    if (_profileCache.containsKey(userId)) {
+      return _profileCache[userId]!;
+    }
+
+    // Create a new future for the fetch operation
+    final future = _firestore.collection('users').doc(userId).get().then((doc) {
+      if (!doc.exists) return null;
+      return {...doc.data()!, 'id': doc.id};
+    }).catchError((error) {
+      // Remove from cache on error so subsequent attempts can retry
+      _profileCache.remove(userId);
+      throw error;
+    });
+
+    // Limit cache size to 100 entries to prevent memory leaks
+    if (_profileCache.length >= 100) {
+      _profileCache.remove(_profileCache.keys.first);
+    }
+
+    _profileCache[userId] = future;
+    return future;
   }
 
   // Get user profile stream
@@ -192,6 +224,7 @@ class UserService {
       'skills': skills,
       'skillsLower': skillsLower, // For optimized search
     });
+    invalidateCache(userId);
   }
 
   // Update user profile
@@ -203,6 +236,7 @@ class UserService {
       ...updates,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    invalidateCache(userId);
   }
 
   // Reset daily earnings (should be called at midnight)
@@ -210,6 +244,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'todaysEarnings': 0.0,
     });
+    invalidateCache(userId);
   }
 
   // Update safety settings
@@ -220,6 +255,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'safetySettings': settings,
     });
+    invalidateCache(userId);
   }
 
   // Add a trusted contact
@@ -230,6 +266,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayUnion([contact]),
     });
+    invalidateCache(userId);
   }
 
   // Remove a trusted contact
@@ -240,5 +277,6 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayRemove([contact]),
     });
+    invalidateCache(userId);
   }
 }

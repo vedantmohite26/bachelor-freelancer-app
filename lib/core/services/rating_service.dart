@@ -1,7 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:freelancer/core/services/user_service.dart';
+
 class RatingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final UserService? _userService;
+
+  // In-memory cache for rating distributions to reduce Firestore reads
+  final Map<String, Future<Map<int, int>>> _distributionCache = {};
+
+  RatingService({UserService? userService}) : _userService = userService;
+
+  // Clear specific distribution from cache
+  void invalidateCache(String helperId) {
+    _distributionCache.remove(helperId);
+  }
 
   // Submit rating with validation
   Future<void> submitRating({
@@ -59,6 +72,9 @@ class RatingService {
       'createdAt': FieldValue.serverTimestamp(),
     });
 
+    // Invalidate distribution cache after submission
+    invalidateCache(helperId);
+
     // Update helper's average rating
     await _updateHelperRating(helperId);
   }
@@ -85,6 +101,9 @@ class RatingService {
       'rating': avgRating,
       'reviewCount': reviewCount,
     });
+
+    // Invalidate user profile cache since rating/reviewCount changed
+    _userService?.invalidateCache(helperId);
   }
 
   // Get ratings for a helper
@@ -101,21 +120,41 @@ class RatingService {
         );
   }
 
-  // Get rating distribution (for profile page)
+  // Get rating distribution with in-memory Future caching
   Future<Map<int, int>> getRatingDistribution(String helperId) async {
-    final ratingsSnapshot = await _firestore
-        .collection('ratings')
-        .where('helperId', isEqualTo: helperId)
-        .get();
-
-    final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
-
-    for (final doc in ratingsSnapshot.docs) {
-      final rating = (doc.data()['overallRating'] as num).toInt();
-      distribution[rating] = (distribution[rating] ?? 0) + 1;
+    // Return from cache if available
+    if (_distributionCache.containsKey(helperId)) {
+      return _distributionCache[helperId]!;
     }
 
-    return distribution;
+    // Create a new future for the fetch operation
+    final future = _firestore
+        .collection('ratings')
+        .where('helperId', isEqualTo: helperId)
+        .get()
+        .then((snapshot) {
+          final distribution = <int, int>{5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+
+          for (final doc in snapshot.docs) {
+            final rating = (doc.data()['overallRating'] as num).toInt();
+            distribution[rating] = (distribution[rating] ?? 0) + 1;
+          }
+
+          return distribution;
+        })
+        .catchError((error) {
+          // Remove from cache on error so subsequent attempts can retry
+          _distributionCache.remove(helperId);
+          throw error;
+        });
+
+    // Limit cache size to 100 entries to prevent memory leaks
+    if (_distributionCache.length >= 100) {
+      _distributionCache.remove(_distributionCache.keys.first);
+    }
+
+    _distributionCache[helperId] = future;
+    return future;
   }
 
   // Check if user already rated this job

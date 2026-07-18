@@ -1,0 +1,3 @@
+## 2026-07-18 - Deep Copying in Async Future Caching
+**Learning:** In Dart null-safety, when implementing an in-memory cache that stores a `Future` (to avoid concurrent duplicate network queries), returning the cached future directly to multiple callers means they will all resolve to the exact same Map instance. If any UI component mutates that Map, it propagates to all other components sharing that cache entry.
+**Action:** Store the raw Future in the cache, but always chain a `.then((data) => Map<String, dynamic>.from(data))` on the future before returning it. This ensures every caller receives a brand-new independent deep/shallow copy of the map reference while still fully sharing the single underlying network request.

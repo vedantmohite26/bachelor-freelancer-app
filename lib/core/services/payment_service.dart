@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:freelancer/core/services/notification_service.dart';
+import 'package:freelancer/core/services/user_service.dart';
 
 class PaymentService extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -127,6 +128,8 @@ class PaymentService extends ChangeNotifier {
     });
 
     await batch.commit();
+    UserService.invalidateCache(helperId);
+    UserService.invalidateCache(seekerId);
 
     // ----------------------------------
 

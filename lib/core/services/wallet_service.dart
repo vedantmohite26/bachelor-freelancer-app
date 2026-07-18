@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:freelancer/core/services/user_service.dart';
 
 class WalletService extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -84,6 +85,7 @@ class WalletService extends ChangeNotifier {
     });
 
     await batch.commit();
+    UserService.invalidateCache(userId);
   }
 
   // Withdraw Funds (Mock for now)
@@ -129,5 +131,6 @@ class WalletService extends ChangeNotifier {
     await _db.collection('users').doc(userId).update({
       'activePowerUps.$powerUpType': Timestamp.fromDate(expiresAt),
     });
+    UserService.invalidateCache(userId);
   }
 }

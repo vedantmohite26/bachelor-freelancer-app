@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:freelancer/core/services/user_service.dart';
 
 class RatingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -85,6 +86,7 @@ class RatingService {
       'rating': avgRating,
       'reviewCount': reviewCount,
     });
+    UserService.invalidateCache(helperId);
   }
 
   // Get ratings for a helper

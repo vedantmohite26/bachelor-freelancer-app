@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:freelancer/core/services/notification_service.dart';
+import 'package:freelancer/core/services/user_service.dart';
 
 class JobService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -354,6 +355,7 @@ class JobService {
     });
 
     await batch.commit();
+    UserService.invalidateCache(helperId);
   }
 
   // "Slide to Accept" - Direct Claim logic

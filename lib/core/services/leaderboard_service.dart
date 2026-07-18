@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:freelancer/core/services/user_service.dart';
 
 class LeaderboardService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -52,6 +53,7 @@ class LeaderboardService {
     await _firestore.collection('users').doc(userId).update({
       'points': totalPoints,
     });
+    UserService.invalidateCache(userId);
   }
 
   // Get badges for user based on achievements

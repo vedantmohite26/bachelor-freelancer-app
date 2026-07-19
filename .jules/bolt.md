@@ -1,0 +1,3 @@
+## 2026-07-19 - Optimizing Trusted Contacts List Rendering
+**Learning:** Nested `ListView.builder` with `shrinkWrap: true` inside scrollable sheets disables list item virtualization and can cause significant UI thread frame drops during rendering of large datasets. Replacing it with standard non-nested widgets or layout configurations (since sheet/modal sizes are often constrained) prevents premature and heavy layout calculations.
+**Action:** Replace `shrinkWrap: true` list views inside sheet modals with virtualized scroll structures or use proper constraints to ensure high performance and smooth framerates on devices.

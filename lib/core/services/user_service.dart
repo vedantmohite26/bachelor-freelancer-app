@@ -3,6 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // In-memory static cache for user profiles
+  // We store the Future directly so concurrent requests for the same user ID share the same future and avoid duplicate network calls.
+  static final Map<String, Future<Map<String, dynamic>?>> _cache = {};
+
+  // Invalidate a specific user profile cache entry
+  static void invalidateCache(String userId) {
+    _cache.remove(userId);
+  }
+
   // Create user profile with search optimization and email uniqueness enforcement
   Future<void> createUserProfile({
     required String userId,
@@ -53,14 +62,39 @@ class UserService {
 
     // Commit the batch
     await batch.commit();
+
+    // Invalidate cache since profile has been created/updated
+    invalidateCache(userId);
   }
 
-  // Get user profile
-  Future<Map<String, dynamic>?> getUserProfile(String userId) async {
-    if (userId.isEmpty) return null;
-    final doc = await _firestore.collection('users').doc(userId).get();
-    if (!doc.exists) return null;
-    return {...doc.data()!, 'id': doc.id};
+  // Get user profile - Optimized with in-memory static caching
+  Future<Map<String, dynamic>?> getUserProfile(String userId) {
+    if (userId.isEmpty) return Future.value(null);
+
+    // If already in cache, return a deep copy of the resolved data to prevent shared mutation issues
+    if (_cache.containsKey(userId)) {
+      return _cache[userId]!.then((data) => data != null ? Map<String, dynamic>.from(data) : null);
+    }
+
+    // Otherwise, fetch from Firestore and cache the future
+    final Future<Map<String, dynamic>?> fetchFuture = _firestore
+        .collection('users')
+        .doc(userId)
+        .get()
+        .then((doc) {
+          if (!doc.exists) return null;
+          return {...doc.data()!, 'id': doc.id};
+        })
+        .catchError((error) {
+          // If an error occurs, remove the future from the cache so subsequent requests can try again
+          invalidateCache(userId);
+          throw error;
+        });
+
+    _cache[userId] = fetchFuture;
+
+    // Return deep copy
+    return fetchFuture.then((data) => data != null ? Map<String, dynamic>.from(data) : null);
   }
 
   // Get user profile stream
@@ -78,6 +112,8 @@ class UserService {
       'isOnline': isOnline,
       'lastSeen': FieldValue.serverTimestamp(),
     });
+    // Invalidate cache to reflect updated online status / last seen
+    invalidateCache(userId);
   }
 
   // Get nearby helpers
@@ -192,6 +228,8 @@ class UserService {
       'skills': skills,
       'skillsLower': skillsLower, // For optimized search
     });
+    // Invalidate cache to reflect updated skills
+    invalidateCache(userId);
   }
 
   // Update user profile
@@ -203,6 +241,8 @@ class UserService {
       ...updates,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    // Invalidate cache to reflect updated profile fields
+    invalidateCache(userId);
   }
 
   // Reset daily earnings (should be called at midnight)
@@ -210,6 +250,8 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'todaysEarnings': 0.0,
     });
+    // Invalidate cache to reflect updated daily earnings
+    invalidateCache(userId);
   }
 
   // Update safety settings
@@ -220,6 +262,8 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'safetySettings': settings,
     });
+    // Invalidate cache to reflect updated safety settings
+    invalidateCache(userId);
   }
 
   // Add a trusted contact
@@ -230,6 +274,8 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayUnion([contact]),
     });
+    // Invalidate cache to reflect new trusted contact
+    invalidateCache(userId);
   }
 
   // Remove a trusted contact
@@ -240,5 +286,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayRemove([contact]),
     });
+    // Invalidate cache to reflect removed trusted contact
+    invalidateCache(userId);
   }
 }

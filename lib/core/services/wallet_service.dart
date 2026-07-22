@@ -1,14 +1,21 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 class WalletService extends ChangeNotifier {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _db;
+
+  WalletService({FirebaseFirestore? firestore}) : _db = firestore ?? FirebaseFirestore.instance;
 
   // Wallet Data
   double _balance = 0.0;
   int _coins = 0;
   List<Map<String, dynamic>> _transactions = [];
   Map<String, dynamic> _activePowerUps = {};
+
+  // Active Firestore stream subscription to avoid memory leaks
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _walletSubscription;
+  String? _activeUserId;
 
   double get balance => _balance;
   int get coins => _coins;
@@ -17,7 +24,16 @@ class WalletService extends ChangeNotifier {
 
   // Stream listening to user wallet changes
   void listenToWallet(String userId) {
-    _db.collection('users').doc(userId).snapshots().listen((snapshot) {
+    if (_activeUserId == userId && _walletSubscription != null) {
+      // Already listening to this user's wallet
+      return;
+    }
+
+    // Cancel any existing subscription
+    _walletSubscription?.cancel();
+    _activeUserId = userId;
+
+    _walletSubscription = _db.collection('users').doc(userId).snapshots().listen((snapshot) {
       if (snapshot.exists) {
         final data = snapshot.data();
         _balance = (data?['walletBalance'] as num? ?? 0.0).toDouble();
@@ -26,6 +42,19 @@ class WalletService extends ChangeNotifier {
         notifyListeners();
       }
     });
+  }
+
+  // Cancel subscription when not needed (e.g., on logout or dispose)
+  void cancelWalletSubscription() {
+    _walletSubscription?.cancel();
+    _walletSubscription = null;
+    _activeUserId = null;
+  }
+
+  @override
+  void dispose() {
+    cancelWalletSubscription();
+    super.dispose();
   }
 
   // Fetch Transaction History

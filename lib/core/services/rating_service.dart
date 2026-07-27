@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:freelancer/core/services/user_service.dart';
 
 class RatingService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  RatingService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // Submit rating with validation
   Future<void> submitRating({
@@ -85,6 +89,8 @@ class RatingService {
       'rating': avgRating,
       'reviewCount': reviewCount,
     });
+    // Invalidate user cache to ensure profile pages see the updated rating and review count
+    UserService.invalidateCache(helperId);
   }
 
   // Get ratings for a helper

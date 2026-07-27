@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  UserService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // Create user profile with search optimization and email uniqueness enforcement
   Future<void> createUserProfile({
@@ -53,14 +56,62 @@ class UserService {
 
     // Commit the batch
     await batch.commit();
+    invalidateCache(userId);
+  }
+
+  // Static in-memory cache for user profiles to prevent redundant Firestore fetches.
+  // Storing the Future itself ensures that multiple concurrent calls for the same ID
+  // (e.g., in a list of review cards) share the exact same network request.
+  static final Map<String, Future<Map<String, dynamic>?>> _cache = {};
+
+  // Invalidates the cache for a specific user ID to prevent serving stale data
+  static void invalidateCache(String userId) {
+    _cache.remove(userId);
   }
 
   // Get user profile
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     if (userId.isEmpty) return null;
-    final doc = await _firestore.collection('users').doc(userId).get();
-    if (!doc.exists) return null;
-    return {...doc.data()!, 'id': doc.id};
+
+    if (_cache.containsKey(userId)) {
+      try {
+        final data = await _cache[userId]!;
+        // Return a fresh deep copy of the cached resolved data.
+        // This prevents parallel callers from sharing and mutating the same map reference.
+        return data != null ? Map<String, dynamic>.from(data) : null;
+      } catch (e) {
+        // Cache contains a failed future, let's remove it and rethrow
+        _cache.remove(userId);
+        rethrow;
+      }
+    }
+
+    // Wrap the async fetch in a future immediately so concurrent callers can share it
+    final Future<Map<String, dynamic>?> fetchFuture = () async {
+      try {
+        final doc = await _firestore.collection('users').doc(userId).get();
+        if (!doc.exists) return null;
+        return {...doc.data()!, 'id': doc.id};
+      } catch (e) {
+        _cache.remove(userId);
+        rethrow;
+      }
+    }();
+
+    // Register a silent error handler synchronously on the cached future.
+    // This prevents Dart's Zone system from treating failures as unhandled asynchronous errors
+    // while we wait for other microtasks or callers to await the future.
+    fetchFuture.catchError((_) => null);
+
+    _cache[userId] = fetchFuture;
+
+    try {
+      final data = await fetchFuture;
+      return data != null ? Map<String, dynamic>.from(data) : null;
+    } catch (e) {
+      _cache.remove(userId);
+      rethrow;
+    }
   }
 
   // Get user profile stream
@@ -78,6 +129,7 @@ class UserService {
       'isOnline': isOnline,
       'lastSeen': FieldValue.serverTimestamp(),
     });
+    invalidateCache(userId);
   }
 
   // Get nearby helpers
@@ -192,6 +244,7 @@ class UserService {
       'skills': skills,
       'skillsLower': skillsLower, // For optimized search
     });
+    invalidateCache(userId);
   }
 
   // Update user profile
@@ -203,6 +256,7 @@ class UserService {
       ...updates,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    invalidateCache(userId);
   }
 
   // Reset daily earnings (should be called at midnight)
@@ -210,6 +264,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'todaysEarnings': 0.0,
     });
+    invalidateCache(userId);
   }
 
   // Update safety settings
@@ -220,6 +275,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'safetySettings': settings,
     });
+    invalidateCache(userId);
   }
 
   // Add a trusted contact
@@ -230,6 +286,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayUnion([contact]),
     });
+    invalidateCache(userId);
   }
 
   // Remove a trusted contact
@@ -240,5 +297,6 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayRemove([contact]),
     });
+    invalidateCache(userId);
   }
 }

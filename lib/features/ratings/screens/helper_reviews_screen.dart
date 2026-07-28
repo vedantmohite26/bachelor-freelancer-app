@@ -30,62 +30,80 @@ class HelperReviewsScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Summary Section
-            RatingSummaryCard(
-              helperId: helperId,
-              averageRating: averageRating,
-              reviewCount: reviewCount,
-            ),
-            Divider(height: 1.h),
-            // Reviews List
-            StreamBuilder<List<Map<String, dynamic>>>(
-              stream: ratingService.getHelperRatings(helperId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: ratingService.getHelperRatings(helperId),
+        builder: (context, snapshot) {
+          final isLoading = snapshot.connectionState == ConnectionState.waiting;
+          final hasError = snapshot.hasError;
+          final reviews = snapshot.data ?? [];
+          final isEmpty = !isLoading && !hasError && reviews.isEmpty;
+
+          // Replacing the non-virtualized SingleChildScrollView + Column + ListView.builder
+          // with a highly optimized CustomScrollView that virtualizes review items
+          return CustomScrollView(
+            slivers: [
+              // Summary card wrapped in SliverToBoxAdapter to match original UI layout flow
+              SliverToBoxAdapter(
+                child: RatingSummaryCard(
+                  helperId: helperId,
+                  averageRating: averageRating,
+                  reviewCount: reviewCount,
+                ),
+              ),
+              // Thin divider separating the rating summary and the reviews list
+              SliverToBoxAdapter(
+                child: Divider(height: 1.h),
+              ),
+
+              // Dynamically rendering placeholders within SliverFillRemaining to keep the UI
+              // elements cleanly aligned/centered in the viewport.
+              if (isLoading)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.w),
                       child: const CircularProgressIndicator(),
                     ),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
+                  ),
+                )
+              else if (hasError)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.w),
                       child: const Text('Error loading reviews'),
                     ),
-                  );
-                }
-
-                final reviews = snapshot.data ?? [];
-
-                if (reviews.isEmpty) {
-                  return Center(
+                  ),
+                )
+              else if (isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.w),
                       child: const Text('No reviews found'),
                     ),
-                  );
-                }
-
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+                  ),
+                )
+              else
+                // Lazy-loaded virtualized SliverList rendering only visible items.
+                // Wrapped in SliverPadding to retain original 16.w margins.
+                SliverPadding(
                   padding: EdgeInsets.all(16.w),
-                  itemCount: reviews.length,
-                  itemBuilder: (context, index) {
-                    return ReviewCard(review: reviews[index]);
-                  },
-                );
-              },
-            ),
-          ],
-        ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return ReviewCard(review: reviews[index]);
+                      },
+                      childCount: reviews.length,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

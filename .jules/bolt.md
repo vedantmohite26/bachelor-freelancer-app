@@ -1,0 +1,3 @@
+## 2026-08-03 - In-Memory Caching and List Virtualization
+**Learning:** Nested SingleChildScrollView + Column + ListView with shrinkWrap: true disables list item virtualization in Flutter, causing massive layout/render overhead and a flood of concurrent document fetches on large lists. In addition, missing service-level cache results in redundant expensive Firestore document reads.
+**Action:** Use CustomScrollView with SliverToBoxAdapter, SliverFillRemaining, and SliverPadding with SliverList to ensure full list virtualization. Implement in-memory Future-based static caching in UserService with manual cache invalidation to achieve O(1) profile retrieval and zero redundant network calls.

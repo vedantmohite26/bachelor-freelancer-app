@@ -1,7 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  UserService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  // In-memory static cache for user profiles to prevent redundant Firestore calls
+  static final Map<String, Future<Map<String, dynamic>?>> _cache = {};
+
+  // Invalidate cached entry
+  static void invalidateCache(String userId) {
+    _cache.remove(userId);
+  }
 
   // Create user profile with search optimization and email uniqueness enforcement
   Future<void> createUserProfile({
@@ -53,22 +64,77 @@ class UserService {
 
     // Commit the batch
     await batch.commit();
+
+    // Invalidate cache after successful data modification
+    invalidateCache(userId);
   }
 
-  // Get user profile
+  // Helper to deep copy Map and its collections recursively to prevent shared mutations
+  static Map<String, dynamic> _deepCopyMap(Map<String, dynamic> source) {
+    return source.map((key, value) {
+      if (value is Map<String, dynamic>) {
+        return MapEntry(key, _deepCopyMap(value));
+      } else if (value is List) {
+        return MapEntry(key, _deepCopyList(value));
+      } else {
+        return MapEntry(key, value);
+      }
+    });
+  }
+
+  // Helper to deep copy List and its collections recursively
+  static List _deepCopyList(List source) {
+    return source.map((value) {
+      if (value is Map<String, dynamic>) {
+        return _deepCopyMap(value);
+      } else if (value is List) {
+        return _deepCopyList(value);
+      } else {
+        return value;
+      }
+    }).toList();
+  }
+
+  // Get user profile with caching and deep copying
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     if (userId.isEmpty) return null;
-    final doc = await _firestore.collection('users').doc(userId).get();
-    if (!doc.exists) return null;
-    return {...doc.data()!, 'id': doc.id};
+
+    if (_cache.containsKey(userId)) {
+      // Returns a deep copy to prevent callers from mutating the internal cache
+      return _cache[userId]!.then((data) => data != null ? _deepCopyMap(data) : null);
+    }
+
+    final Future<Map<String, dynamic>?> fetchFuture = _firestore
+        .collection('users')
+        .doc(userId)
+        .get()
+        .then((doc) {
+          if (!doc.exists) return null;
+          return {...doc.data()!, 'id': doc.id};
+        });
+
+    // Synchronously handle zone errors to evict failed futures immediately
+    final Future<Map<String, dynamic>?> cacheFuture = fetchFuture.catchError((error) {
+      invalidateCache(userId);
+      throw error;
+    });
+
+    _cache[userId] = cacheFuture;
+
+    return cacheFuture.then((data) => data != null ? _deepCopyMap(data) : null);
   }
 
-  // Get user profile stream
+  // Get user profile stream and automatically populate the cache with real-time updates
   Stream<Map<String, dynamic>?> getUserProfileStream(String userId) {
     if (userId.isEmpty) return Stream.value(null);
     return _firestore.collection('users').doc(userId).snapshots().map((doc) {
-      if (!doc.exists) return null;
-      return {...doc.data()!, 'id': doc.id};
+      if (!doc.exists) {
+        _cache[userId] = Future.value(null);
+        return null;
+      }
+      final data = {...doc.data()!, 'id': doc.id};
+      _cache[userId] = Future.value(data);
+      return data;
     });
   }
 
@@ -78,6 +144,7 @@ class UserService {
       'isOnline': isOnline,
       'lastSeen': FieldValue.serverTimestamp(),
     });
+    invalidateCache(userId);
   }
 
   // Get nearby helpers
@@ -192,6 +259,7 @@ class UserService {
       'skills': skills,
       'skillsLower': skillsLower, // For optimized search
     });
+    invalidateCache(userId);
   }
 
   // Update user profile
@@ -203,6 +271,7 @@ class UserService {
       ...updates,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    invalidateCache(userId);
   }
 
   // Reset daily earnings (should be called at midnight)
@@ -210,6 +279,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'todaysEarnings': 0.0,
     });
+    invalidateCache(userId);
   }
 
   // Update safety settings
@@ -220,6 +290,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'safetySettings': settings,
     });
+    invalidateCache(userId);
   }
 
   // Add a trusted contact
@@ -230,6 +301,7 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayUnion([contact]),
     });
+    invalidateCache(userId);
   }
 
   // Remove a trusted contact
@@ -240,5 +312,6 @@ class UserService {
     await _firestore.collection('users').doc(userId).update({
       'trustedContacts': FieldValue.arrayRemove([contact]),
     });
+    invalidateCache(userId);
   }
 }

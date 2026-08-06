@@ -1,0 +1,6 @@
+## 2026-06-25 - Caching User Profiles in Freelance Marketplace
+**Learning:** In a highly interactive app (such as local gig matching and helper ratings), components like `ReviewCard` dynamically query the database for profile information (e.g., helper/seeker names, avatars) on every build or scroll. Introducing static in-memory `Future` caching drastically reduces Firestore reads and eliminates stutter/flickering.
+To prevent concurrent callers from modifying nested list/map objects inside cached maps by reference, recursive deep copying of cached maps is mandatory.
+Furthermore, asynchronous errors on cached futures must be handled cleanly via catchError, invalidating the cached future immediately to avoid storing broken futures, while registering an inline catchError to prevent unhandled Dart Zone crashes.
+Cache invalidation should always occur AFTER the corresponding database write completes successfully to prevent race conditions.
+**Action:** Implement static in-memory Future-based caching in `UserService.getUserProfile` paired with static `invalidateCache` static methods triggered after write operations and rating submissions. Return fresh deep copies on cached resolution and protect against Zone-level asynchronous error crashes.

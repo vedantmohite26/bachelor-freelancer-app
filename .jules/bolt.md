@@ -1,0 +1,3 @@
+## 2026-11-20 - Optimizing layout and scroll performance in Flutter screens
+**Learning:** Wrapping a `ListView.builder` inside a `SingleChildScrollView` with `shrinkWrap: true` and `NeverScrollableScrollPhysics()` is a major performance bottleneck. It disables list virtualization, forcing Flutter to build and layout all list items at once, causing O(N) rendering complexity and high memory/CPU usage.
+**Action:** Replace the layout hierarchy with a single `CustomScrollView` and standard virtualized slivers like `SliverList` and `SliverToBoxAdapter` for any static elements, maintaining O(visible items) layout and paint efficiency.

@@ -1,0 +1,3 @@
+## 2026-07-28 - [Flutter WalletScreen Dynamic List Virtualization]
+**Learning:** Nested `ListView.builder(shrinkWrap: true, physics: NeverScrollableScrollPhysics())` within a `SingleChildScrollView` disables rendering virtualization, layout boundaries, and item recycling in Flutter, generating extensive performance lag and memory bloat on larger data sets.
+**Action:** Replace parent scrollable views with a single parent `CustomScrollView` and use equivalent slivers (`SliverToBoxAdapter` for top panels, `SliverPadding` and `SliverList` with standard delegate) to leverage lazy list rendering/virtualization natively and keep CPU and frame rates optimal.

@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class RatingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // ⚡ Bolt Optimization: In-memory cache for helper rating distributions
+  // to avoid redundant Firestore queries when displaying profile summaries.
+  final Map<String, Map<int, int>> _ratingDistributionCache = {};
+
   // Submit rating with validation
   Future<void> submitRating({
     required String helperId,
@@ -61,6 +65,10 @@ class RatingService {
 
     // Update helper's average rating
     await _updateHelperRating(helperId);
+
+    // ⚡ Bolt Invalidation: Invalidate the rating distribution cache AFTER
+    // the rating change has successfully completed.
+    _ratingDistributionCache.remove(helperId);
   }
 
   // Update helper's average rating
@@ -102,7 +110,13 @@ class RatingService {
   }
 
   // Get rating distribution (for profile page)
+  // ⚡ Bolt Optimization: Uses in-memory cache to skip heavy Firestore queries.
   Future<Map<int, int>> getRatingDistribution(String helperId) async {
+    if (_ratingDistributionCache.containsKey(helperId)) {
+      // Return a copy of the cached map to prevent callers from mutating the cache by reference
+      return Map<int, int>.from(_ratingDistributionCache[helperId]!);
+    }
+
     final ratingsSnapshot = await _firestore
         .collection('ratings')
         .where('helperId', isEqualTo: helperId)
@@ -114,6 +128,9 @@ class RatingService {
       final rating = (doc.data()['overallRating'] as num).toInt();
       distribution[rating] = (distribution[rating] ?? 0) + 1;
     }
+
+    // Cache the retrieved distribution map
+    _ratingDistributionCache[helperId] = Map<int, int>.from(distribution);
 
     return distribution;
   }

@@ -1,0 +1,3 @@
+## 2026-03-23 - [Rating Distribution Caching]
+**Learning:** Rating distribution queries can fetch all matching rating documents across a helper's profile, leading to severe redundant Firestore reads and CPU-heavy operations for map computation during profile UI rebuilds. By caching these distribution maps locally and invalidating them strictly after successful new rating submissions, we can completely eliminate repetitive queries without risking stale data.
+**Action:** Use memory-efficient Map cache for expensive summary aggregations and ensure proper invalidation is triggered in data-mutating endpoints.

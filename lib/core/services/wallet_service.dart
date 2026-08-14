@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 class WalletService extends ChangeNotifier {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _db;
 
   // Wallet Data
   double _balance = 0.0;
@@ -10,14 +11,34 @@ class WalletService extends ChangeNotifier {
   List<Map<String, dynamic>> _transactions = [];
   Map<String, dynamic> _activePowerUps = {};
 
+  // For managing stream subscription and preventing leaks
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _walletSubscription;
+  String? _currentUserId;
+
   double get balance => _balance;
   int get coins => _coins;
   List<Map<String, dynamic>> get transactions => _transactions;
   Map<String, dynamic> get activePowerUps => _activePowerUps;
 
+  // Constructor with dependency injection support
+  WalletService({FirebaseFirestore? firestore})
+      : _db = firestore ?? FirebaseFirestore.instance;
+
   // Stream listening to user wallet changes
   void listenToWallet(String userId) {
-    _db.collection('users').doc(userId).snapshots().listen((snapshot) {
+    // Prevent re-subscribing to the exact same user's stream if already active
+    if (_currentUserId == userId && _walletSubscription != null) {
+      return;
+    }
+
+    _currentUserId = userId;
+    _walletSubscription?.cancel();
+
+    _walletSubscription = _db
+        .collection('users')
+        .doc(userId)
+        .snapshots()
+        .listen((snapshot) {
       if (snapshot.exists) {
         final data = snapshot.data();
         _balance = (data?['walletBalance'] as num? ?? 0.0).toDouble();
@@ -118,7 +139,7 @@ class WalletService extends ChangeNotifier {
     return true;
   }
 
-  // Activate Power-Up
+  // Backwards-compatible power up activation
   Future<void> activatePowerUp(
     String userId,
     String powerUpType,
@@ -129,5 +150,11 @@ class WalletService extends ChangeNotifier {
     await _db.collection('users').doc(userId).update({
       'activePowerUps.$powerUpType': Timestamp.fromDate(expiresAt),
     });
+  }
+
+  @override
+  void dispose() {
+    _walletSubscription?.cancel();
+    super.dispose();
   }
 }

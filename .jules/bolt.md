@@ -1,0 +1,3 @@
+## 2026-07-15 - List Virtualization Anti-Pattern with `shrinkWrap: true`
+**Learning:** Using `SingleChildScrollView` parent with nested `ListView.builder(shrinkWrap: true, physics: NeverScrollableScrollPhysics())` forces Flutter to build and layout ALL children in memory regardless of screen visibility. Replacing this layout structure with a `CustomScrollView` and dynamic `SliverList` enables true view-port item virtualization, drastically reducing layout computation, memory consumption, and frame drops during scrolling.
+**Action:** Always refactor nested scroll views into a unified `CustomScrollView` using `SliverToBoxAdapter` for fixed header sections and `SliverList` / `SliverGrid` for list items.

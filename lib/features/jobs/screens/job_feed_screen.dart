@@ -242,26 +242,34 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
                 }
                 final allJobs = snapshot.data ?? [];
 
-                // Filter jobs within 10km radius
-                final jobs = _currentPosition != null
-                    ? allJobs.where((job) {
-                        if (job['latitude'] == null ||
-                            job['longitude'] == null) {
-                          return true; // Show jobs without location data
-                        }
-                        try {
-                          final distMeters = Geolocator.distanceBetween(
-                            _currentPosition!.latitude,
-                            _currentPosition!.longitude,
-                            job['latitude'],
-                            job['longitude'],
-                          );
-                          return distMeters <= _maxRadiusKm * 1000;
-                        } catch (_) {
-                          return true;
-                        }
-                      }).toList()
-                    : allJobs;
+                // Single-pass optimization: Filter jobs within radius and pre-calculate formatted distance strings once per stream emission
+                // to avoid redundant trigonometric Geolocator calculations inside itemBuilder during scrolling.
+                final List<Map<String, dynamic>> jobs = [];
+                for (final job in allJobs) {
+                  if (_currentPosition == null ||
+                      job['latitude'] == null ||
+                      job['longitude'] == null) {
+                    jobs.add({...job, '_distanceDisplay': '...'});
+                    continue;
+                  }
+                  try {
+                    final distMeters = Geolocator.distanceBetween(
+                      _currentPosition!.latitude,
+                      _currentPosition!.longitude,
+                      job['latitude'],
+                      job['longitude'],
+                    );
+                    if (distMeters <= _maxRadiusKm * 1000) {
+                      final distDisplay = distMeters < 1000
+                          ? "${distMeters.toStringAsFixed(0)} m"
+                          : "${(distMeters / 1000).toStringAsFixed(1)} km";
+                      jobs.add({...job, '_distanceDisplay': distDisplay});
+                    }
+                  } catch (_) {
+                    jobs.add({...job, '_distanceDisplay': '...'});
+                  }
+                }
+
                 if (_isMapView) {
                   return MapScreen(onToggleView: _toggleView, jobs: jobs);
                 }
@@ -292,26 +300,8 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
                               SizedBox(height: 12.h),
                           itemBuilder: (context, index) {
                             final job = jobs[index];
-                            String distanceDisplay = "...";
-                            if (_currentPosition != null &&
-                                job['latitude'] != null &&
-                                job['longitude'] != null) {
-                              try {
-                                double distMeters = Geolocator.distanceBetween(
-                                  _currentPosition!.latitude,
-                                  _currentPosition!.longitude,
-                                  job['latitude'],
-                                  job['longitude'],
-                                );
-                                if (distMeters < 1000) {
-                                  distanceDisplay =
-                                      "${distMeters.toStringAsFixed(0)} m";
-                                } else {
-                                  distanceDisplay =
-                                      "${(distMeters / 1000).toStringAsFixed(1)} km";
-                                }
-                              } catch (_) {}
-                            }
+                            final distanceDisplay =
+                                (job['_distanceDisplay'] as String?) ?? "...";
                             String timeDisplay = job['time'] ?? "Flexible";
                             return JobCard(
                               key: ValueKey(job['id'] ?? 'job_$index'),

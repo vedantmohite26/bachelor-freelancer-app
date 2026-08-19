@@ -1003,12 +1003,13 @@ class _TrustedContactsModalState extends State<_TrustedContactsModal> {
               ),
             )
           else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: widget.contacts.length,
-              separatorBuilder: (context, index) => const Divider(),
-              itemBuilder: (context, index) {
+            // Performance optimization: Wrapping ListView in Flexible without shrinkWrap: true
+            // allows list virtualization and avoids synchronous calculation/layout of all list items.
+            Flexible(
+              child: ListView.separated(
+                itemCount: widget.contacts.length,
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, index) {
                 final contact = widget.contacts[index];
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -1043,6 +1044,7 @@ class _TrustedContactsModalState extends State<_TrustedContactsModal> {
                   ),
                 );
               },
+            ),
             ),
           SizedBox(height: 24.h),
           SizedBox(

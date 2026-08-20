@@ -30,62 +30,76 @@ class HelperReviewsScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Summary Section
-            RatingSummaryCard(
-              helperId: helperId,
-              averageRating: averageRating,
-              reviewCount: reviewCount,
-            ),
-            Divider(height: 1.h),
-            // Reviews List
-            StreamBuilder<List<Map<String, dynamic>>>(
-              stream: ratingService.getHelperRatings(helperId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: ratingService.getHelperRatings(helperId),
+        builder: (context, snapshot) {
+          // Bolt Optimization: Replace SingleChildScrollView + Column + shrinkWrap ListView
+          // with a single CustomScrollView and slivers.
+          // This enables lazy rendering (virtualization) of review cards as the user scrolls,
+          // preventing premature widget instantiation and reducing memory and GPU paint overhead.
+          return CustomScrollView(
+            slivers: [
+              // Summary Header
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    RatingSummaryCard(
+                      helperId: helperId,
+                      averageRating: averageRating,
+                      reviewCount: reviewCount,
+                    ),
+                    Divider(height: 1.h),
+                  ],
+                ),
+              ),
+
+              // Dynamic Review List or Status Placeholders
+              if (snapshot.connectionState == ConnectionState.waiting)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.w),
                       child: const CircularProgressIndicator(),
                     ),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
+                  ),
+                )
+              else if (snapshot.hasError)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.w),
                       child: const Text('Error loading reviews'),
                     ),
-                  );
-                }
-
-                final reviews = snapshot.data ?? [];
-
-                if (reviews.isEmpty) {
-                  return Center(
+                  ),
+                )
+              else if ((snapshot.data ?? []).isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.w),
                       child: const Text('No reviews found'),
                     ),
-                  );
-                }
-
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+                  ),
+                )
+              else
+                SliverPadding(
                   padding: EdgeInsets.all(16.w),
-                  itemCount: reviews.length,
-                  itemBuilder: (context, index) {
-                    return ReviewCard(review: reviews[index]);
-                  },
-                );
-              },
-            ),
-          ],
-        ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final reviews = snapshot.data!;
+                        return ReviewCard(review: reviews[index]);
+                      },
+                      childCount: snapshot.data!.length,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

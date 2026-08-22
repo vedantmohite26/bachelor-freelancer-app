@@ -1,0 +1,3 @@
+## 2026-08-22 - Pre-computing distance calculations in JobFeedScreen list
+**Learning:** Calculating distance with `Geolocator.distanceBetween` inside a `ListView.builder` / `ListView.separated` `itemBuilder` causes $O(N)$ trigonometric calculations on every frame render during scrolling. Consolidating distance filtering and string formatting into a single pass per stream snapshot update and storing `_distanceDisplay` on the map eliminates redundant trigonometric math completely during list scroll animations.
+**Action:** When working with location-based lists, pre-compute distance and display strings once per data update rather than dynamically calculating inside item builders.

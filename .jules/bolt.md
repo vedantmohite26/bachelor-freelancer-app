@@ -1,0 +1,3 @@
+## 2026-02-21 - Consolidating Location Distance Computations in JobFeedScreen
+**Learning:** Calculating distances using `Geolocator.distanceBetween` in both filtering (`.where`) and item builders (`ListView.separated`) causes redundant $O(N)$ trigonometric calculations on every scroll frame. Consolidating filtering and string formatting into a single pass per stream snapshot drastically reduces frame build overhead and GC pressure.
+**Action:** When filtering list items by location, compute distances and format display values in a single loop upfront during stream evaluation, attaching the formatted string to the job map.

@@ -1003,46 +1003,47 @@ class _TrustedContactsModalState extends State<_TrustedContactsModal> {
               ),
             )
           else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: widget.contacts.length,
-              separatorBuilder: (context, index) => const Divider(),
-              itemBuilder: (context, index) {
-                final contact = widget.contacts[index];
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: CircleAvatar(
-                    backgroundColor: isDark
-                        ? AppTheme.growthGreen.withValues(alpha: 0.2)
-                        : const Color(0xFFD1FAE5),
-                    child: const Icon(
-                      Icons.person_outline,
-                      color: AppTheme.growthGreen,
+            // Bolt: Wrapped in Flexible and removed shrinkWrap/NeverScrollableScrollPhysics to restore full list virtualization and improve scrolling performance inside the modal.
+            Flexible(
+              child: ListView.separated(
+                itemCount: widget.contacts.length,
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, index) {
+                  final contact = widget.contacts[index];
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: CircleAvatar(
+                      backgroundColor: isDark
+                          ? AppTheme.growthGreen.withValues(alpha: 0.2)
+                          : const Color(0xFFD1FAE5),
+                      child: const Icon(
+                        Icons.person_outline,
+                        color: AppTheme.growthGreen,
+                      ),
                     ),
-                  ),
-                  title: Text(
-                    contact['name'] ?? '',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurface,
+                    title: Text(
+                      contact['name'] ?? '',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
-                  ),
-                  subtitle: Text(
-                    contact['phone'] ?? '',
-                    style: GoogleFonts.inter(
-                      color: colorScheme.onSurfaceVariant,
+                    subtitle: Text(
+                      contact['phone'] ?? '',
+                      style: GoogleFonts.inter(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
-                  trailing: IconButton(
-                    icon: Icon(
-                      Icons.delete_outline,
-                      color: colorScheme.error.withValues(alpha: 0.8),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: colorScheme.error.withValues(alpha: 0.8),
+                      ),
+                      onPressed: () => widget.onRemoveContact(contact),
                     ),
-                    onPressed: () => widget.onRemoveContact(contact),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           SizedBox(height: 24.h),
           SizedBox(

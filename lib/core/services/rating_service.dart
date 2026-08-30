@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class RatingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // In-memory cache for helper rating distributions to reduce redundant Firestore queries
+  final Map<String, Map<int, int>> _ratingDistributionCache = {};
+
   // Submit rating with validation
   Future<void> submitRating({
     required String helperId,
@@ -65,6 +68,9 @@ class RatingService {
 
   // Update helper's average rating
   Future<void> _updateHelperRating(String helperId) async {
+    // Invalidate distribution cache when rating is updated/added
+    _ratingDistributionCache.remove(helperId);
+
     final ratingsSnapshot = await _firestore
         .collection('ratings')
         .where('helperId', isEqualTo: helperId)
@@ -103,6 +109,10 @@ class RatingService {
 
   // Get rating distribution (for profile page)
   Future<Map<int, int>> getRatingDistribution(String helperId) async {
+    if (_ratingDistributionCache.containsKey(helperId)) {
+      return Map<int, int>.from(_ratingDistributionCache[helperId]!);
+    }
+
     final ratingsSnapshot = await _firestore
         .collection('ratings')
         .where('helperId', isEqualTo: helperId)
@@ -115,6 +125,7 @@ class RatingService {
       distribution[rating] = (distribution[rating] ?? 0) + 1;
     }
 
+    _ratingDistributionCache[helperId] = Map<int, int>.from(distribution);
     return distribution;
   }
 

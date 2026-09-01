@@ -122,7 +122,7 @@ class ChatListScreen extends StatelessWidget {
   }
 }
 
-class _ChatListItem extends StatelessWidget {
+class _ChatListItem extends StatefulWidget {
   final List<dynamic> participants;
   final String currentUserId;
   final String message;
@@ -138,16 +138,43 @@ class _ChatListItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final otherUserId = participants.firstWhere(
-      (id) => id != currentUserId,
+  State<_ChatListItem> createState() => _ChatListItemState();
+}
+
+class _ChatListItemState extends State<_ChatListItem> {
+  // Caching the Future prevents FutureBuilder from re-executing async fetches on parent rebuilds or scrolls
+  Future<Map<String, dynamic>?>? _userProfileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ChatListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentUserId != widget.currentUserId ||
+        oldWidget.participants != widget.participants) {
+      _loadProfile();
+    }
+  }
+
+  void _loadProfile() {
+    final otherUserId = widget.participants.firstWhere(
+      (id) => id != widget.currentUserId,
       orElse: () => 'Unknown',
     );
     final userService = Provider.of<UserService>(context, listen: false);
+    _userProfileFuture = userService.getUserProfile(otherUserId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return FutureBuilder<Map<String, dynamic>?>(
-      future: userService.getUserProfile(otherUserId),
+      future: _userProfileFuture,
       builder: (context, snapshot) {
         final user = snapshot.data;
         final name = user?['name'] ?? 'User';
@@ -188,7 +215,7 @@ class _ChatListItem extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          time,
+                          widget.time,
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: AppTheme.textLight,
@@ -198,12 +225,12 @@ class _ChatListItem extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      message,
+                      widget.message,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: unread ? AppTheme.textDark : AppTheme.textLight,
-                        fontWeight: unread
+                        color: widget.unread ? AppTheme.textDark : AppTheme.textLight,
+                        fontWeight: widget.unread
                             ? FontWeight.w600
                             : FontWeight.normal,
                       ),

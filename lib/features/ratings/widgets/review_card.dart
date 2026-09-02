@@ -5,10 +5,44 @@ import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/user_service.dart';
 import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 
-class ReviewCard extends StatelessWidget {
+class ReviewCard extends StatefulWidget {
   final Map<String, dynamic> review;
 
   const ReviewCard({super.key, required this.review});
+
+  @override
+  State<ReviewCard> createState() => _ReviewCardState();
+}
+
+class _ReviewCardState extends State<ReviewCard> {
+  // Caching the Future prevents redundant fetches & FutureBuilder resets on parent rebuilds
+  Future<Map<String, dynamic>?>? _userProfileFuture;
+  String? _seekerId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  @override
+  void didUpdateWidget(covariant ReviewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newSeekerId = widget.review['seekerId'] as String? ?? '';
+    if (newSeekerId != _seekerId) {
+      _loadUserProfile();
+    }
+  }
+
+  void _loadUserProfile() {
+    _seekerId = widget.review['seekerId'] as String? ?? '';
+    if (_seekerId != null && _seekerId!.isNotEmpty) {
+      final userService = Provider.of<UserService>(context, listen: false);
+      _userProfileFuture = userService.getUserProfile(_seekerId!);
+    } else {
+      _userProfileFuture = null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,14 +50,11 @@ class ReviewCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final overallRating = (review['overallRating'] as num).toDouble();
-    final feedback = review['feedback'] as String?;
+    final overallRating = (widget.review['overallRating'] as num).toDouble();
+    final feedback = widget.review['feedback'] as String?;
     final tags =
-        (review['tags'] as List?)?.map((e) => e.toString()).toList() ?? [];
-    final createdAt = review['createdAt']; // Timestamp
-
-    final seekerId = review['seekerId'] as String? ?? '';
-    final userService = Provider.of<UserService>(context, listen: false);
+        (widget.review['tags'] as List?)?.map((e) => e.toString()).toList() ?? [];
+    final createdAt = widget.review['createdAt']; // Timestamp
 
     DateTime date;
     if (createdAt != null) {
@@ -63,7 +94,7 @@ class ReviewCard extends StatelessWidget {
             children: [
               Expanded(
                 child: FutureBuilder<Map<String, dynamic>?>(
-                  future: userService.getUserProfile(seekerId),
+                  future: _userProfileFuture,
                   builder: (context, snapshot) {
                     final user = snapshot.data;
                     final name = user?['name'] ?? 'Verified User';

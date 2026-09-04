@@ -122,7 +122,10 @@ class ChatListScreen extends StatelessWidget {
   }
 }
 
-class _ChatListItem extends StatelessWidget {
+/// StatefulWidget wrapper around chat list item to cache the profile fetch future.
+/// Caching the future prevents re-executing `userService.getUserProfile` on every parent
+/// StreamBuilder event or layout update when messages or timestamps change.
+class _ChatListItem extends StatefulWidget {
   final List<dynamic> participants;
   final String currentUserId;
   final String message;
@@ -138,16 +141,46 @@ class _ChatListItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final otherUserId = participants.firstWhere(
-      (id) => id != currentUserId,
+  State<_ChatListItem> createState() => _ChatListItemState();
+}
+
+class _ChatListItemState extends State<_ChatListItem> {
+  late Future<Map<String, dynamic>?> _userProfileFuture;
+
+  String _getOtherUserId() {
+    return widget.participants.firstWhere(
+      (id) => id != widget.currentUserId,
       orElse: () => 'Unknown',
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
     final userService = Provider.of<UserService>(context, listen: false);
+    _userProfileFuture = userService.getUserProfile(_getOtherUserId());
+  }
+
+  @override
+  void didUpdateWidget(covariant _ChatListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldOtherId = oldWidget.participants.firstWhere(
+      (id) => id != oldWidget.currentUserId,
+      orElse: () => 'Unknown',
+    );
+    final newOtherId = _getOtherUserId();
+    if (oldOtherId != newOtherId) {
+      final userService = Provider.of<UserService>(context, listen: false);
+      _userProfileFuture = userService.getUserProfile(newOtherId);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return FutureBuilder<Map<String, dynamic>?>(
-      future: userService.getUserProfile(otherUserId),
+      future: _userProfileFuture,
       builder: (context, snapshot) {
         final user = snapshot.data;
         final name = user?['name'] ?? 'User';
@@ -188,7 +221,7 @@ class _ChatListItem extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          time,
+                          widget.time,
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: AppTheme.textLight,
@@ -198,12 +231,12 @@ class _ChatListItem extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      message,
+                      widget.message,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: unread ? AppTheme.textDark : AppTheme.textLight,
-                        fontWeight: unread
+                        color: widget.unread ? AppTheme.textDark : AppTheme.textLight,
+                        fontWeight: widget.unread
                             ? FontWeight.w600
                             : FontWeight.normal,
                       ),

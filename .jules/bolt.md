@@ -1,0 +1,3 @@
+## 2026-11-08 - Cache profile fetch Futures in StatefulWidget for list items
+**Learning:** In screens driven by active streams (such as `ChatListScreen` listening to `getUserChats`), item widgets wrapped in `FutureBuilder` (e.g. `_ChatListItem`) re-trigger `userService.getUserProfile` on every stream event if the future is instantiated directly inside `build()`. Converting the list item to a `StatefulWidget` and caching the `Future` in `initState()` prevents redundant future calls and rebuilds across message updates.
+**Action:** When using `FutureBuilder` inside dynamic list items under active streams, convert the item to a `StatefulWidget` and cache the `Future` in state.

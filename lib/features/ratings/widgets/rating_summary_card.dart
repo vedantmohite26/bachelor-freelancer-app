@@ -3,7 +3,7 @@ import 'package:freelancer/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:freelancer/core/services/rating_service.dart';
 
-class RatingSummaryCard extends StatelessWidget {
+class RatingSummaryCard extends StatefulWidget {
   final String helperId;
   final double averageRating;
   final int reviewCount;
@@ -18,10 +18,37 @@ class RatingSummaryCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (reviewCount == 0) return const SizedBox.shrink();
+  State<RatingSummaryCard> createState() => _RatingSummaryCardState();
+}
 
+class _RatingSummaryCardState extends State<RatingSummaryCard> {
+  // Cache the rating distribution Future in state to avoid re-instantiating
+  // the Future on every parent rebuild, preventing unnecessary FutureBuilder resets.
+  Future<Map<int, int>>? _distributionFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRatingDistribution();
+  }
+
+  @override
+  void didUpdateWidget(covariant RatingSummaryCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.helperId != widget.helperId) {
+      _fetchRatingDistribution();
+    }
+  }
+
+  void _fetchRatingDistribution() {
     final ratingService = Provider.of<RatingService>(context, listen: false);
+    _distributionFuture = ratingService.getRatingDistribution(widget.helperId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.reviewCount == 0) return const SizedBox.shrink();
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -44,7 +71,7 @@ class RatingSummaryCard extends StatelessWidget {
               Column(
                 children: [
                   Text(
-                    averageRating.toStringAsFixed(1),
+                    widget.averageRating.toStringAsFixed(1),
                     style: textTheme.displayMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: colorScheme.onSurface,
@@ -53,7 +80,7 @@ class RatingSummaryCard extends StatelessWidget {
                   Row(
                     children: List.generate(5, (index) {
                       return Icon(
-                        index < averageRating.round()
+                        index < widget.averageRating.round()
                             ? Icons.star
                             : Icons.star_border,
                         color: const Color(0xFFFBBF24),
@@ -63,7 +90,7 @@ class RatingSummaryCard extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    '$reviewCount ${reviewCount == 1 ? 'Review' : 'Reviews'}',
+                    '${widget.reviewCount} ${widget.reviewCount == 1 ? 'Review' : 'Reviews'}',
                     style: textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -74,13 +101,13 @@ class RatingSummaryCard extends StatelessWidget {
               // Rating Bars
               Expanded(
                 child: FutureBuilder<Map<int, int>>(
-                  future: ratingService.getRatingDistribution(helperId),
+                  future: _distributionFuture,
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
                     final distribution = snapshot.data!;
-                    final maxCount = reviewCount > 0 ? reviewCount : 1;
+                    final maxCount = widget.reviewCount > 0 ? widget.reviewCount : 1;
 
                     return Column(
                       children: [5, 4, 3, 2, 1].map((star) {

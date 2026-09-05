@@ -1,0 +1,3 @@
+## 2026-11-20 - Cache Future in StatefulWidget to Prevent FutureBuilder Resets
+**Learning:** In Flutter, invoking asynchronous methods inline inside `FutureBuilder.future` (e.g. `future: service.getRatingDistribution(...)`) within a `StatelessWidget.build` re-instantiates a new `Future` on every widget rebuild. When parent widgets or streams update, `FutureBuilder` detects `oldWidget.future != widget.future`, causing it to reset state and re-trigger subscriptions.
+**Action:** Convert `StatelessWidget` with asynchronous `FutureBuilder`s to `StatefulWidget`, cache the `Future` in state during `initState()`, and update it in `didUpdateWidget()` when identifiers change.

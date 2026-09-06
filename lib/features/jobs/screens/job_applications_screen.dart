@@ -425,7 +425,7 @@ class _JobApplicationsScreenState extends State<JobApplicationsScreen> {
   }
 }
 
-class _ApplicationCard extends StatelessWidget {
+class _ApplicationCard extends StatefulWidget {
   final Map<String, dynamic> application;
   final void Function(
     String name,
@@ -445,12 +445,26 @@ class _ApplicationCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final userService = Provider.of<UserService>(context, listen: false);
-    final helperId = application['helperId'] as String;
+  State<_ApplicationCard> createState() => _ApplicationCardState();
+}
 
+class _ApplicationCardState extends State<_ApplicationCard> {
+  late final Future<Map<String, dynamic>?> _userProfileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Cache the user profile Future in state to prevent re-instantiating
+    // the Future on every parent or card widget rebuild.
+    final userService = Provider.of<UserService>(context, listen: false);
+    final helperId = widget.application['helperId'] as String;
+    _userProfileFuture = userService.getUserProfile(helperId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return FutureBuilder<Map<String, dynamic>?>(
-      future: userService.getUserProfile(helperId),
+      future: _userProfileFuture,
       builder: (context, snapshot) {
         final helper = snapshot.data;
         if (helper == null &&
@@ -469,7 +483,7 @@ class _ApplicationCard extends StatelessWidget {
         final colorScheme = Theme.of(context).colorScheme;
 
         return GestureDetector(
-          onTap: onViewProfile,
+          onTap: widget.onViewProfile,
           child: Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
@@ -548,7 +562,7 @@ class _ApplicationCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: onReject,
+                        onPressed: widget.onReject,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: colorScheme.error,
                           side: BorderSide(color: colorScheme.error),
@@ -563,7 +577,7 @@ class _ApplicationCard extends StatelessWidget {
                     SizedBox(width: 12.w),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => onAccept(
+                        onPressed: () => widget.onAccept(
                           name,
                           helper?['profileImage'] ?? '',
                           helper?['email'] ?? '',
@@ -603,21 +617,38 @@ class _ApplicationCard extends StatelessWidget {
   }
 }
 
-class _ProcessedApplicationCard extends StatelessWidget {
+class _ProcessedApplicationCard extends StatefulWidget {
   final Map<String, dynamic> application;
 
   const _ProcessedApplicationCard({required this.application});
 
   @override
-  Widget build(BuildContext context) {
+  State<_ProcessedApplicationCard> createState() =>
+      _ProcessedApplicationCardState();
+}
+
+class _ProcessedApplicationCardState
+    extends State<_ProcessedApplicationCard> {
+  late final Future<Map<String, dynamic>?> _userProfileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Cache the user profile Future in state to prevent re-instantiating
+    // the Future on every parent or card widget rebuild.
     final userService = Provider.of<UserService>(context, listen: false);
-    final helperId = application['helperId'] as String;
-    final status = application['status'];
+    final helperId = widget.application['helperId'] as String;
+    _userProfileFuture = userService.getUserProfile(helperId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final status = widget.application['status'];
     final isAccepted = status == 'accepted';
     final colorScheme = Theme.of(context).colorScheme;
 
     return FutureBuilder<Map<String, dynamic>?>(
-      future: userService.getUserProfile(helperId),
+      future: _userProfileFuture,
       builder: (context, snapshot) {
         final helper = snapshot.data;
         if (helper == null &&
@@ -702,7 +733,7 @@ class _ProcessedApplicationCard extends StatelessWidget {
                   stream: Provider.of<JobService>(
                     context,
                     listen: false,
-                  ).getJobStream(application['jobId']),
+                  ).getJobStream(widget.application['jobId']),
                   builder: (context, jobSnapshot) {
                     if (jobSnapshot.connectionState ==
                         ConnectionState.waiting) {
@@ -796,8 +827,8 @@ class _ProcessedApplicationCard extends StatelessWidget {
                         _buildAction(
                           context,
                           jobStatus,
-                          application['jobId'],
-                          helperId,
+                          widget.application['jobId'],
+                          widget.application['helperId'] as String,
                           name,
                           job,
                           colorScheme,

@@ -257,11 +257,53 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _JobCard extends StatelessWidget {
+/// Converting _JobCard to StatefulWidget caches _applicationCountStream across parent rebuilds,
+/// filter changes, and scrolling events. This avoids tearing down and recreating
+/// Firestore stream listeners inside StreamBuilder on every build.
+class _JobCard extends StatefulWidget {
   final Map<String, dynamic> job;
   final VoidCallback onTap;
 
   const _JobCard({required this.job, required this.onTap});
+
+  @override
+  State<_JobCard> createState() => _JobCardState();
+}
+
+class _JobCardState extends State<_JobCard> {
+  Stream<int>? _applicationCountStream;
+  String? _cachedJobId;
+  String? _cachedSeekerId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initStreamIfNeeded();
+  }
+
+  @override
+  void didUpdateWidget(_JobCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.job['id'] != widget.job['id']) {
+      _initStreamIfNeeded();
+    }
+  }
+
+  void _initStreamIfNeeded() {
+    final jobService = Provider.of<JobService>(context, listen: false);
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final seekerId = authService.user?.uid ?? '';
+    final jobId = widget.job['id'] as String? ?? '';
+
+    if (jobId != _cachedJobId || seekerId != _cachedSeekerId) {
+      _cachedJobId = jobId;
+      _cachedSeekerId = seekerId;
+      _applicationCountStream = jobService.getApplicationCountStream(
+        jobId,
+        seekerId,
+      );
+    }
+  }
 
   Color _getStatusColor(String status) {
     switch (status) {
@@ -303,9 +345,8 @@ class _JobCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final jobService = Provider.of<JobService>(context, listen: false);
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final seekerId = authService.user?.uid ?? '';
+    final job = widget.job;
+    final onTap = widget.onTap;
 
     final title = job['title'] ?? 'Untitled Job';
     final price = (job['price'] ?? 0.0).toDouble();
@@ -322,7 +363,6 @@ class _JobCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
-          // border: Border.all(color: colorScheme.outlineVariant), // Optional border
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,7 +416,6 @@ class _JobCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                // Removed redundant Icon(Icons.currency_rupee)
                 Text(
                   '₹${price.toStringAsFixed(2)}', // Indian Rupee
                   style: TextStyle(
@@ -394,10 +433,7 @@ class _JobCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   StreamBuilder<int>(
-                    stream: jobService.getApplicationCountStream(
-                      job['id'],
-                      seekerId,
-                    ),
+                    stream: _applicationCountStream,
                     initialData: initialApplications,
                     builder: (context, snapshot) {
                       final count = snapshot.data ?? initialApplications;

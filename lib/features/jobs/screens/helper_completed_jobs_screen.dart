@@ -6,14 +6,31 @@ import 'package:freelancer/core/services/auth_service.dart';
 import 'package:intl/intl.dart';
 import 'package:freelancer/features/jobs/screens/payment_received_screen.dart';
 
-class HelperCompletedJobsScreen extends StatelessWidget {
+class HelperCompletedJobsScreen extends StatefulWidget {
   const HelperCompletedJobsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<HelperCompletedJobsScreen> createState() =>
+      _HelperCompletedJobsScreenState();
+}
+
+class _HelperCompletedJobsScreenState
+    extends State<HelperCompletedJobsScreen> {
+  // Bolt Optimization: Cache the completed jobs Future in State to prevent
+  // redundant Firestore database queries and flickering when parent rebuilds.
+  Future<List<Map<String, dynamic>>>? _completedJobsFuture;
+
+  @override
+  void initState() {
+    super.initState();
     final jobService = Provider.of<JobService>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
     final userId = authService.user?.uid ?? '';
+    _completedJobsFuture = jobService.getHelperCompletedJobs(userId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -30,7 +47,7 @@ class HelperCompletedJobsScreen extends StatelessWidget {
         foregroundColor: colorScheme.onSurface,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: jobService.getHelperCompletedJobs(userId),
+        future: _completedJobsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -99,7 +116,10 @@ class HelperCompletedJobsScreen extends StatelessWidget {
             itemCount: jobs.length,
             itemBuilder: (context, index) {
               final job = jobs[index];
-              return _CompletedJobCard(job: job);
+              // RepaintBoundary isolates paint repaints during scrolling
+              return RepaintBoundary(
+                child: _CompletedJobCard(job: job),
+              );
             },
           );
         },

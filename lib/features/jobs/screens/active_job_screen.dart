@@ -32,6 +32,20 @@ class ActiveJobScreen extends StatefulWidget {
 
 class _ActiveJobScreenState extends State<ActiveJobScreen> {
   // Configurable dependencies logic if needed
+  // Cache user profile future in state to prevent redundant Future re-instantiations
+  // on every rebuild/stream tick inside FutureBuilder.
+  Future<Map<String, dynamic>?>? _userProfileFuture;
+  String? _cachedProfileUserId;
+
+  void _loadUserProfile(String targetUserId) {
+    if (_cachedProfileUserId != targetUserId) {
+      _cachedProfileUserId = targetUserId;
+      _userProfileFuture = Provider.of<UserService>(
+        context,
+        listen: false,
+      ).getUserProfile(targetUserId);
+    }
+  }
 
   @override
   void initState() {
@@ -110,6 +124,11 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
             });
           }
         }
+
+        final targetUserId = widget.isSeeker
+            ? (job['assignedHelperId'] as String? ?? '')
+            : (job['posterId'] as String? ?? '');
+        _loadUserProfile(targetUserId);
 
         return _buildActiveJobUI(
           context: context,
@@ -220,13 +239,10 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
               const Spacer(flex: 1),
 
               // 1. Profile / Status Card
+              // Performance optimization: Cached _userProfileFuture is passed
+              // to FutureBuilder to prevent redundant Future re-instantiations on every rebuild.
               FutureBuilder<Map<String, dynamic>?>(
-                future: Provider.of<UserService>(context, listen: false)
-                    .getUserProfile(
-                      widget.isSeeker
-                          ? (job['assignedHelperId'] ?? '')
-                          : (job['posterId'] ?? ''),
-                    ),
+                future: _userProfileFuture,
                 builder: (context, profileSnapshot) {
                   final profile = profileSnapshot.data;
                   final name =

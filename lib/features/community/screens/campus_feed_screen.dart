@@ -108,16 +108,20 @@ class CampusFeedScreen extends StatelessWidget {
               final timestamp =
                   (post['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now();
 
-              return _PostCard(
-                key: ValueKey(post['id']),
-                authorName: post['authorName'] ?? 'Student',
-                timeAgo: _formatTimeAgo(timestamp),
-                content: post['content'] ?? '',
-                isOfficial: post['isOfficial'] ?? false,
-                likes: post['likes'] ?? 0,
-                comments: post['comments'] ?? 0,
-                postId: post['id'],
-                authorId: post['authorId'],
+              // Bolt: Wrap each post card with a RepaintBoundary to isolate repaints
+              // during real-time stream updates (e.g., likes/comments updates) and smooth out scrolling performance.
+              return RepaintBoundary(
+                child: _PostCard(
+                  key: ValueKey(post['id']),
+                  authorName: post['authorName'] ?? 'Student',
+                  timeAgo: _formatTimeAgo(timestamp),
+                  content: post['content'] ?? '',
+                  isOfficial: post['isOfficial'] ?? false,
+                  likes: post['likes'] ?? 0,
+                  comments: post['comments'] ?? 0,
+                  postId: post['id'],
+                  authorId: post['authorId'],
+                ),
               );
             },
           );

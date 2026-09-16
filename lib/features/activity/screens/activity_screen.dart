@@ -257,106 +257,110 @@ class _ActivityItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      margin: EdgeInsets.only(bottom: 24.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Leading Icon
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: iconBgColor ?? colorScheme.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+    // Bolt Optimization: Isolate paint operations for activity items using RepaintBoundary
+    // to prevent repainting adjacent list elements during scroll or stream updates.
+    return RepaintBoundary(
+      child: Container(
+        margin: EdgeInsets.only(bottom: 24.h),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Leading Icon
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: iconBgColor ?? colorScheme.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: iconColor ?? colorScheme.primary,
+                size: 24.sp,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: iconColor ?? colorScheme.primary,
-              size: 24.sp,
-            ),
-          ),
-          SizedBox(width: 16.w),
+            SizedBox(width: 16.w),
 
-          // Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16.sp,
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  color: colorScheme.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16.sp,
+                                ),
                               ),
                             ),
-                          ),
-                          if (isUnread) ...[
-                            SizedBox(width: 8.w),
-                            Container(
-                              width: 6.w,
-                              height: 6.h,
-                              decoration: const BoxDecoration(
-                                color: AppTheme.primaryBlue,
-                                shape: BoxShape.circle,
+                            if (isUnread) ...[
+                              SizedBox(width: 8.w),
+                              Container(
+                                width: 6.w,
+                                height: 6.h,
+                                decoration: const BoxDecoration(
+                                  color: AppTheme.primaryBlue,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
+                            ],
                           ],
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    if (trailing != null)
-                      trailing!
-                    else
-                      Text(
-                        time,
-                        style: GoogleFonts.inter(
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
-                          fontSize: 12.sp,
                         ),
                       ),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        subtitle,
-                        style: GoogleFonts.inter(
-                          color: colorScheme.onSurface.withValues(alpha: 0.6),
-                          fontSize: 14.sp,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                    if (trailing != null) ...[
                       SizedBox(width: 8.w),
-                      Text(
-                        time,
-                        style: GoogleFonts.inter(
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
-                          fontSize: 12.sp,
+                      if (trailing != null)
+                        trailing!
+                      else
+                        Text(
+                          time,
+                          style: GoogleFonts.inter(
+                            color: colorScheme.onSurface.withValues(alpha: 0.5),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          subtitle,
+                          style: GoogleFonts.inter(
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            fontSize: 14.sp,
+                            height: 1.4,
+                          ),
                         ),
                       ),
+                      if (trailing != null) ...[
+                        SizedBox(width: 8.w),
+                        Text(
+                          time,
+                          style: GoogleFonts.inter(
+                            color: colorScheme.onSurface.withValues(alpha: 0.5),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

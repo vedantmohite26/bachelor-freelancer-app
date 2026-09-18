@@ -1,0 +1,3 @@
+## 2026-03-29 - Sliver Layout Hierarchy for Decorated Containers
+**Learning:** When refactoring a `Container(decoration: ..., padding: ..., child: ListView)` to a `CustomScrollView`, wrapping `SliverPadding` inside `DecoratedSliver` puts the padding outside the background decoration. Wrapping `SliverPadding` inside `DecoratedSliver` (`DecoratedSliver(sliver: SliverPadding(...))`) ensures the background container spans full width while keeping padding inside.
+**Action:** Always place `DecoratedSliver` as the outer sliver wrapping `SliverPadding` when migrating decorated padded containers to slivers.

@@ -122,7 +122,7 @@ class ChatListScreen extends StatelessWidget {
   }
 }
 
-class _ChatListItem extends StatelessWidget {
+class _ChatListItem extends StatefulWidget {
   final List<dynamic> participants;
   final String currentUserId;
   final String message;
@@ -138,83 +138,122 @@ class _ChatListItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final otherUserId = participants.firstWhere(
-      (id) => id != currentUserId,
+  State<_ChatListItem> createState() => _ChatListItemState();
+}
+
+class _ChatListItemState extends State<_ChatListItem> {
+  Future<Map<String, dynamic>?>? _userProfileFuture;
+  late String _otherUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _otherUserId = _getOtherUserId();
+    _loadUserProfile();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ChatListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newOtherUserId = _getOtherUserId();
+    if (newOtherUserId != _otherUserId) {
+      _otherUserId = newOtherUserId;
+      _loadUserProfile();
+    }
+  }
+
+  String _getOtherUserId() {
+    return widget.participants.firstWhere(
+      (id) => id != widget.currentUserId,
       orElse: () => 'Unknown',
     );
+  }
+
+  void _loadUserProfile() {
+    if (_otherUserId == 'Unknown') {
+      _userProfileFuture = Future.value(null);
+      return;
+    }
     final userService = Provider.of<UserService>(context, listen: false);
+    _userProfileFuture = userService.getUserProfile(_otherUserId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return FutureBuilder<Map<String, dynamic>?>(
-      future: userService.getUserProfile(otherUserId),
-      builder: (context, snapshot) {
-        final user = snapshot.data;
-        final name = user?['name'] ?? 'User';
-        final profilePic = user?['profilePic'];
+    // Bolt Optimization: Wrap item in RepaintBoundary to isolate repaints during stream/scroll updates.
+    return RepaintBoundary(
+      child: FutureBuilder<Map<String, dynamic>?>(
+        future: _userProfileFuture,
+        builder: (context, snapshot) {
+          final user = snapshot.data;
+          final name = user?['name'] ?? 'User';
+          final profilePic = user?['profilePic'];
 
-        return Container(
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(12.w),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              CachedNetworkAvatar(
-                imageUrl: profilePic,
-                radius: 20,
-                fallbackText: name,
-                backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                fallbackIconColor: AppTheme.primaryBlue,
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          time,
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: AppTheme.textLight,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      message,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: unread ? AppTheme.textDark : AppTheme.textLight,
-                        fontWeight: unread
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ],
+          return Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(12.w),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+            child: Row(
+              children: [
+                CachedNetworkAvatar(
+                  imageUrl: profilePic,
+                  radius: 20,
+                  fallbackText: name,
+                  backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                  fallbackIconColor: AppTheme.primaryBlue,
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            widget.time,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: AppTheme.textLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        widget.message,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: widget.unread ? AppTheme.textDark : AppTheme.textLight,
+                          fontWeight: widget.unread
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

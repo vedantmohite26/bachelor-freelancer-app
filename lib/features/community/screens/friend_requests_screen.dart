@@ -10,17 +10,38 @@ import 'package:freelancer/features/profile/screens/helper_profile_screen.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class FriendRequestsScreen extends StatelessWidget {
+class FriendRequestsScreen extends StatefulWidget {
   const FriendRequestsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<FriendRequestsScreen> createState() => _FriendRequestsScreenState();
+}
+
+class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
+  Stream<List<Map<String, dynamic>>>? _incomingRequestsStream;
+  Stream<List<Map<String, dynamic>>>? _sentRequestsStream;
+  String? _userId;
+
+  @override
+  void initState() {
+    super.initState();
     final authService = Provider.of<AuthService>(context, listen: false);
     final friendService = Provider.of<FriendService>(context, listen: false);
-    final userId = authService.user?.uid;
+    _userId = authService.user?.uid;
+    if (_userId != null) {
+      // FIX: Cache stream instances once to prevent redundant Firestore listener creations
+      // and duplicate subscriptions across TabBar badges and tab body views.
+      _incomingRequestsStream = friendService.getIncomingRequestsStream(_userId!);
+      _sentRequestsStream = friendService.getSentRequestsStream(_userId!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final friendService = Provider.of<FriendService>(context, listen: false);
     final colorScheme = Theme.of(context).colorScheme;
 
-    if (userId == null) {
+    if (_userId == null) {
       return Scaffold(
         body: Center(
           child: Text(
@@ -98,14 +119,14 @@ class FriendRequestsScreen extends StatelessWidget {
                 tabs: [
                   _buildTab("Find", 0, icon: Icons.search),
                   StreamBuilder<List<Map<String, dynamic>>>(
-                    stream: friendService.getIncomingRequestsStream(userId),
+                    stream: _incomingRequestsStream,
                     builder: (context, snapshot) {
                       final count = snapshot.data?.length ?? 0;
                       return _buildTab("Received", count);
                     },
                   ),
                   StreamBuilder<List<Map<String, dynamic>>>(
-                    stream: friendService.getSentRequestsStream(userId),
+                    stream: _sentRequestsStream,
                     builder: (context, snapshot) {
                       final count = snapshot.data?.length ?? 0;
                       return _buildTab("Sent", count);
@@ -118,9 +139,9 @@ class FriendRequestsScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            _FindFriendsTab(userId: userId),
-            _buildReceivedList(friendService, userId),
-            _buildSentList(friendService, userId),
+            _FindFriendsTab(userId: _userId!),
+            _buildReceivedList(friendService),
+            _buildSentList(friendService),
           ],
         ),
       ),
@@ -159,9 +180,9 @@ class FriendRequestsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildReceivedList(FriendService friendService, String userId) {
+  Widget _buildReceivedList(FriendService friendService) {
     return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: friendService.getIncomingRequestsStream(userId),
+      stream: _incomingRequestsStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -183,9 +204,10 @@ class FriendRequestsScreen extends StatelessWidget {
                 ? "${date.month}/${date.day} ${date.hour}:${date.minute}"
                 : "Recently";
 
-            return Column(
-              children: [
-                RequestCard(
+            return RepaintBoundary(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 16.h),
+                child: RequestCard(
                   key: ValueKey(req['requestId']),
                   requestId: req['requestId'], // Need requestId for actions
                   name: req['name'],
@@ -200,8 +222,7 @@ class FriendRequestsScreen extends StatelessWidget {
                   onReject: () =>
                       friendService.rejectFriendRequest(req['requestId']),
                 ),
-                SizedBox(height: 16.h),
-              ],
+              ),
             );
           },
         );
@@ -209,9 +230,9 @@ class FriendRequestsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSentList(FriendService friendService, String userId) {
+  Widget _buildSentList(FriendService friendService) {
     return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: friendService.getSentRequestsStream(userId),
+      stream: _sentRequestsStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -231,9 +252,10 @@ class FriendRequestsScreen extends StatelessWidget {
                 ? "${date.month}/${date.day} ${date.hour}:${date.minute}"
                 : "Recently";
 
-            return Column(
-              children: [
-                RequestCard(
+            return RepaintBoundary(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 16.h),
+                child: RequestCard(
                   key: ValueKey(req['requestId']),
                   requestId: req['requestId'],
                   name: req['name'],
@@ -244,12 +266,11 @@ class FriendRequestsScreen extends StatelessWidget {
                   isSent: true,
                   profilePic: req['profilePic'],
                   onCancel: () => friendService.cancelFriendRequest(
-                    userId,
+                    _userId!,
                     req['receiverId'],
                   ),
                 ),
-                SizedBox(height: 16.h),
-              ],
+              ),
             );
           },
         );

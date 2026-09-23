@@ -1,0 +1,3 @@
+## 2026-02-21 - CustomScrollView for WalletScreen List Virtualization
+**Learning:** `WalletScreen` was using `SingleChildScrollView` + `ListView.builder(shrinkWrap: true)`, which disables viewport virtualization and forces Flutter to build and layout all transaction cards in memory at once. Separating padding between `SliverPadding` for header (`top`, `left`, `right`) and `SliverPadding` for list (`left`, `right`, `bottom`) avoids layout spacing flaws between slivers.
+**Action:** When converting non-virtualized scroll views to `CustomScrollView` with slivers, always split header and list padding cleanly across `SliverPadding` boundaries to preserve layout spacing while enabling lazy rendering via `SliverList`.

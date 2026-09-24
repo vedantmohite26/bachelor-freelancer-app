@@ -24,6 +24,28 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   bool _isSending = false;
 
+  // Cached message stream to prevent StreamBuilder from re-subscribing on rebuilds
+  late Stream<List<Map<String, dynamic>>> _messagesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _initMessagesStream();
+  }
+
+  @override
+  void didUpdateWidget(ChatScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.chatId != widget.chatId) {
+      _initMessagesStream();
+    }
+  }
+
+  void _initMessagesStream() {
+    final chatService = Provider.of<ChatService>(context, listen: false);
+    _messagesStream = chatService.getMessages(widget.chatId);
+  }
+
   void _sendMessage() async {
     final content = _messageController.text.trim();
     if (content.isEmpty) return;
@@ -62,7 +84,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final chatService = Provider.of<ChatService>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
     final currentUserId = authService.user?.uid;
 
@@ -73,7 +94,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: StreamBuilder<List<Map<String, dynamic>>>(
-              stream: chatService.getMessages(widget.chatId),
+              stream: _messagesStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -196,46 +217,51 @@ class _MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        decoration: BoxDecoration(
-          color: isMe
-              ? AppTheme.primaryBlue
-              : colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: isMe ? const Radius.circular(16) : Radius.zero,
-            bottomRight: isMe ? Radius.zero : const Radius.circular(16),
+    // Wrap message bubble in RepaintBoundary to isolate repaints during stream updates and scrolling
+    return RepaintBoundary(
+      child: Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          margin: EdgeInsets.only(bottom: 8.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.75,
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              message,
-              style: TextStyle(
-                color: isMe ? Colors.white : colorScheme.onSurface,
-                fontSize: 15.sp,
-              ),
+          decoration: BoxDecoration(
+            color: isMe
+                ? AppTheme.primaryBlue
+                : colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(16),
+              topRight: const Radius.circular(16),
+              bottomLeft: isMe ? const Radius.circular(16) : Radius.zero,
+              bottomRight: isMe ? Radius.zero : const Radius.circular(16),
             ),
-            if (time != null) ...[
-              SizedBox(height: 4.h),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
               Text(
-                _formatTime(time!),
+                message,
                 style: TextStyle(
-                  color: isMe ? Colors.white70 : colorScheme.onSurfaceVariant,
-                  fontSize: 10.sp,
+                  color: isMe ? Colors.white : colorScheme.onSurface,
+                  fontSize: 15.sp,
                 ),
               ),
+              if (time != null) ...[
+                SizedBox(height: 4.h),
+                Text(
+                  _formatTime(time!),
+                  style: TextStyle(
+                    color: isMe
+                        ? Colors.white70
+                        : colorScheme.onSurfaceVariant,
+                    fontSize: 10.sp,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

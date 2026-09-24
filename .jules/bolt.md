@@ -1,0 +1,3 @@
+## 2026-11-20 - Caching Stream Subscriptions in ChatScreen
+**Learning:** Instantiating `chatService.getMessages(chatId)` directly inside `StreamBuilder(stream: ...)` causes `StreamBuilder` to cancel and re-subscribe to a new Firestore stream on every widget rebuild (e.g., typing text or sending state updates). Caching `_messagesStream` in `initState()` and updating in `didUpdateWidget()` maintains a single active stream listener and avoids unnecessary database query subscriptions and UI rebuild stutter.
+**Action:** Always cache stream instances in `StatefulWidget.initState()` when using `StreamBuilder` with parameterized service calls, and wrap individual stream item widgets in `RepaintBoundary` to isolate repaints during real-time stream updates.

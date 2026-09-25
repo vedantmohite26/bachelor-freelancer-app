@@ -180,6 +180,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _JobCard(
+                        key: ValueKey(job['id'] ?? index),
                         job: job,
                         onTap: () {
                           Navigator.push(
@@ -257,11 +258,53 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _JobCard extends StatelessWidget {
+// Converted _JobCard to a StatefulWidget to cache _applicationCountStream across parent rebuilds and filter changes,
+// preventing StreamBuilder from tearing down and recreating Firestore listeners on every render cycle.
+class _JobCard extends StatefulWidget {
   final Map<String, dynamic> job;
   final VoidCallback onTap;
 
-  const _JobCard({required this.job, required this.onTap});
+  const _JobCard({required this.job, required this.onTap, super.key});
+
+  @override
+  State<_JobCard> createState() => _JobCardState();
+}
+
+class _JobCardState extends State<_JobCard> {
+  Stream<int>? _applicationCountStream;
+  String? _cachedJobId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initApplicationCountStream();
+  }
+
+  @override
+  void didUpdateWidget(covariant _JobCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.job['id'] != widget.job['id']) {
+      _initApplicationCountStream();
+    }
+  }
+
+  void _initApplicationCountStream() {
+    final jobId = widget.job['id'] as String?;
+    if (_applicationCountStream == null || _cachedJobId != jobId) {
+      _cachedJobId = jobId;
+      if (jobId != null && jobId.isNotEmpty) {
+        final jobService = Provider.of<JobService>(context, listen: false);
+        final authService = Provider.of<AuthService>(context, listen: false);
+        final seekerId = authService.user?.uid ?? '';
+        _applicationCountStream = jobService.getApplicationCountStream(
+          jobId,
+          seekerId,
+        );
+      } else {
+        _applicationCountStream = null;
+      }
+    }
+  }
 
   Color _getStatusColor(String status) {
     switch (status) {
@@ -303,10 +346,7 @@ class _JobCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final jobService = Provider.of<JobService>(context, listen: false);
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final seekerId = authService.user?.uid ?? '';
-
+    final job = widget.job;
     final title = job['title'] ?? 'Untitled Job';
     final price = (job['price'] ?? 0.0).toDouble();
     final status = job['status'] ?? 'open';
@@ -314,133 +354,130 @@ class _JobCard extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(12),
-          // border: Border.all(color: colorScheme.outlineVariant), // Optional border
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(status).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _getStatusIcon(status),
-                        size: 14,
-                        color: _getStatusColor(status),
+    return RepaintBoundary(
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        status.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(status).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _getStatusIcon(status),
+                          size: 14,
                           color: _getStatusColor(status),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          status.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: _getStatusColor(status),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Text(
+                    '₹${price.toStringAsFixed(2)}', // Indian Rupee
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (status == 'open') ...[
+                    Icon(
+                      Icons.people,
+                      size: 16,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
+                    StreamBuilder<int>(
+                      stream: _applicationCountStream,
+                      initialData: initialApplications,
+                      builder: (context, snapshot) {
+                        final count = snapshot.data ?? initialApplications;
+                        return Text(
+                          '$count ${count == 1 ? "applicant" : "applicants"}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ],
+              ),
+              if (status == 'open')
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: widget.onTap,
+                          style: TextButton.styleFrom(
+                            backgroundColor: colorScheme.primary.withValues(
+                              alpha: 0.1,
+                            ),
+                            foregroundColor: colorScheme.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'View Applications',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                // Removed redundant Icon(Icons.currency_rupee)
-                Text(
-                  '₹${price.toStringAsFixed(2)}', // Indian Rupee
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
-                  ),
-                ),
-                const Spacer(),
-                if (status == 'open') ...[
-                  Icon(
-                    Icons.people,
-                    size: 16,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  StreamBuilder<int>(
-                    stream: jobService.getApplicationCountStream(
-                      job['id'],
-                      seekerId,
-                    ),
-                    initialData: initialApplications,
-                    builder: (context, snapshot) {
-                      final count = snapshot.data ?? initialApplications;
-                      return Text(
-                        '$count ${count == 1 ? "applicant" : "applicants"}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ],
-            ),
-            if (status == 'open')
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: onTap,
-                        style: TextButton.styleFrom(
-                          backgroundColor: colorScheme.primary.withValues(
-                            alpha: 0.1,
-                          ),
-                          foregroundColor: colorScheme.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text(
-                          'View Applications',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

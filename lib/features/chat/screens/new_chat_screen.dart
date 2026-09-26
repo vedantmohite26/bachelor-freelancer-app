@@ -8,23 +8,44 @@ import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/features/chat/screens/chat_screen.dart';
 import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 
-class NewChatScreen extends StatelessWidget {
+class NewChatScreen extends StatefulWidget {
   const NewChatScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final friendService = Provider.of<FriendService>(context, listen: false);
+  State<NewChatScreen> createState() => _NewChatScreenState();
+}
+
+class _NewChatScreenState extends State<NewChatScreen> {
+  Stream<List<Map<String, dynamic>>>? _friendsStream;
+  String? _cachedUserId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     final authService = Provider.of<AuthService>(context, listen: false);
     final currentUserId = authService.user?.uid;
+    // FIX: Cache stream in state to prevent redundant stream allocations & re-subscriptions on widget rebuilds
+    if (currentUserId != _cachedUserId) {
+      _cachedUserId = currentUserId;
+      if (currentUserId != null) {
+        final friendService = Provider.of<FriendService>(context, listen: false);
+        _friendsStream = friendService.getFriendsStream(currentUserId);
+      } else {
+        _friendsStream = null;
+      }
+    }
+  }
 
-    if (currentUserId == null) {
+  @override
+  Widget build(BuildContext context) {
+    if (_cachedUserId == null) {
       return const Scaffold(body: Center(child: Text("Please log in to chat")));
     }
 
     return Scaffold(
       appBar: AppBar(title: const Text("New Chat"), elevation: 0),
       body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: friendService.getFriendsStream(currentUserId),
+        stream: _friendsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -67,37 +88,39 @@ class NewChatScreen extends StatelessWidget {
             separatorBuilder: (context, index) => SizedBox(height: 16.h),
             itemBuilder: (context, index) {
               final friend = friends[index];
-              return _FriendListItem(
-                friend: friend,
-                onTap: () async {
-                  try {
-                    final chatService = Provider.of<ChatService>(
-                      context,
-                      listen: false,
-                    );
-                    final chatId = await chatService.createChat(
-                      friend['id'],
-                      currentUserId,
-                    );
-                    if (context.mounted) {
-                      Navigator.pushReplacement(
+              return RepaintBoundary(
+                child: _FriendListItem(
+                  friend: friend,
+                  onTap: () async {
+                    try {
+                      final chatService = Provider.of<ChatService>(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => ChatScreen(
-                            chatId: chatId,
-                            otherUserName: friend['name'],
+                        listen: false,
+                      );
+                      final chatId = await chatService.createChat(
+                        friend['id'],
+                        _cachedUserId!,
+                      );
+                      if (context.mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChatScreen(
+                              chatId: chatId,
+                              otherUserName: friend['name'],
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Error starting chat: $e")),
+                        );
+                      }
                     }
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Error starting chat: $e")),
-                      );
-                    }
-                  }
-                },
+                  },
+                ),
               );
             },
           );

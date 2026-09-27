@@ -26,13 +26,29 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
   @override
   bool get wantKeepAlive => true;
 
+  Stream<Map<String, dynamic>?>? _userProfileStream;
+  Stream<List<Map<String, dynamic>>>? _applicationsStream;
+  Stream<List<Map<String, dynamic>>>? _upcomingGigsStream;
+  String? _cachedUserId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final userId = authService.user?.uid ?? '';
+    if (_cachedUserId != userId) {
+      _cachedUserId = userId;
+      final userService = Provider.of<UserService>(context, listen: false);
+      final jobService = Provider.of<JobService>(context, listen: false);
+      _userProfileStream = userService.getUserProfileStream(userId);
+      _applicationsStream = jobService.getHelperApplications(userId);
+      _upcomingGigsStream = jobService.getHelperUpcomingGigs(userId);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final userService = Provider.of<UserService>(context, listen: false);
-    final jobService = Provider.of<JobService>(context, listen: false);
-    final userId = authService.user?.uid ?? '';
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -44,7 +60,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
         child: const Icon(Icons.security, color: Colors.white),
       ),
       body: StreamBuilder<Map<String, dynamic>?>(
-        stream: userService.getUserProfileStream(userId),
+        stream: _userProfileStream,
         builder: (context, profileSnapshot) {
           if (profileSnapshot.connectionState == ConnectionState.waiting) {
             return const ShimmerDashboard();
@@ -306,7 +322,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
 
               // Applications List
               StreamBuilder<List<Map<String, dynamic>>>(
-                stream: jobService.getHelperApplications(userId),
+                stream: _applicationsStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const SliverToBoxAdapter(
@@ -343,16 +359,18 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                   return SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final application = applications[index];
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20.w,
-                          vertical: 6.h,
-                        ),
-                        child: _ApplicationCard(
-                          title: "Application #${index + 1}",
-                          category: "General",
-                          timeAgo: "2 hours ago",
-                          status: application['status'] ?? 'pending',
+                      return RepaintBoundary(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 6.h,
+                          ),
+                          child: _ApplicationCard(
+                            title: "Application #${index + 1}",
+                            category: "General",
+                            timeAgo: "2 hours ago",
+                            status: application['status'] ?? 'pending',
+                          ),
                         ),
                       );
                     }, childCount: applications.length),
@@ -381,7 +399,7 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
 
               // Upcoming Gigs List
               StreamBuilder<List<Map<String, dynamic>>>(
-                stream: jobService.getHelperUpcomingGigs(userId),
+                stream: _upcomingGigsStream,
                 builder: (context, snapshot) {
                   final gigs = snapshot.data ?? [];
 
@@ -412,29 +430,31 @@ class _HelperDashboardTabState extends State<HelperDashboardTab>
                   return SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final gig = gigs[index];
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20.w,
-                          vertical: 6.h,
-                        ),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ActiveJobScreen(
-                                  initialJobId: gig['id'],
-                                  isSeeker: false,
+                      return RepaintBoundary(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 6.h,
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ActiveJobScreen(
+                                    initialJobId: gig['id'],
+                                    isSeeker: false,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          child: _UpcomingGigCard(
-                            title: gig['title'] ?? 'Gig',
-                            category: gig['category'] ?? 'General',
-                            price: (gig['price'] ?? 0.0).toDouble(),
-                            time: gig['time'] ?? 'TBD',
-                            status: gig['status'] ?? 'assigned',
+                              );
+                            },
+                            child: _UpcomingGigCard(
+                              title: gig['title'] ?? 'Gig',
+                              category: gig['category'] ?? 'General',
+                              price: (gig['price'] ?? 0.0).toDouble(),
+                              time: gig['time'] ?? 'TBD',
+                              status: gig['status'] ?? 'assigned',
+                            ),
                           ),
                         ),
                       );

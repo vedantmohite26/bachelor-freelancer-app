@@ -23,11 +23,21 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
   bool get wantKeepAlive => true;
 
   String _currentLocation = "Fetching location...";
+  Stream<List<Map<String, dynamic>>>? _helpersStream;
 
   @override
   void initState() {
     super.initState();
     _updateLocation();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_helpersStream == null) {
+      final userService = Provider.of<UserService>(context, listen: false);
+      _helpersStream = userService.getNearbyHelpers(limit: 20);
+    }
   }
 
   Future<void> _updateLocation() async {
@@ -59,7 +69,6 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final userService = Provider.of<UserService>(context, listen: false);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -192,7 +201,7 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
 
                 // 4. Helpers List (Real-time data)
                 StreamBuilder<List<Map<String, dynamic>>>(
-                  stream: userService.getNearbyHelpers(limit: 20),
+                  stream: _helpersStream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const SliverToBoxAdapter(
@@ -224,29 +233,31 @@ class _SeekerHomeTabState extends State<SeekerHomeTab>
                         final helper = filteredHelpers[index];
                         final helperId = helper['id'] as String;
 
-                        return Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 20.w,
-                            vertical: 8.h,
-                          ),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      HelperProfileScreen(helperId: helperId),
-                                ),
-                              );
-                            },
-                            child: _HelperCard(
-                              name: helper['name'] ?? 'Unknown',
-                              role:
-                                  "Comp Sci Student • Tech Support", // Dynamic later
-                              rating: (helper['rating'] ?? 0.0).toDouble(),
-                              reviewCount: helper['reviewCount'] ?? 0,
-                              distance: '0.2',
-                              isVerified: helper['verifiedStudent'] ?? false,
+                        return RepaintBoundary(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20.w,
+                              vertical: 8.h,
+                            ),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        HelperProfileScreen(helperId: helperId),
+                                  ),
+                                );
+                              },
+                              child: _HelperCard(
+                                name: helper['name'] ?? 'Unknown',
+                                role:
+                                    "Comp Sci Student • Tech Support", // Dynamic later
+                                rating: (helper['rating'] ?? 0.0).toDouble(),
+                                reviewCount: helper['reviewCount'] ?? 0,
+                                distance: '0.2',
+                                isVerified: helper['verifiedStudent'] ?? false,
+                              ),
                             ),
                           ),
                         );

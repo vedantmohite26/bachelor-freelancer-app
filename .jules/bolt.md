@@ -1,0 +1,3 @@
+## 2026-11-20 - Profile Screen Stream Caching and Repaint Isolation
+**Learning:** Instantiating Firestore stream subscriptions directly inside `build()` on `StatelessWidget` profile screens causes `StreamBuilder` to cancel and re-subscribe to Firestore listeners on every parent rebuild or layout pass, leading to redundant subscriptions, extra network traffic, and UI frame repaints.
+**Action:** Convert profile screens to `StatefulWidget` and cache stream instances (`getUserProfileStream`, `getFriendStatusStream`, `getHelperRatings`) in `didChangeDependencies()`, and wrap layout cards in `RepaintBoundary` to isolate repaints.

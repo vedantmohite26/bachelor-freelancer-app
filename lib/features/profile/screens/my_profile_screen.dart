@@ -12,8 +12,30 @@ import 'package:freelancer/features/ratings/widgets/rating_summary_card.dart';
 import 'package:freelancer/features/jobs/screens/helper_completed_jobs_screen.dart';
 import 'package:freelancer/core/widgets/shimmer_widgets.dart';
 
-class MyProfileScreen extends StatelessWidget {
+class MyProfileScreen extends StatefulWidget {
   const MyProfileScreen({super.key});
+
+  @override
+  State<MyProfileScreen> createState() => _MyProfileScreenState();
+}
+
+class _MyProfileScreenState extends State<MyProfileScreen> {
+  Stream<Map<String, dynamic>?>? _profileStream;
+  String? _cachedUserId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final currentUserId = authService.user?.uid ?? '';
+
+    // Cache the profile stream to avoid stream recreation and listener re-subscriptions on parent rebuilds
+    if (_profileStream == null || _cachedUserId != currentUserId) {
+      _cachedUserId = currentUserId;
+      final userService = Provider.of<UserService>(context, listen: false);
+      _profileStream = userService.getUserProfileStream(currentUserId);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +72,7 @@ class MyProfileScreen extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<Map<String, dynamic>?>(
-        stream: userService.getUserProfileStream(userId),
+        stream: _profileStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const ShimmerProfile();
@@ -77,286 +99,348 @@ class MyProfileScreen extends StatelessWidget {
           return SingleChildScrollView(
             child: Column(
               children: [
-                // Header Card
-                Container(
-                  color: colorScheme.surface,
-                  padding: EdgeInsets.all(24.w),
-                  child: Column(
-                    children: [
-                      Stack(
-                        children: [
-                          CachedNetworkAvatar(
-                            imageUrl: photoUrl,
-                            radius: 50,
-                            backgroundColor: Colors.grey.shade200,
-                            fallbackIconColor: Colors.grey.shade400,
-                          ),
-                          if (isOnline)
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                padding: EdgeInsets.all(10.w),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF10B981),
-                                  shape: BoxShape.circle,
+                // Header Card wrapped in RepaintBoundary to isolate avatar & status repaints
+                RepaintBoundary(
+                  child: Container(
+                    color: colorScheme.surface,
+                    padding: EdgeInsets.all(24.w),
+                    child: Column(
+                      children: [
+                        Stack(
+                          children: [
+                            CachedNetworkAvatar(
+                              imageUrl: photoUrl,
+                              radius: 50,
+                              backgroundColor: Colors.grey.shade200,
+                              fallbackIconColor: Colors.grey.shade400,
+                            ),
+                            if (isOnline)
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: EdgeInsets.all(10.w),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: SizedBox(width: 4.w, height: 4.h),
                                 ),
-                                child: SizedBox(width: 4.w, height: 4.h),
+                              ),
+                          ],
+                        ),
+                        SizedBox(height: 16.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 24.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                        ],
-                      ),
-                      SizedBox(height: 16.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 24.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            SizedBox(width: 4.w),
+                            Icon(
+                              Icons.verified,
+                              color: AppTheme.primaryBlue,
+                              size: 20.sp,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          email,
+                          style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                        ),
+                        SizedBox(height: 8.h),
+                        if (profile['university'] != null)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 4.h),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.school,
+                                  color: Colors.grey,
+                                  size: 16.sp,
+                                ),
+                                SizedBox(width: 6.w),
+                                Flexible(
+                                  child: Text(
+                                    profile['university'],
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(color: Colors.grey[700]),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          SizedBox(width: 4.w),
-                          Icon(
-                            Icons.verified,
-                            color: AppTheme.primaryBlue,
-                            size: 20.sp,
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        email,
-                        style: TextStyle(fontSize: 14.sp, color: Colors.grey),
-                      ),
-                      SizedBox(height: 8.h),
-                      if (profile['university'] != null)
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 4.h),
-                          child: Row(
+                        if (profile['phoneNumber'] != null)
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.school,
-                                color: Colors.grey,
-                                size: 16.sp,
-                              ),
+                              Icon(Icons.phone, color: Colors.grey, size: 16.sp),
                               SizedBox(width: 6.w),
-                              Flexible(
-                                child: Text(
-                                  profile['university'],
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Colors.grey[700]),
+                              Text(
+                                profile['phoneNumber'],
+                                style: TextStyle(color: Colors.grey[700]),
+                              ),
+                            ],
+                          ),
+                        SizedBox(height: 16.h),
+                        // Online/Offline Toggle Card
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12.w),
+                            border: Border.all(color: colorScheme.outlineVariant),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(8.w),
+                                decoration: BoxDecoration(
+                                  color: isOnline
+                                      ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                                      : Colors.grey.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
                                 ),
+                                child: Icon(
+                                  Icons.wifi,
+                                  color: isOnline
+                                      ? const Color(0xFF10B981)
+                                      : Colors.grey,
+                                  size: 20.sp,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      isOnline
+                                          ? "You are Online"
+                                          : "You are Offline",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    Text(
+                                      isOnline
+                                          ? "Receiving new gig offers"
+                                          : "Not receiving gigs",
+                                      style: TextStyle(
+                                        color: colorScheme.onSurfaceVariant,
+                                        fontSize: 12.sp,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch(
+                                value: isOnline,
+                                onChanged: (value) async {
+                                  if (value) {
+                                    // Show scanning animation when going online
+                                    bool scanning = true;
+
+                                    // Start timer to auto-close screen after delay
+                                    Future.delayed(const Duration(seconds: 3), () {
+                                      if (scanning && context.mounted) {
+                                        Navigator.of(context).pop();
+                                      }
+                                    });
+
+                                    // Wait for screen to close (either by timer or user back)
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const HelperScanningGigsScreen(),
+                                      ),
+                                    );
+
+                                    scanning = false;
+                                  }
+
+                                  await userService.updateOnlineStatus(
+                                    userId,
+                                    value,
+                                  );
+                                },
+                                activeThumbColor: const Color(0xFF10B981),
                               ),
                             ],
                           ),
                         ),
-                      if (profile['phoneNumber'] != null)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.phone, color: Colors.grey, size: 16.sp),
-                            SizedBox(width: 6.w),
-                            Text(
-                              profile['phoneNumber'],
-                              style: TextStyle(color: Colors.grey[700]),
-                            ),
-                          ],
-                        ),
-                      SizedBox(height: 16.h),
-                      // Online/Offline Toggle Card
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 12.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface,
-                          borderRadius: BorderRadius.circular(12.w),
-                          border: Border.all(color: colorScheme.outlineVariant),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(8.w),
-                              decoration: BoxDecoration(
-                                color: isOnline
-                                    ? const Color(0xFF10B981).withValues(alpha: 0.1)
-                                    : Colors.grey.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.wifi,
-                                color: isOnline
-                                    ? const Color(0xFF10B981)
-                                    : Colors.grey,
-                                size: 20.sp,
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isOnline
-                                        ? "You are Online"
-                                        : "You are Offline",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.onSurface,
+                        SizedBox(height: 8.h),
+                        if (rating > 0)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 12.w,
+                                  vertical: 6.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFBBF24).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8.w),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.star,
+                                      color: const Color(0xFFFBBF24),
+                                      size: 16.sp,
                                     ),
-                                  ),
-                                  Text(
-                                    isOnline
-                                        ? "Receiving new gig offers"
-                                        : "Not receiving gigs",
-                                    style: TextStyle(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontSize: 12.sp,
+                                    SizedBox(width: 4.w),
+                                    Text(
+                                      rating.toStringAsFixed(1),
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Switch(
-                              value: isOnline,
-                              onChanged: (value) async {
-                                if (value) {
-                                  // Show scanning animation when going online
-                                  bool scanning = true;
-
-                                  // Start timer to auto-close screen after delay
-                                  Future.delayed(const Duration(seconds: 3), () {
-                                    if (scanning && context.mounted) {
-                                      Navigator.of(context).pop();
-                                    }
-                                  });
-
-                                  // Wait for screen to close (either by timer or user back)
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const HelperScanningGigsScreen(),
+                                    Text(
+                                      " ($reviewCount)",
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
+                                        color: Colors.grey,
+                                      ),
                                     ),
-                                  );
-
-                                  scanning = false;
-                                }
-
-                                await userService.updateOnlineStatus(
-                                  userId,
-                                  value,
-                                );
-                              },
-                              activeThumbColor: const Color(0xFF10B981),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      if (rating > 0)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12.w,
-                                vertical: 6.h,
+                                  ],
+                                ),
                               ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFBBF24).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8.w),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.star,
-                                    color: const Color(0xFFFBBF24),
-                                    size: 16.sp,
-                                  ),
-                                  SizedBox(width: 4.w),
-                                  Text(
-                                    rating.toStringAsFixed(1),
-                                    style: TextStyle(
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    " ($reviewCount)",
-                                    style: TextStyle(
-                                      fontSize: 14.sp,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
+                            ],
+                          ),
+                      ],
+                    ),
                   ),
                 ),
 
                 SizedBox(height: 16.h),
 
-                // Stats Grid
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          icon: Icons.payments,
-                          label: "Earnings",
-                          value: "₹${totalEarnings.toStringAsFixed(0)}",
-                          color: const Color(0xFF10B981),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const HelperCompletedJobsScreen(),
-                              ),
-                            );
-                          },
+                // Stats Grid wrapped in RepaintBoundary
+                RepaintBoundary(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Row(
+                      children: [
+                        Expanded(
                           child: _StatCard(
-                            icon: Icons.check_circle,
-                            label: "Completed",
-                            value: "$gigsCompleted",
-                            color: AppTheme.primaryBlue,
+                            icon: Icons.payments,
+                            label: "Earnings",
+                            value: "₹${totalEarnings.toStringAsFixed(0)}",
+                            color: const Color(0xFF10B981),
                           ),
                         ),
-                      ),
-                    ],
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const HelperCompletedJobsScreen(),
+                                ),
+                              );
+                            },
+                            child: _StatCard(
+                              icon: Icons.check_circle,
+                              label: "Completed",
+                              value: "$gigsCompleted",
+                              color: AppTheme.primaryBlue,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
                 SizedBox(height: 16.h),
 
-                // XP Progress Bar
-                _XpProgressCard(totalPoints: totalPoints),
+                // XP Progress Bar wrapped in RepaintBoundary
+                RepaintBoundary(
+                  child: _XpProgressCard(totalPoints: totalPoints),
+                ),
 
                 SizedBox(height: 16.h),
 
                 // Skills
                 if (skills.isNotEmpty) ...[
-                  Container(
+                  RepaintBoundary(
+                    child: Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.symmetric(horizontal: 20.w),
+                      padding: EdgeInsets.all(20.w),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16.w),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Skills",
+                            style: TextStyle(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: skills
+                                .map(
+                                  (skill) => Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12.w,
+                                      vertical: 8.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primaryBlue.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8.w),
+                                    ),
+                                    child: Text(
+                                      skill,
+                                      style: const TextStyle(
+                                        color: AppTheme.primaryBlue,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                ],
+
+                // Reviews Section
+                RepaintBoundary(
+                  child: Container(
                     width: double.infinity,
                     margin: EdgeInsets.symmetric(horizontal: 20.w),
                     padding: EdgeInsets.all(20.w),
@@ -367,103 +451,51 @@ class MyProfileScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Skills",
-                          style: TextStyle(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: skills
-                              .map(
-                                (skill) => Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 12.w,
-                                    vertical: 8.h,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primaryBlue.withValues(
-                                      alpha: 0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8.w),
-                                  ),
-                                  child: Text(
-                                    skill,
-                                    style: const TextStyle(
-                                      color: AppTheme.primaryBlue,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                ],
-
-                // Reviews Section
-                Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.symmetric(horizontal: 20.w),
-                  padding: EdgeInsets.all(20.w),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16.w),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            "Reviews",
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Spacer(),
-                          if (reviewCount > 0)
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => HelperReviewsScreen(
-                                      helperId: userId,
-                                      averageRating: rating,
-                                      reviewCount: reviewCount,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                "See all",
-                                style: TextStyle(
-                                  color: AppTheme.primaryBlue,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                        Row(
+                          children: [
+                            Text(
+                              "Reviews",
+                              style: TextStyle(
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                        ],
-                      ),
-                      SizedBox(height: 16.h),
-                      if (rating > 0 && reviewCount > 0) ...[
-                        RatingSummaryCard(
-                          helperId: userId,
-                          averageRating: rating,
-                          reviewCount: reviewCount,
+                            const Spacer(),
+                            if (reviewCount > 0)
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => HelperReviewsScreen(
+                                        helperId: userId,
+                                        averageRating: rating,
+                                        reviewCount: reviewCount,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  "See all",
+                                  style: TextStyle(
+                                    color: AppTheme.primaryBlue,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                         SizedBox(height: 16.h),
+                        if (rating > 0 && reviewCount > 0) ...[
+                          RatingSummaryCard(
+                            helperId: userId,
+                            averageRating: rating,
+                            reviewCount: reviewCount,
+                          ),
+                          SizedBox(height: 16.h),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
 

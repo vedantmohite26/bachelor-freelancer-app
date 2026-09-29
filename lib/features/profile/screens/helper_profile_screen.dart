@@ -16,7 +16,7 @@ import 'package:freelancer/core/services/rating_service.dart';
 import 'package:freelancer/features/jobs/screens/helper_completed_jobs_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class HelperProfileScreen extends StatelessWidget {
+class HelperProfileScreen extends StatefulWidget {
   final String helperId;
   final bool bypassPrivacy;
 
@@ -27,17 +27,55 @@ class HelperProfileScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final userService = Provider.of<UserService>(context, listen: false);
+  State<HelperProfileScreen> createState() => _HelperProfileScreenState();
+}
+
+class _HelperProfileScreenState extends State<HelperProfileScreen> {
+  Stream<Map<String, dynamic>?>? _profileStream;
+  Stream<FriendStatus>? _friendStatusStream;
+  Stream<List<Map<String, dynamic>>>? _ratingsStream;
+  String? _cachedHelperId;
+  String? _cachedUserId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     final authService = Provider.of<AuthService>(context, listen: false);
-    final ratingService = Provider.of<RatingService>(context, listen: false);
+    final currentUserId = authService.user?.uid ?? '';
+
+    // Cache stream instances to prevent StreamBuilder from re-subscribing on widget rebuilds
+    if (_profileStream == null ||
+        _cachedHelperId != widget.helperId ||
+        _cachedUserId != currentUserId) {
+      _cachedHelperId = widget.helperId;
+      _cachedUserId = currentUserId;
+
+      final userService = Provider.of<UserService>(context, listen: false);
+      final friendService = Provider.of<FriendService>(context, listen: false);
+      final ratingService = Provider.of<RatingService>(context, listen: false);
+
+      _profileStream = userService.getUserProfileStream(widget.helperId);
+      _friendStatusStream = friendService.getFriendStatusStream(
+        currentUserId,
+        widget.helperId,
+      );
+      _ratingsStream = ratingService.getHelperRatings(widget.helperId);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final userService = Provider.of<UserService>(context, listen: false);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(
-          authService.user?.uid == helperId ? "My Profile" : "Helper Profile",
+          authService.user?.uid == widget.helperId
+              ? "My Profile"
+              : "Helper Profile",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,
@@ -48,7 +86,7 @@ class HelperProfileScreen extends StatelessWidget {
         elevation: 0,
         foregroundColor: colorScheme.onSurface,
         actions: [
-          if (authService.user?.uid == helperId)
+          if (authService.user?.uid == widget.helperId)
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () {
@@ -61,7 +99,7 @@ class HelperProfileScreen extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<Map<String, dynamic>?>(
-        stream: userService.getUserProfileStream(helperId),
+        stream: _profileStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -72,14 +110,14 @@ class HelperProfileScreen extends StatelessWidget {
           }
 
           final helper = snapshot.data!;
-          final isMe = authService.user?.uid == helperId;
+          final isMe = authService.user?.uid == widget.helperId;
 
           final safetySettings =
               helper['safetySettings'] as Map<String, dynamic>?;
           final isProfileVisible = safetySettings?['profileVisibility'] ?? true;
 
           // Privacy Check
-          if (!isProfileVisible && !bypassPrivacy && !isMe) {
+          if (!isProfileVisible && !widget.bypassPrivacy && !isMe) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -126,136 +164,148 @@ class HelperProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // 1. Profile Avatar & Info
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    CachedNetworkAvatar(
-                      imageUrl: profilePic,
-                      radius: 50,
-                      backgroundColor: Colors.grey[200],
-                      fallbackIconColor: Colors.grey[400],
-                    ),
-                    Container(
-                      height: 20.h,
-                      width: 20.w,
-                      decoration: BoxDecoration(
-                        color: isOnline ? const Color(0xFF10B981) : Colors.grey,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: colorScheme.surface,
-                          width: 3.w,
+                RepaintBoundary(
+                  child: Column(
+                    children: [
+                      Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          CachedNetworkAvatar(
+                            imageUrl: profilePic,
+                            radius: 50,
+                            backgroundColor: Colors.grey[200],
+                            fallbackIconColor: Colors.grey[400],
+                          ),
+                          Container(
+                            height: 20.h,
+                            width: 20.w,
+                            decoration: BoxDecoration(
+                              color: isOnline
+                                  ? const Color(0xFF10B981)
+                                  : Colors.grey,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: colorScheme.surface,
+                                width: 3.w,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (authService.user?.uid == widget.helperId)
+                        Padding(
+                          padding: EdgeInsets.only(top: 12.h),
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  backgroundColor: colorScheme.surface,
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        "My QR Code",
+                                        style: TextStyle(
+                                          fontSize: 20.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 16.h),
+                                      QrImageView(
+                                        data: widget.helperId,
+                                        version: QrVersions.auto,
+                                        size: 200.0.sp,
+                                        backgroundColor: Colors.white,
+                                      ),
+                                      SizedBox(height: 16.h),
+                                      const Text(
+                                        "Show this to the Seeker to start the job",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text("Close"),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            icon: Icon(Icons.qr_code, size: 18.sp),
+                            label: const Text("Show QR Code"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryBlue,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.w),
+                              ),
+                            ),
+                          ),
+                        ),
+                      SizedBox(height: 16.h),
+                      Text(
+                        name,
+                        style: TextStyle(
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                if (authService.user?.uid == helperId)
-                  Padding(
-                    padding: EdgeInsets.only(top: 12.h),
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            backgroundColor: colorScheme.surface,
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  "My QR Code",
-                                  style: TextStyle(
-                                    fontSize: 20.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.verified, color: Colors.blue, size: 16.sp),
+                          SizedBox(width: 4.w),
+                          Text(
+                            bio,
+                            style: TextStyle(color: Colors.blue, fontSize: 14.sp),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      if (helper['university'] != null)
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 4.h),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.school, color: Colors.grey, size: 16.sp),
+                              SizedBox(width: 6.w),
+                              Text(
+                                helper['university'],
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
-                                SizedBox(height: 16.h),
-                                QrImageView(
-                                  data: helperId,
-                                  version: QrVersions.auto,
-                                  size: 200.0.sp,
-                                  backgroundColor: Colors.white,
-                                ),
-                                SizedBox(height: 16.h),
-                                const Text(
-                                  "Show this to the Seeker to start the job",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("Close"),
                               ),
                             ],
                           ),
-                        );
-                      },
-                      icon: Icon(Icons.qr_code, size: 18.sp),
-                      label: const Text("Show QR Code"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryBlue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.w),
                         ),
-                      ),
-                    ),
-                  ),
-                SizedBox(height: 16.h),
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.verified, color: Colors.blue, size: 16.sp),
-                    SizedBox(width: 4.w),
-                    Text(
-                      bio,
-                      style: TextStyle(color: Colors.blue, fontSize: 14.sp),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-                if (helper['university'] != null)
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 4.h),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.school, color: Colors.grey, size: 16.sp),
-                        SizedBox(width: 6.w),
-                        Text(
-                          helper['university'],
-                          style: TextStyle(color: colorScheme.onSurfaceVariant),
+                      if (helper['phoneNumber'] != null &&
+                          authService.user?.uid == widget.helperId)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.phone, color: Colors.grey, size: 16.sp),
+                            SizedBox(width: 6.w),
+                            Text(
+                              helper['phoneNumber'],
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                if (helper['phoneNumber'] != null &&
-                    authService.user?.uid == helperId)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.phone, color: Colors.grey, size: 16.sp),
-                      SizedBox(width: 6.w),
-                      Text(
-                        helper['phoneNumber'],
-                        style: TextStyle(color: colorScheme.onSurfaceVariant),
-                      ),
                     ],
                   ),
+                ),
                 SizedBox(height: 24.h),
 
                 // 2. Action Buttons
-                if (authService.user?.uid == helperId)
+                if (authService.user?.uid == widget.helperId)
                   Row(
                     children: [
                       Expanded(
@@ -305,13 +355,14 @@ class HelperProfileScreen extends StatelessWidget {
                     ],
                   )
                 else
-                  Consumer<FriendService>(
-                    builder: (context, friendService, _) {
+                  Builder(
+                    builder: (context) {
+                      final friendService = Provider.of<FriendService>(
+                        context,
+                        listen: false,
+                      );
                       return StreamBuilder<FriendStatus>(
-                        stream: friendService.getFriendStatusStream(
-                          authService.user?.uid ?? '',
-                          helperId,
-                        ),
+                        stream: _friendStatusStream,
                         builder: (context, snapshot) {
                           final status = snapshot.data ?? FriendStatus.none;
 
@@ -338,13 +389,13 @@ class HelperProfileScreen extends StatelessWidget {
                                     if (status == FriendStatus.none) {
                                       await friendService.sendFriendRequest(
                                         currentUser.uid,
-                                        helperId,
+                                        widget.helperId,
                                       );
                                     } else if (status ==
                                         FriendStatus.pendingSent) {
                                       await friendService.cancelFriendRequest(
                                         currentUser.uid,
-                                        helperId,
+                                        widget.helperId,
                                       );
                                     } else if (status ==
                                         FriendStatus.pendingReceived) {
@@ -369,10 +420,11 @@ class HelperProfileScreen extends StatelessWidget {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor:
                                         status == FriendStatus.connected
-                                        ? Colors.green
-                                        : (status == FriendStatus.pendingSent
-                                              ? Colors.grey
-                                              : AppTheme.primaryBlue),
+                                            ? Colors.green
+                                            : (status ==
+                                                      FriendStatus.pendingSent
+                                                  ? Colors.grey
+                                                  : AppTheme.primaryBlue),
                                     foregroundColor: Colors.white,
                                     elevation: 0,
                                     shape: RoundedRectangleBorder(
@@ -400,7 +452,7 @@ class HelperProfileScreen extends StatelessWidget {
                                       try {
                                         final chatId = await chatService
                                             .createChat(
-                                              helperId,
+                                              widget.helperId,
                                               currentUser.uid,
                                             );
                                         if (context.mounted) {
@@ -434,7 +486,9 @@ class HelperProfileScreen extends StatelessWidget {
                                         color: AppTheme.primaryBlue,
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8.w),
+                                        borderRadius: BorderRadius.circular(
+                                          8.w,
+                                        ),
                                       ),
                                     ),
                                     child: const Text("Message"),
@@ -450,87 +504,92 @@ class HelperProfileScreen extends StatelessWidget {
                 SizedBox(height: 24.h),
 
                 // 3. Online Status Card
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16.w),
-                    border: Border.all(color: colorScheme.outlineVariant),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: isOnline
-                              ? const Color(0xFF10B981).withValues(alpha: 0.1)
-                              : Colors.grey.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.wifi,
-                          color: isOnline
-                              ? const Color(0xFF10B981)
-                              : Colors.grey,
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isOnline ? "You are Online" : "You are Offline",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface,
-                            ),
+                RepaintBoundary(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 12.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(16.w),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8.w),
+                          decoration: BoxDecoration(
+                            color: isOnline
+                                ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                                : Colors.grey.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
                           ),
-                          Text(
-                            isOnline
-                                ? "Receiving new gig offers"
-                                : "Not receiving gigs",
-                            style: TextStyle(
-                              color: colorScheme.onSurfaceVariant,
-                              fontSize: 12.sp,
-                            ),
+                          child: Icon(
+                            Icons.wifi,
+                            color: isOnline
+                                ? const Color(0xFF10B981)
+                                : Colors.grey,
                           ),
-                        ],
-                      ),
-                      const Spacer(),
-                      Switch(
-                        value: isOnline,
-                        onChanged: (value) async {
-                          if (value) {
-                            // Show scanning animation when going online
-                            bool scanning = true;
-
-                            // Start timer to auto-close screen after delay
-                            Future.delayed(const Duration(seconds: 3), () {
-                              if (scanning && context.mounted) {
-                                Navigator.of(context).pop();
-                              }
-                            });
-
-                            // Wait for screen to close (either by timer or user back)
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const HelperScanningGigsScreen(),
+                        ),
+                        SizedBox(width: 12.w),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isOnline ? "You are Online" : "You are Offline",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurface,
                               ),
+                            ),
+                            Text(
+                              isOnline
+                                  ? "Receiving new gig offers"
+                                  : "Not receiving gigs",
+                              style: TextStyle(
+                                color: colorScheme.onSurfaceVariant,
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        Switch(
+                          value: isOnline,
+                          onChanged: (value) async {
+                            if (value) {
+                              // Show scanning animation when going online
+                              bool scanning = true;
+
+                              // Start timer to auto-close screen after delay
+                              Future.delayed(const Duration(seconds: 3), () {
+                                if (scanning && context.mounted) {
+                                  Navigator.of(context).pop();
+                                }
+                              });
+
+                              // Wait for screen to close (either by timer or user back)
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const HelperScanningGigsScreen(),
+                                ),
+                              );
+
+                              scanning = false;
+                            }
+
+                            await userService.updateOnlineStatus(
+                              widget.helperId,
+                              value,
                             );
-
-                            scanning = false;
-                          }
-
-                          await userService.updateOnlineStatus(helperId, value);
-                        },
-                        activeThumbColor: const Color(0xFF10B981),
-                      ),
-                    ],
+                          },
+                          activeThumbColor: const Color(0xFF10B981),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
@@ -550,98 +609,100 @@ class HelperProfileScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 12.h),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(20.w),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16.w),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "TOTAL EARNINGS",
-                          style: TextStyle(
-                            color: colorScheme.onSurfaceVariant,
-                            fontSize: 12.sp,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Text(
-                          "₹${walletBalance.toStringAsFixed(2)}",
-                          style: TextStyle(
-                            fontSize: 32.sp,
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.trending_up,
-                              color: const Color(0xFF10B981),
-                              size: 16.sp,
+                  RepaintBoundary(
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(20.w),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(16.w),
+                        border: Border.all(color: colorScheme.outlineVariant),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "TOTAL EARNINGS",
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
+                              fontSize: 12.sp,
+                              letterSpacing: 1,
                             ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              "+₹50.00 this week",
-                              style: TextStyle(
+                          ),
+                          SizedBox(height: 8.h),
+                          Text(
+                            "₹${walletBalance.toStringAsFixed(2)}",
+                            style: TextStyle(
+                              fontSize: 32.sp,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.trending_up,
                                 color: const Color(0xFF10B981),
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w500,
+                                size: 16.sp,
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 24.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "$gigsCompleted",
-                                  style: TextStyle(
-                                    fontSize: 24.sp,
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.onSurface,
-                                  ),
+                              SizedBox(width: 4.w),
+                              Text(
+                                "+₹50.00 this week",
+                                style: TextStyle(
+                                  color: const Color(0xFF10B981),
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                Text(
-                                  "Gigs Completed",
-                                  style: TextStyle(
-                                    color: colorScheme.onSurfaceVariant,
-                                    fontSize: 12.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        const HelperCompletedJobsScreen(),
-                                  ),
-                                );
-                              },
-                              child: Row(
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 24.h),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text("View History"),
-                                  SizedBox(width: 4.w),
-                                  Icon(Icons.arrow_forward, size: 16.sp),
+                                  Text(
+                                    "$gigsCompleted",
+                                    style: TextStyle(
+                                      fontSize: 24.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Gigs Completed",
+                                    style: TextStyle(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontSize: 12.sp,
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const HelperCompletedJobsScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Row(
+                                  children: [
+                                    const Text("View History"),
+                                    SizedBox(width: 4.w),
+                                    Icon(Icons.arrow_forward, size: 16.sp),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 24.h),
@@ -674,31 +735,35 @@ class HelperProfileScreen extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 8.h),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    ...skills.map(
-                      (skill) => _SkillChip(
-                        label: skill,
-                        certificateUrl: skillCertificates[skill],
-                      ),
-                    ),
-                    // Add Button Placeholder (only for own profile)
-                    if (isMe)
-                      Container(
-                        padding: EdgeInsets.all(8.w),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerLow,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: colorScheme.outlineVariant),
-                        ),
-                        child: Icon(
-                          Icons.add,
-                          color: colorScheme.onSurfaceVariant,
+                RepaintBoundary(
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      ...skills.map(
+                        (skill) => _SkillChip(
+                          label: skill,
+                          certificateUrl: skillCertificates[skill],
                         ),
                       ),
-                  ],
+                      // Add Button Placeholder (only for own profile)
+                      if (isMe)
+                        Container(
+                          padding: EdgeInsets.all(8.w),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerLow,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: colorScheme.outlineVariant,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
 
                 SizedBox(height: 24.h),
@@ -716,119 +781,121 @@ class HelperProfileScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 12.h),
-                Container(
-                  padding: EdgeInsets.all(20.w),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16.w),
-                    border: Border.all(color: colorScheme.outlineVariant),
-                  ),
-                  child: StreamBuilder<List<Map<String, dynamic>>>(
-                    stream: ratingService.getHelperRatings(helperId),
-                    builder: (context, ratingsSnapshot) {
-                      final reviews = ratingsSnapshot.data ?? [];
-                      final count = reviews.length;
-                      final avg = count > 0
-                          ? reviews
-                                    .map(
-                                      (r) => (r['overallRating'] as num)
-                                          .toDouble(),
-                                    )
-                                    .reduce((a, b) => a + b) /
-                                count
-                          : 0.0;
+                RepaintBoundary(
+                  child: Container(
+                    padding: EdgeInsets.all(20.w),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(16.w),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                    ),
+                    child: StreamBuilder<List<Map<String, dynamic>>>(
+                      stream: _ratingsStream,
+                      builder: (context, ratingsSnapshot) {
+                        final reviews = ratingsSnapshot.data ?? [];
+                        final count = reviews.length;
+                        final avg = count > 0
+                            ? reviews
+                                      .map(
+                                        (r) => (r['overallRating'] as num)
+                                            .toDouble(),
+                                      )
+                                      .reduce((a, b) => a + b) /
+                                  count
+                            : 0.0;
 
-                      // Calculate distribution
-                      final distribution = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
-                      for (var r in reviews) {
-                        final star = (r['overallRating'] as num).toInt();
-                        if (distribution.containsKey(star)) {
-                          distribution[star] = (distribution[star] ?? 0) + 1;
+                        // Calculate distribution
+                        final distribution = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+                        for (var r in reviews) {
+                          final star = (r['overallRating'] as num).toInt();
+                          if (distribution.containsKey(star)) {
+                            distribution[star] = (distribution[star] ?? 0) + 1;
+                          }
                         }
-                      }
 
-                      return Column(
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                avg.toStringAsFixed(1),
-                                style: TextStyle(
-                                  fontSize: 32.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: colorScheme.onSurface,
+                        return Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  avg.toStringAsFixed(1),
+                                  style: TextStyle(
+                                    fontSize: 32.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.onSurface,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 8.w),
-                              Text(
-                                "/ 5.0",
+                                SizedBox(width: 8.w),
+                                Text(
+                                  "/ 5.0",
+                                  style: TextStyle(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontSize: 16.sp,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Row(
+                                  children: List.generate(5, (index) {
+                                    return Icon(
+                                      index < avg.round()
+                                          ? Icons.star
+                                          : Icons.star_border,
+                                      color: Colors.amber,
+                                      size: 24.sp,
+                                    );
+                                  }),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4.h),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Based on $count reviews",
                                 style: TextStyle(
                                   color: colorScheme.onSurfaceVariant,
-                                  fontSize: 16.sp,
                                 ),
                               ),
-                              const Spacer(),
-                              Row(
-                                children: List.generate(5, (index) {
-                                  return Icon(
-                                    index < avg.round()
-                                        ? Icons.star
-                                        : Icons.star_border,
-                                    color: Colors.amber,
-                                    size: 24.sp,
-                                  );
-                                }),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 4.h),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "Based on $count reviews",
-                              style: TextStyle(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
                             ),
-                          ),
-                          SizedBox(height: 16.h),
-                          // Dynamic Progress Bars
-                          ...[5, 4, 3, 2, 1].map((star) {
-                            final starCount = distribution[star] ?? 0;
-                            final pct = count > 0 ? starCount / count : 0.0;
-                            return _buildRatingBar(context, star, pct);
-                          }),
-                          SizedBox(height: 16.h),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => HelperReviewsScreen(
-                                      helperId: helperId,
-                                      averageRating: avg,
-                                      reviewCount: count,
+                            SizedBox(height: 16.h),
+                            // Dynamic Progress Bars
+                            ...[5, 4, 3, 2, 1].map((star) {
+                              final starCount = distribution[star] ?? 0;
+                              final pct = count > 0 ? starCount / count : 0.0;
+                              return _buildRatingBar(context, star, pct);
+                            }),
+                            SizedBox(height: 16.h),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => HelperReviewsScreen(
+                                        helperId: widget.helperId,
+                                        averageRating: avg,
+                                        reviewCount: count,
+                                      ),
                                     ),
+                                  );
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide.none,
+                                  backgroundColor:
+                                      colorScheme.surfaceContainerLow,
+                                  foregroundColor: colorScheme.onSurface,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.w),
                                   ),
-                                );
-                              },
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide.none,
-                                backgroundColor:
-                                    colorScheme.surfaceContainerLow,
-                                foregroundColor: colorScheme.onSurface,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.w),
                                 ),
+                                child: const Text("Read all reviews"),
                               ),
-                              child: const Text("Read all reviews"),
                             ),
-                          ),
-                        ],
-                      );
-                    },
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
                 SizedBox(height: 40.h),
@@ -901,7 +968,8 @@ class _SkillChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final hasCertificate = certificateUrl != null && certificateUrl!.isNotEmpty;
+    final hasCertificate =
+        certificateUrl != null && certificateUrl!.isNotEmpty;
 
     return GestureDetector(
       onTap: hasCertificate ? () => _showCertificate(context) : null,
@@ -954,7 +1022,9 @@ class _SkillChip extends StatelessWidget {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.w)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.w),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

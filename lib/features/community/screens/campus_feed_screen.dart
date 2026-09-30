@@ -11,8 +11,23 @@ import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 import 'package:freelancer/features/community/screens/leaderboard_screen.dart';
 import 'package:freelancer/features/profile/screens/helper_profile_screen.dart';
 
-class CampusFeedScreen extends StatelessWidget {
+class CampusFeedScreen extends StatefulWidget {
   const CampusFeedScreen({super.key});
+
+  @override
+  State<CampusFeedScreen> createState() => _CampusFeedScreenState();
+}
+
+class _CampusFeedScreenState extends State<CampusFeedScreen> {
+  // Cache stream instance in State to prevent StreamBuilder from re-subscribing on rebuilds
+  Stream<List<Map<String, dynamic>>>? _postsStream;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final communityService = Provider.of<CommunityService>(context);
+    _postsStream ??= communityService.getPostsStream();
+  }
 
   void _showCreatePostDialog(BuildContext context) {
     showDialog(
@@ -23,7 +38,6 @@ class CampusFeedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final communityService = Provider.of<CommunityService>(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -71,7 +85,7 @@ class CampusFeedScreen extends StatelessWidget {
         child: const Icon(Icons.add),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: communityService.getPostsStream(),
+        stream: _postsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -108,16 +122,19 @@ class CampusFeedScreen extends StatelessWidget {
               final timestamp =
                   (post['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now();
 
-              return _PostCard(
-                key: ValueKey(post['id']),
-                authorName: post['authorName'] ?? 'Student',
-                timeAgo: _formatTimeAgo(timestamp),
-                content: post['content'] ?? '',
-                isOfficial: post['isOfficial'] ?? false,
-                likes: post['likes'] ?? 0,
-                comments: post['comments'] ?? 0,
-                postId: post['id'],
-                authorId: post['authorId'],
+              // Isolate post card rendering with RepaintBoundary during scrolling and stream updates
+              return RepaintBoundary(
+                child: _PostCard(
+                  key: ValueKey(post['id']),
+                  authorName: post['authorName'] ?? 'Student',
+                  timeAgo: _formatTimeAgo(timestamp),
+                  content: post['content'] ?? '',
+                  isOfficial: post['isOfficial'] ?? false,
+                  likes: post['likes'] ?? 0,
+                  comments: post['comments'] ?? 0,
+                  postId: post['id'],
+                  authorId: post['authorId'],
+                ),
               );
             },
           );

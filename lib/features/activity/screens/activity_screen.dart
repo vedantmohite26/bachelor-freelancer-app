@@ -60,22 +60,49 @@ class ActivityScreen extends StatelessWidget {
   }
 }
 
-class _UpdatesList extends StatelessWidget {
+class _UpdatesList extends StatefulWidget {
   const _UpdatesList();
 
   @override
-  Widget build(BuildContext context) {
-    final authService = Provider.of<AuthService>(context, listen: false);
+  State<_UpdatesList> createState() => _UpdatesListState();
+}
+
+class _UpdatesListState extends State<_UpdatesList> {
+  Stream<List<Map<String, dynamic>>>? _notificationsStream;
+  String? _cachedUserId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context);
     final notificationService = Provider.of<NotificationService>(
       context,
       listen: false,
     );
     final userId = authService.user?.uid;
 
+    if (userId != _cachedUserId) {
+      _cachedUserId = userId;
+      if (userId != null) {
+        _notificationsStream = notificationService.getUserNotifications(userId);
+      } else {
+        _notificationsStream = null;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final notificationService = Provider.of<NotificationService>(
+      context,
+      listen: false,
+    );
+    final userId = _cachedUserId;
+
     if (userId == null) return const Center(child: Text("Please login"));
 
     return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: notificationService.getUserNotifications(userId),
+      stream: _notificationsStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const ShimmerListScreen();
@@ -257,120 +284,145 @@ class _ActivityItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      margin: EdgeInsets.only(bottom: 24.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Leading Icon
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: iconBgColor ?? colorScheme.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+    return RepaintBoundary(
+      child: Container(
+        margin: EdgeInsets.only(bottom: 24.h),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Leading Icon
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: iconBgColor ?? colorScheme.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: iconColor ?? colorScheme.primary,
+                size: 24.sp,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: iconColor ?? colorScheme.primary,
-              size: 24.sp,
-            ),
-          ),
-          SizedBox(width: 16.w),
+            SizedBox(width: 16.w),
 
-          // Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16.sp,
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  color: colorScheme.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16.sp,
+                                ),
                               ),
                             ),
-                          ),
-                          if (isUnread) ...[
-                            SizedBox(width: 8.w),
-                            Container(
-                              width: 6.w,
-                              height: 6.h,
-                              decoration: const BoxDecoration(
-                                color: AppTheme.primaryBlue,
-                                shape: BoxShape.circle,
+                            if (isUnread) ...[
+                              SizedBox(width: 8.w),
+                              Container(
+                                width: 6.w,
+                                height: 6.h,
+                                decoration: const BoxDecoration(
+                                  color: AppTheme.primaryBlue,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
+                            ],
                           ],
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    if (trailing != null)
-                      trailing!
-                    else
-                      Text(
-                        time,
-                        style: GoogleFonts.inter(
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
-                          fontSize: 12.sp,
                         ),
                       ),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        subtitle,
-                        style: GoogleFonts.inter(
-                          color: colorScheme.onSurface.withValues(alpha: 0.6),
-                          fontSize: 14.sp,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                    if (trailing != null) ...[
                       SizedBox(width: 8.w),
-                      Text(
-                        time,
-                        style: GoogleFonts.inter(
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
-                          fontSize: 12.sp,
+                      if (trailing != null)
+                        trailing!
+                      else
+                        Text(
+                          time,
+                          style: GoogleFonts.inter(
+                            color: colorScheme.onSurface.withValues(alpha: 0.5),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          subtitle,
+                          style: GoogleFonts.inter(
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            fontSize: 14.sp,
+                            height: 1.4,
+                          ),
                         ),
                       ),
+                      if (trailing != null) ...[
+                        SizedBox(width: 8.w),
+                        Text(
+                          time,
+                          style: GoogleFonts.inter(
+                            color: colorScheme.onSurface.withValues(alpha: 0.5),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _CommunityTab extends StatelessWidget {
+class _CommunityTab extends StatefulWidget {
   const _CommunityTab();
+
+  @override
+  State<_CommunityTab> createState() => _CommunityTabState();
+}
+
+class _CommunityTabState extends State<_CommunityTab> {
+  Stream<List<Map<String, dynamic>>>? _incomingRequestsStream;
+  String? _cachedUserId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context);
+    final friendService = Provider.of<FriendService>(context, listen: false);
+    final userId = authService.user?.uid;
+
+    if (userId != _cachedUserId) {
+      _cachedUserId = userId;
+      if (userId != null) {
+        _incomingRequestsStream = friendService.getIncomingRequestsStream(userId);
+      } else {
+        _incomingRequestsStream = null;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final friendService = Provider.of<FriendService>(context, listen: false);
-    final userId = authService.user?.uid;
+    final userId = _cachedUserId;
 
     if (userId == null) {
       return Center(
@@ -386,7 +438,7 @@ class _CommunityTab extends StatelessWidget {
       children: [
         // Friend Requests Card
         StreamBuilder<List<Map<String, dynamic>>>(
-          stream: friendService.getIncomingRequestsStream(userId),
+          stream: _incomingRequestsStream,
           builder: (context, snapshot) {
             final count = snapshot.data?.length ?? 0;
 
@@ -447,19 +499,42 @@ class _CommunityTab extends StatelessWidget {
   }
 }
 
-class _PaymentsList extends StatelessWidget {
+class _PaymentsList extends StatefulWidget {
   const _PaymentsList();
 
   @override
-  Widget build(BuildContext context) {
-    final authService = Provider.of<AuthService>(context, listen: false);
+  State<_PaymentsList> createState() => _PaymentsListState();
+}
+
+class _PaymentsListState extends State<_PaymentsList> {
+  Stream<List<Map<String, dynamic>>>? _paymentsStream;
+  String? _cachedUserId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context);
     final paymentService = Provider.of<PaymentService>(context, listen: false);
     final userId = authService.user?.uid;
+
+    if (userId != _cachedUserId) {
+      _cachedUserId = userId;
+      if (userId != null) {
+        _paymentsStream = paymentService.getAllUserPaymentsStream(userId);
+      } else {
+        _paymentsStream = null;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userId = _cachedUserId;
 
     if (userId == null) return const Center(child: Text("Please login"));
 
     return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: paymentService.getAllUserPaymentsStream(userId),
+      stream: _paymentsStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const ShimmerListScreen();

@@ -124,10 +124,14 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
               itemBuilder: (context, index) {
                 final msg = _messages[index];
                 final isUser = msg['isUser'] as bool;
-                return _ChatBubble(
-                  message: msg['message'] as String,
-                  isUser: isUser,
-                  time: msg['time'] as DateTime,
+                // RepaintBoundary isolates each chat bubble onto its own render layer,
+                // preventing whole-list repaints when new messages arrive or when scrolling.
+                return RepaintBoundary(
+                  child: _ChatBubble(
+                    message: msg['message'] as String,
+                    isUser: isUser,
+                    time: msg['time'] as DateTime,
+                  ),
                 );
               },
             ),

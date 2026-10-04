@@ -21,16 +21,12 @@ class _CoinShopScreenState extends State<CoinShopScreen>
   bool _isLoading = false;
   late Stream<List<Map<String, dynamic>>> _redeemCodesStream;
   late Stream<List<Map<String, dynamic>>> _powerUpsStream;
+  bool _isStreamsInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
-    // FIX: Initialize streams once to prevent redundant API calls on every rebuild
-    final rewardsService = Provider.of<RewardsService>(context, listen: false);
-    _redeemCodesStream = rewardsService.getRewards('redeem_code');
-    _powerUpsStream = rewardsService.getRewards('power_up');
 
     // Ensure wallet listener is active
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -42,6 +38,20 @@ class _CoinShopScreenState extends State<CoinShopScreen>
         ).listenToWallet(authService.user!.uid);
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cache stream instances safely using inherited Provider context.
+    // Initializing in didChangeDependencies ensures inherited widget dependencies
+    // are fully resolved while avoiding stream recreation on parent widget rebuilds.
+    if (!_isStreamsInitialized) {
+      final rewardsService = Provider.of<RewardsService>(context, listen: false);
+      _redeemCodesStream = rewardsService.getRewards('redeem_code');
+      _powerUpsStream = rewardsService.getRewards('power_up');
+      _isStreamsInitialized = true;
+    }
   }
 
   @override

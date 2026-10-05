@@ -33,6 +33,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // Cache of built tabs — null means not yet visited
   final Map<int, Widget> _builtTabs = {};
 
+  // Cached stream instance to avoid stream teardown and re-subscription on tab switches
+  Stream<Map<String, dynamic>?>? _userProfileStream;
+  String? _cachedUserId;
+
   @override
   void initState() {
     super.initState();
@@ -69,6 +73,19 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final currentUserId = authService.user?.uid ?? '';
+    // Only recreate the profile stream when the user ID changes
+    if (_cachedUserId != currentUserId || _userProfileStream == null) {
+      _cachedUserId = currentUserId;
+      final userService = Provider.of<UserService>(context, listen: false);
+      _userProfileStream = userService.getUserProfileStream(currentUserId);
+    }
+  }
+
   /// Get or build a tab lazily
   Widget _getTab(int index) {
     _builtTabs[index] ??= _tabBuilders[index]();
@@ -88,10 +105,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final userService = Provider.of<UserService>(context, listen: false);
-    final userId = authService.user?.uid ?? '';
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -110,9 +123,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        // Only the nav bar listens to profile stream (for avatar)
+        // Only the nav bar listens to cached profile stream (for avatar)
         bottomNavigationBar: StreamBuilder<Map<String, dynamic>?>(
-          stream: userService.getUserProfileStream(userId),
+          stream: _userProfileStream,
           builder: (context, snapshot) {
             final profile = snapshot.data;
             final photoUrl = profile?['photoUrl'] as String?;

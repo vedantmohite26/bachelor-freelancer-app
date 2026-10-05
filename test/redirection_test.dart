@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 import 'package:freelancer/features/auth/screens/login_screen.dart';
 import 'package:freelancer/core/services/auth_service.dart';
 import 'package:freelancer/core/services/user_service.dart';
@@ -418,7 +419,13 @@ void main() {
         Provider<RewardsService>.value(value: mockRewardsService),
         ChangeNotifierProvider<PaymentService>.value(value: mockPaymentService),
       ],
-      child: const MaterialApp(home: LoginScreen()),
+      child: MaterialApp(
+        builder: (context, child) {
+          Responsive.init(context);
+          return child!;
+        },
+        home: const LoginScreen(),
+      ),
     );
   }
 

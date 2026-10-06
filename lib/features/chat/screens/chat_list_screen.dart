@@ -10,16 +10,37 @@ import 'package:freelancer/features/chat/screens/chat_screen.dart';
 import 'package:freelancer/features/chat/screens/new_chat_screen.dart';
 import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 
-class ChatListScreen extends StatelessWidget {
+/// Screen listing all active chat conversations for the current user.
+/// Converted to [StatefulWidget] to cache the chats stream and prevent
+/// redundant Firestore stream subscriptions on rebuilds.
+class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final chatService = Provider.of<ChatService>(context, listen: false);
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final currentUserId = authService.user?.uid;
+  State<ChatListScreen> createState() => _ChatListScreenState();
+}
 
-    if (currentUserId == null) {
+class _ChatListScreenState extends State<ChatListScreen> {
+  Stream<List<Map<String, dynamic>>>? _chatsStream;
+  String? _currentUserId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final userId = authService.user?.uid;
+
+    if (userId != null && userId != _currentUserId) {
+      _currentUserId = userId;
+      final chatService = Provider.of<ChatService>(context, listen: false);
+      // Cache stream in state to prevent re-subscriptions on widget rebuilds
+      _chatsStream = chatService.getUserChats(userId);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_currentUserId == null) {
       return const Scaffold(
         body: Center(child: Text("Please log in to view messages")),
       );
@@ -39,7 +60,7 @@ class ChatListScreen extends StatelessWidget {
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: chatService.getUserChats(currentUserId),
+        stream: _chatsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -80,31 +101,18 @@ class ChatListScreen extends StatelessWidget {
             separatorBuilder: (context, index) => SizedBox(height: 16.h),
             itemBuilder: (context, index) {
               final chat = chats[index];
-              // Ideally we pass the name, but for now we'll let ChatScreen fetch it or show generic
-              // Using "Chat" as default title if name is not immediately available
-              const otherUserName = "User";
-
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ChatScreen(
-                        chatId: chat['id'],
-                        otherUserName: otherUserName,
-                      ),
-                    ),
-                  );
-                },
+              return RepaintBoundary(
                 child: _ChatListItem(
+                  key: ValueKey(chat['id']),
+                  chatId: chat['id'] ?? '',
                   participants: chat['participants'] ?? [],
-                  currentUserId: currentUserId,
+                  currentUserId: _currentUserId!,
                   message: chat['lastMessage'] ?? '',
                   time: _formatTimeAgo(
                     (chat['lastMessageTime'] as Timestamp?)?.toDate() ??
                         DateTime.now(),
                   ),
-                  unread: false, // Implement read status logic if needed
+                  unread: false,
                 ),
               );
             },
@@ -122,7 +130,11 @@ class ChatListScreen extends StatelessWidget {
   }
 }
 
-class _ChatListItem extends StatelessWidget {
+/// Individual chat item in the conversations list.
+/// Converted to [StatefulWidget] to cache `_userProfileFuture` in state,
+/// avoiding redundant [getUserProfile] calls on parent rebuilds and list scrolling.
+class _ChatListItem extends StatefulWidget {
+  final String chatId;
   final List<dynamic> participants;
   final String currentUserId;
   final String message;
@@ -130,6 +142,8 @@ class _ChatListItem extends StatelessWidget {
   final bool unread;
 
   const _ChatListItem({
+    super.key,
+    required this.chatId,
     required this.participants,
     required this.currentUserId,
     required this.message,
@@ -138,80 +152,120 @@ class _ChatListItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final otherUserId = participants.firstWhere(
-      (id) => id != currentUserId,
+  State<_ChatListItem> createState() => _ChatListItemState();
+}
+
+class _ChatListItemState extends State<_ChatListItem> {
+  Future<Map<String, dynamic>?>? _userProfileFuture;
+  late String _otherUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileFuture();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ChatListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.participants != widget.participants ||
+        oldWidget.currentUserId != widget.currentUserId) {
+      _loadProfileFuture();
+    }
+  }
+
+  void _loadProfileFuture() {
+    _otherUserId = widget.participants.firstWhere(
+      (id) => id != widget.currentUserId,
       orElse: () => 'Unknown',
     );
     final userService = Provider.of<UserService>(context, listen: false);
+    _userProfileFuture = userService.getUserProfile(_otherUserId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return FutureBuilder<Map<String, dynamic>?>(
-      future: userService.getUserProfile(otherUserId),
+      future: _userProfileFuture,
       builder: (context, snapshot) {
         final user = snapshot.data;
         final name = user?['name'] ?? 'User';
         final profilePic = user?['profilePic'];
 
-        return Container(
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(12.w),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              CachedNetworkAvatar(
-                imageUrl: profilePic,
-                radius: 20,
-                fallbackText: name,
-                backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                fallbackIconColor: AppTheme.primaryBlue,
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          time,
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: AppTheme.textLight,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      message,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: unread ? AppTheme.textDark : AppTheme.textLight,
-                        fontWeight: unread
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ],
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ChatScreen(
+                  chatId: widget.chatId,
+                  otherUserName: name,
                 ),
               ),
-            ],
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(12.w),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                CachedNetworkAvatar(
+                  imageUrl: profilePic,
+                  radius: 20,
+                  fallbackText: name,
+                  backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                  fallbackIconColor: AppTheme.primaryBlue,
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            widget.time,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: AppTheme.textLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        widget.message,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: widget.unread ? AppTheme.textDark : AppTheme.textLight,
+                          fontWeight: widget.unread
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

@@ -4,8 +4,31 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freelancer/core/theme/app_theme.dart';
 import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 
-class HomeTab extends StatelessWidget {
-  const HomeTab({super.key});
+/// Optimized HomeTab converting to StatefulWidget to cache stream instances
+/// and avoid tearing down/recreating Firestore subscriptions on widget rebuilds.
+class HomeTab extends StatefulWidget {
+  final Stream<QuerySnapshot>? helpersStream;
+
+  const HomeTab({super.key, this.helpersStream});
+
+  @override
+  State<HomeTab> createState() => _HomeTabState();
+}
+
+class _HomeTabState extends State<HomeTab> {
+  late final Stream<QuerySnapshot> _helpersStream;
+
+  @override
+  void initState() {
+    super.initState();
+    // Cache stream once to prevent re-subscribing on rebuilds
+    _helpersStream = widget.helpersStream ??
+        FirebaseFirestore.instance
+            .collection('users')
+            .where('role', isEqualTo: 'helper')
+            .limit(5)
+            .snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -206,11 +229,7 @@ class HomeTab extends StatelessWidget {
               SizedBox(
                 height: 140.h, // Height for helper cards
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('users')
-                      .where('role', isEqualTo: 'helper')
-                      .limit(5)
-                      .snapshots(),
+                  stream: _helpersStream,
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
@@ -229,11 +248,13 @@ class HomeTab extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final helper =
                             helpers[index].data() as Map<String, dynamic>;
-                        return _HelperCard(
-                          name: helper['name'] ?? 'Student',
-                          tagline: helper['tagline'] ?? 'General Helper',
-                          rating: (helper['rating'] as num?)?.toDouble() ?? 5.0,
-                          reviews: helper['reviews'] ?? 0,
+                        return RepaintBoundary(
+                          child: _HelperCard(
+                            name: helper['name'] ?? 'Student',
+                            tagline: helper['tagline'] ?? 'General Helper',
+                            rating: (helper['rating'] as num?)?.toDouble() ?? 5.0,
+                            reviews: helper['reviews'] ?? 0,
+                          ),
                         );
                       },
                     );

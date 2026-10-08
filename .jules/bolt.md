@@ -1,0 +1,3 @@
+## 2026-10-08 - Stream caching and RepaintBoundary in HomeTab
+**Learning:** Instantiating `FirebaseFirestore.instance.collection(...).snapshots()` directly inside a `StatelessWidget.build()` method causes `StreamBuilder` to cancel and re-subscribe to Firestore on every rebuild frame. Converting to `StatefulWidget`, caching the stream instance in state, and adding an optional constructor parameter enables clean dependency injection for unit/widget testing without live Firebase initialization.
+**Action:** When building Firestore-backed screens or tab views, always convert to `StatefulWidget` or cache stream instances in state/services, and expose an optional stream parameter for testability.

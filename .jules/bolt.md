@@ -1,0 +1,3 @@
+## 2026-08-15 - Consolidate Finance Dashboard List Traversals
+**Learning:** In Flutter screens with complex dashboard analytics (like `FinanceDashboardScreen`), calling separate `.where()` and `.fold()` filtering pipelines in individual sub-widgets causes $O(N)$ list traversals to multiply (14+ passes per frame), generating excessive CPU cycles and transient iterator garbage during rebuilds.
+**Action:** Consolidate multiple list filtering/aggregation operations into a single-pass `_calculateMetrics` method that produces an immutable `_DashboardMetrics` holder class for child widgets to consume.

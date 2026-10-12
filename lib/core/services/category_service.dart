@@ -2,11 +2,34 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class CategoryService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _db;
+  List<Map<String, dynamic>>? _cachedCategories;
+
+  CategoryService({FirebaseFirestore? firestore})
+      : _db = firestore ?? FirebaseFirestore.instance;
+
+  /// Clear the in-memory categories cache
+  void clearCache() {
+    _cachedCategories = null;
+  }
+
+  /// Deep-copy helper to ensure callers cannot mutate internal cache references
+  List<Map<String, dynamic>> _deepCopyCategories(
+    List<Map<String, dynamic>> categories,
+  ) {
+    return categories
+        .map((cat) => Map<String, dynamic>.from(cat))
+        .toList();
+  }
 
   /// Fetch all categories from Firestore
-  /// Returns a list of category maps with: id, name, icon, color, bgColor
+  /// Uses in-memory caching to prevent redundant Firestore queries
+  /// Returns a list of category maps with: id, title, icon, color, bgColor
   Future<List<Map<String, dynamic>>> getCategories() async {
+    if (_cachedCategories != null) {
+      return _deepCopyCategories(_cachedCategories!);
+    }
+
     try {
       final snapshot = await _db
           .collection('categories')
@@ -14,11 +37,11 @@ class CategoryService {
           .get();
 
       if (snapshot.docs.isEmpty) {
-        // Return default categories if none exist in Firestore
-        return _defaultCategories;
+        _cachedCategories = _defaultCategories;
+        return _deepCopyCategories(_cachedCategories!);
       }
 
-      return snapshot.docs.map((doc) {
+      final categories = snapshot.docs.map((doc) {
         final data = doc.data();
         return {
           'id': doc.id,
@@ -28,20 +51,28 @@ class CategoryService {
           'bgColor': _getColorFromHex(data['bgColor'] ?? '#DBEAFE'),
         };
       }).toList();
+
+      _cachedCategories = categories;
+      return _deepCopyCategories(_cachedCategories!);
     } catch (e) {
       debugPrint('Error fetching categories: $e');
-      return _defaultCategories;
+      _cachedCategories = _defaultCategories;
+      return _deepCopyCategories(_cachedCategories!);
     }
   }
 
   /// Stream categories for real-time updates
+  /// Updates the in-memory cache whenever a new snapshot is received
   Stream<List<Map<String, dynamic>>> getCategoriesStream() {
     return _db.collection('categories').orderBy('order').snapshots().map((
       snapshot,
     ) {
-      if (snapshot.docs.isEmpty) return _defaultCategories;
+      if (snapshot.docs.isEmpty) {
+        _cachedCategories = _defaultCategories;
+        return _deepCopyCategories(_cachedCategories!);
+      }
 
-      return snapshot.docs.map((doc) {
+      final categories = snapshot.docs.map((doc) {
         final data = doc.data();
         return {
           'id': doc.id,
@@ -51,6 +82,9 @@ class CategoryService {
           'bgColor': _getColorFromHex(data['bgColor'] ?? '#DBEAFE'),
         };
       }).toList();
+
+      _cachedCategories = categories;
+      return _deepCopyCategories(_cachedCategories!);
     });
   }
 
@@ -107,6 +141,7 @@ class CategoryService {
     for (var cat in categories) {
       await _db.collection('categories').add(cat);
     }
+    clearCache();
   }
 
   // Helper: Convert icon name to IconData

@@ -603,16 +603,47 @@ class _ApplicationCard extends StatelessWidget {
   }
 }
 
-class _ProcessedApplicationCard extends StatelessWidget {
+class _ProcessedApplicationCard extends StatefulWidget {
   final Map<String, dynamic> application;
 
   const _ProcessedApplicationCard({required this.application});
 
   @override
+  State<_ProcessedApplicationCard> createState() => _ProcessedApplicationCardState();
+}
+
+class _ProcessedApplicationCardState extends State<_ProcessedApplicationCard> {
+  Stream<Map<String, dynamic>?>? _jobStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _initStream();
+  }
+
+  @override
+  void didUpdateWidget(_ProcessedApplicationCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.application['jobId'] != widget.application['jobId'] ||
+        oldWidget.application['status'] != widget.application['status']) {
+      _initStream();
+    }
+  }
+
+  void _initStream() {
+    if (widget.application['status'] == 'accepted') {
+      final jobService = Provider.of<JobService>(context, listen: false);
+      _jobStream = jobService.getJobStream(widget.application['jobId']);
+    } else {
+      _jobStream = null;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userService = Provider.of<UserService>(context, listen: false);
-    final helperId = application['helperId'] as String;
-    final status = application['status'];
+    final helperId = widget.application['helperId'] as String;
+    final status = widget.application['status'];
     final isAccepted = status == 'accepted';
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -697,12 +728,9 @@ class _ProcessedApplicationCard extends StatelessWidget {
                 ],
               ),
 
-              if (isAccepted)
+              if (isAccepted && _jobStream != null)
                 StreamBuilder<Map<String, dynamic>?>(
-                  stream: Provider.of<JobService>(
-                    context,
-                    listen: false,
-                  ).getJobStream(application['jobId']),
+                  stream: _jobStream,
                   builder: (context, jobSnapshot) {
                     if (jobSnapshot.connectionState ==
                         ConnectionState.waiting) {
@@ -796,7 +824,7 @@ class _ProcessedApplicationCard extends StatelessWidget {
                         _buildAction(
                           context,
                           jobStatus,
-                          application['jobId'],
+                          widget.application['jobId'],
                           helperId,
                           name,
                           job,

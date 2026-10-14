@@ -1,0 +1,3 @@
+## 2026-10-14 - Stream Caching in _ProcessedApplicationCard
+**Learning:** Instantiating streams inside `StreamBuilder` in Flutter (`stream: Provider.of<JobService>(context).getJobStream(...)`) recreates stream objects on every widget rebuild, tearing down and re-subscribing Firestore listeners needlessly. Caching the stream in `State` via `initState` and `didUpdateWidget` avoids unnecessary database re-subscriptions while safely updating when parameters change.
+**Action:** Always check if `StreamBuilder` stream parameters are method invocations that create new `Stream` instances on render, and cache them in state.

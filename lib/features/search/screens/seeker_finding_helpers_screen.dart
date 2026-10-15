@@ -97,7 +97,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                                 ),
                               ),
                             ),
-                            // Floating Icon 1 (Mop) - Animated
+                            // Floating Icon 1 (Mop) - Animated with RepaintBoundary inside Positioned to isolate tick repaints
                             AnimatedBuilder(
                               animation: _animation,
                               builder: (context, child) {
@@ -106,7 +106,7 @@ class _SeekerFindingHelpersScreenState extends State<SeekerFindingHelpersScreen>
                                       10 +
                                       (_animation.value * 10), // Bounce effect
                                   right: 40,
-                                  child: child!,
+                                  child: RepaintBoundary(child: child!),
                                 );
                               },
                               child: Container(

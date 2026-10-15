@@ -1,0 +1,3 @@
+## 2026-08-16 - RepaintBoundary isolation for 60fps animations in Flutter Stack layouts
+**Learning:** Placing a `RepaintBoundary` directly between `Stack` and `Positioned` throws a framework exception because `Positioned` requires `StackParentData` from an immediate `Stack` parent. Instead, wrap the child inside `Positioned` (`Positioned` -> `RepaintBoundary` -> `AnimatedBuilder`). Isolating 60fps continuous animations (such as pulsing logos or bouncing floating icons) from heavy background image layers prevents continuous full-screen repaints.
+**Action:** When optimizing animated widgets inside a `Stack`, ensure `Positioned` is the direct child of `Stack`, and place `RepaintBoundary` around the inner child element.

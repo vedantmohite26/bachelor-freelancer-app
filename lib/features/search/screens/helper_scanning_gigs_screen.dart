@@ -98,93 +98,95 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
             child: _buildPing(primaryColor, delay: 2),
           ),
 
-          // 3. Center Content: Pulsing Logo
+          // 3. Center Content: Pulsing Logo (Wrapped in RepaintBoundary to isolate 60fps repaints from background image map and bottom tips)
           Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Outer Glow Ring
-                    Container(
-                      width: 128.w,
-                      height: 128.h,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: primaryColor.withValues(alpha: 0.2),
+            child: RepaintBoundary(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Outer Glow Ring
+                      Container(
+                        width: 128.w,
+                        height: 128.h,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: primaryColor.withValues(alpha: 0.2),
+                        ),
                       ),
-                    ),
-                    // Animated inner pulse
-                    AnimatedBuilder(
-                      animation: _pulseAnimation,
-                      builder: (context, child) {
-                        return Container(
-                          width: 96.w + (10 * _pulseAnimation.value),
-                          height: 96.h + (10 * _pulseAnimation.value),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: primaryColor.withValues(
-                              alpha: 0.4 * (1 - _pulseAnimation.value),
+                      // Animated inner pulse
+                      AnimatedBuilder(
+                        animation: _pulseAnimation,
+                        builder: (context, child) {
+                          return Container(
+                            width: 96.w + (10 * _pulseAnimation.value),
+                            height: 96.h + (10 * _pulseAnimation.value),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: primaryColor.withValues(
+                                alpha: 0.4 * (1 - _pulseAnimation.value),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      // Logo Container
+                      Container(
+                        width: 96.w,
+                        height: 96.h,
+                        decoration: BoxDecoration(
+                          color: backgroundDark.withValues(alpha: 0.8),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: primaryColor.withValues(alpha: 0.4),
+                              blurRadius: 40,
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            "S",
+                            style: GoogleFonts.splineSans(
+                              fontSize: 48.sp,
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                    // Logo Container
-                    Container(
-                      width: 96.w,
-                      height: 96.h,
-                      decoration: BoxDecoration(
-                        color: backgroundDark.withValues(alpha: 0.8),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryColor.withValues(alpha: 0.4),
-                            blurRadius: 40,
-                            spreadRadius: 0,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          "S",
-                          style: GoogleFonts.splineSans(
-                            fontSize: 48.sp,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 24.h),
-                // Text pulsing
-                AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity:
-                          0.5 +
-                          (0.5 * _pulseAnimation.value), // Fade in and out
-                      child: child,
-                    );
-                  },
-                  child: Text(
-                    "Scanning nearby campus gigs...",
-                    style: GoogleFonts.splineSans(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.5,
+                    ],
+                  ),
+                  SizedBox(height: 24.h),
+                  // Text pulsing
+                  AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity:
+                            0.5 +
+                            (0.5 * _pulseAnimation.value), // Fade in and out
+                        child: child,
+                      );
+                    },
+                    child: Text(
+                      "Scanning nearby campus gigs...",
+                      style: GoogleFonts.splineSans(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -243,7 +245,7 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
                 SizedBox(height: 24.h),
                 // Tips Carousel
                 SizedBox(
-                  height: 100.h, // Approximate height for the card
+                  height: 120.h, // Sufficient height for tip cards across screen densities
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -320,27 +322,30 @@ class _HelperScanningGigsScreenState extends State<HelperScanningGigsScreen>
           ),
           SizedBox(width: 16.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.splineSans(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+            child: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.splineSans(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.splineSans(
-                    color: Colors.grey.shade400,
-                    fontSize: 12.sp,
+                  SizedBox(height: 4.h),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.splineSans(
+                      color: Colors.grey.shade400,
+                      fontSize: 12.sp,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

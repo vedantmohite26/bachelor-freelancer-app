@@ -3,7 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 enum FriendStatus { none, pendingSent, pendingReceived, connected }
 
 class FriendService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  FriendService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference get _requests => _firestore.collection('friend_requests');
   CollectionReference get _users => _firestore.collection('users');
@@ -31,7 +34,7 @@ class FriendService {
     });
   }
 
-  // Cancel sent request
+  // Cancel sent request using a single batch delete (O(1) commit vs O(N) sequential deletes)
   Future<void> cancelFriendRequest(
     String currentUserId,
     String targetUserId,
@@ -42,9 +45,13 @@ class FriendService {
         .where('status', isEqualTo: 'pending')
         .get();
 
+    if (query.docs.isEmpty) return;
+
+    final batch = _firestore.batch();
     for (var doc in query.docs) {
-      await doc.reference.delete();
+      batch.delete(doc.reference);
     }
+    await batch.commit();
   }
 
   // Accept incoming request
@@ -134,79 +141,80 @@ class FriendService {
         });
   }
 
-  // Get incoming requests stream for a user
+  // Get incoming requests stream for a user (optimized: concurrent Future.wait for sender profile fetches)
   Stream<List<Map<String, dynamic>>> getIncomingRequestsStream(String userId) {
     return _requests
         .where('receiverId', isEqualTo: userId)
         .where('status', isEqualTo: 'pending')
         .snapshots()
         .asyncMap((snapshot) async {
-          final requests = <Map<String, dynamic>>[];
+          final results = await Future.wait(
+            snapshot.docs.map((doc) async {
+              final data = doc.data() as Map<String, dynamic>;
+              final senderId = data['senderId'];
 
-          for (var doc in snapshot.docs) {
-            final data = doc.data() as Map<String, dynamic>;
-            final senderId = data['senderId'];
-
-            // Fetch sender details
-            final senderDoc = await _users.doc(senderId).get();
-            if (senderDoc.exists) {
-              final senderData = senderDoc.data() as Map<String, dynamic>;
-              requests.add({
-                'requestId': doc.id,
-                'senderId': senderId,
-                'name': senderData['name'] ?? 'Unknown',
-                'role': senderData['role'] ?? 'User', // university or role
-                'university':
-                    senderData['university'], // specific field if available
-                'profilePic': senderData['profilePic'],
-                'createdAt': data['createdAt'],
-              });
-            }
-          }
-          return requests;
+              // Fetch sender details concurrently
+              final senderDoc = await _users.doc(senderId).get();
+              if (senderDoc.exists) {
+                final senderData = senderDoc.data() as Map<String, dynamic>;
+                return <String, dynamic>{
+                  'requestId': doc.id,
+                  'senderId': senderId,
+                  'name': senderData['name'] ?? 'Unknown',
+                  'role': senderData['role'] ?? 'User', // university or role
+                  'university':
+                      senderData['university'], // specific field if available
+                  'profilePic': senderData['profilePic'],
+                  'createdAt': data['createdAt'],
+                };
+              }
+              return null;
+            }),
+          );
+          return results.whereType<Map<String, dynamic>>().toList();
         });
   }
 
-  // Get sent requests stream for a user
+  // Get sent requests stream for a user (optimized: concurrent Future.wait for receiver profile fetches)
   Stream<List<Map<String, dynamic>>> getSentRequestsStream(String userId) {
     return _requests
         .where('senderId', isEqualTo: userId)
         .where('status', isEqualTo: 'pending')
         .snapshots()
         .asyncMap((snapshot) async {
-          final requests = <Map<String, dynamic>>[];
+          final results = await Future.wait(
+            snapshot.docs.map((doc) async {
+              final data = doc.data() as Map<String, dynamic>;
+              final receiverId = data['receiverId'];
 
-          for (var doc in snapshot.docs) {
-            final data = doc.data() as Map<String, dynamic>;
-            final receiverId = data['receiverId'];
-
-            // Fetch receiver details
-            final receiverDoc = await _users.doc(receiverId).get();
-            if (receiverDoc.exists) {
-              final receiverData = receiverDoc.data() as Map<String, dynamic>;
-              requests.add({
-                'requestId': doc.id,
-                'receiverId': receiverId,
-                'name': receiverData['name'] ?? 'Unknown',
-                'role': receiverData['role'] ?? 'User',
-                'university': receiverData['university'],
-                'profilePic': receiverData['profilePic'],
-                'createdAt': data['createdAt'],
-              });
-            } else {
-              // Still show the request, but as "Unknown/Deleted User"
-              requests.add({
-                'requestId': doc.id,
-                'receiverId': receiverId,
-                'name': 'Unknown User',
-                'role': 'User (Deleted?)',
-                'university': null,
-                'profilePic': null,
-                'createdAt': data['createdAt'],
-              });
-            }
-          }
-          return requests;
+              // Fetch receiver details concurrently
+              final receiverDoc = await _users.doc(receiverId).get();
+              if (receiverDoc.exists) {
+                final receiverData = receiverDoc.data() as Map<String, dynamic>;
+                return <String, dynamic>{
+                  'requestId': doc.id,
+                  'receiverId': receiverId,
+                  'name': receiverData['name'] ?? 'Unknown',
+                  'role': receiverData['role'] ?? 'User',
+                  'university': receiverData['university'],
+                  'profilePic': receiverData['profilePic'],
+                  'createdAt': data['createdAt'],
+                };
+              } else {
+                // Still show the request, but as "Unknown/Deleted User"
+                return <String, dynamic>{
+                  'requestId': doc.id,
+                  'receiverId': receiverId,
+                  'name': 'Unknown User',
+                  'role': 'User (Deleted?)',
+                  'university': null,
+                  'profilePic': null,
+                  'createdAt': data['createdAt'],
+                };
+              }
+            }),
+          );
+          return results;
         });
   }
 
@@ -217,30 +225,31 @@ class FriendService {
     });
   }
 
-  // Get friends with details stream
+  // Get friends with details stream (optimized: concurrent Future.wait for friend profile fetches)
   Stream<List<Map<String, dynamic>>> getFriendsStream(String userId) {
     return _users.doc(userId).collection('friends').snapshots().asyncMap((
       snapshot,
     ) async {
-      final friends = <Map<String, dynamic>>[];
+      final results = await Future.wait(
+        snapshot.docs.map((doc) async {
+          final friendId = doc.id;
+          final friendDoc = await _users.doc(friendId).get();
 
-      for (var doc in snapshot.docs) {
-        final friendId = doc.id;
-        final friendDoc = await _users.doc(friendId).get();
-
-        if (friendDoc.exists) {
-          final data = friendDoc.data() as Map<String, dynamic>;
-          friends.add({
-            'id': friendId,
-            'name': data['name'] ?? 'Unknown',
-            'email': data['email'] ?? '',
-            'profilePic': data['profilePic'],
-            'role': data['role'] ?? 'User',
-            'university': data['university'],
-          });
-        }
-      }
-      return friends;
+          if (friendDoc.exists) {
+            final data = friendDoc.data() as Map<String, dynamic>;
+            return <String, dynamic>{
+              'id': friendId,
+              'name': data['name'] ?? 'Unknown',
+              'email': data['email'] ?? '',
+              'profilePic': data['profilePic'],
+              'role': data['role'] ?? 'User',
+              'university': data['university'],
+            };
+          }
+          return null;
+        }),
+      );
+      return results.whereType<Map<String, dynamic>>().toList();
     });
   }
 

@@ -1,0 +1,3 @@
+## 2026-10-16 - Parallelizing Firestore sub-document fetches in Streams
+**Learning:** Sequential `for (var doc in snapshot.docs) { await _users.doc(...).get(); }` loops in Firestore stream `asyncMap` transformers cause O(N) network round-trip latency when populating list items. Wrapping the snapshot mapping with `Future.wait(snapshot.docs.map(...))` converts serial queries into concurrent parallel requests, reducing latency to a single round-trip O(1) response time.
+**Action:** Always prefer `Future.wait` over sequential `for-in` `await` loops inside stream `asyncMap` and list mappings when fetching related documents.

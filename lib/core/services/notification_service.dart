@@ -4,8 +4,11 @@ import 'package:freelancer/core/services/local_notification_service.dart';
 import 'dart:async';
 
 class NotificationService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
   StreamSubscription? _subscription;
+
+  NotificationService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // Stream of notifications for a user
   Stream<List<Map<String, dynamic>>> getUserNotifications(String userId) {

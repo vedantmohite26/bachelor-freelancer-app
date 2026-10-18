@@ -1,0 +1,3 @@
+## 2026-10-18 - JobService getJobById In-Memory Caching & Deep-Copy Isolation
+**Learning:** Frequent calls to `JobService.getJobById` trigger unnecessary network reads from Firestore when job details remain unchanged across UI components and navigation flow. Adding an in-memory cache with deep-copy isolation and targeted cache invalidation on job mutation methods eliminates redundant network calls without risking state pollution or stale data.
+**Action:** When implementing service-level caching for Firestore documents, store a deep-copied map in an internal cache, update/invalidate the cache entry on all state mutation operations, and return a fresh deep copy to callers.

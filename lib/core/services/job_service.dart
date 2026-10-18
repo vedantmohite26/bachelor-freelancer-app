@@ -4,8 +4,59 @@ import 'package:flutter/foundation.dart';
 import 'package:freelancer/core/services/notification_service.dart';
 
 class JobService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final NotificationService _notificationService = NotificationService();
+  final FirebaseFirestore _firestore;
+  final NotificationService _notificationService;
+
+  // Bolt Performance Optimization:
+  // In-memory cache for getJobById to prevent redundant network fetches
+  final Map<String, Map<String, dynamic>> _jobCache = {};
+
+  JobService({
+    FirebaseFirestore? firestore,
+    NotificationService? notificationService,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _notificationService = notificationService ?? NotificationService();
+
+  /// Recursively deep-copy map to isolate cached data from caller mutation
+  Map<String, dynamic> _deepCopyMap(Map<String, dynamic> source) {
+    final copy = <String, dynamic>{};
+    source.forEach((key, value) {
+      if (value is Map<String, dynamic>) {
+        copy[key] = _deepCopyMap(value);
+      } else if (value is Map) {
+        copy[key] = _deepCopyMap(Map<String, dynamic>.from(value));
+      } else if (value is List) {
+        copy[key] = _deepCopyList(value);
+      } else {
+        copy[key] = value;
+      }
+    });
+    return copy;
+  }
+
+  List<dynamic> _deepCopyList(List<dynamic> source) {
+    return source.map((item) {
+      if (item is Map<String, dynamic>) {
+        return _deepCopyMap(item);
+      } else if (item is Map) {
+        return _deepCopyMap(Map<String, dynamic>.from(item));
+      } else if (item is List) {
+        return _deepCopyList(item);
+      } else {
+        return item;
+      }
+    }).toList();
+  }
+
+  /// Invalidate cache entry for a specific job
+  void invalidateJobCache(String jobId) {
+    _jobCache.remove(jobId);
+  }
+
+  /// Clear entire job cache
+  void clearJobCache() {
+    _jobCache.clear();
+  }
 
   // Retry logic for transient Firestore errors
   Future<T> _retryOperation<T>(
@@ -56,11 +107,21 @@ class JobService {
         );
   }
 
-  // Get job by ID
+  // Get job by ID (cached)
   Future<Map<String, dynamic>?> getJobById(String jobId) async {
+    if (jobId.isEmpty) return null;
+
+    // Check cache first
+    if (_jobCache.containsKey(jobId)) {
+      return _deepCopyMap(_jobCache[jobId]!);
+    }
+
     final doc = await _firestore.collection('jobs').doc(jobId).get();
     if (!doc.exists) return null;
-    return {...doc.data()!, 'id': doc.id};
+
+    final jobData = {...doc.data()!, 'id': doc.id};
+    _jobCache[jobId] = _deepCopyMap(jobData);
+    return jobData;
   }
 
   // Get job stream by ID
@@ -256,6 +317,7 @@ class JobService {
 
   // Update job status
   Future<void> updateJobStatus(String jobId, String status) async {
+    invalidateJobCache(jobId);
     await _firestore.collection('jobs').doc(jobId).update({
       'status': status,
       'updatedAt': FieldValue.serverTimestamp(),
@@ -354,6 +416,7 @@ class JobService {
     });
 
     await batch.commit();
+    invalidateJobCache(jobId);
   }
 
   // "Slide to Accept" - Direct Claim logic
@@ -378,6 +441,7 @@ class JobService {
           'assignedAt': FieldValue.serverTimestamp(),
         });
       });
+      invalidateJobCache(jobId);
     });
   }
 
@@ -462,6 +526,7 @@ class JobService {
       }
 
       await batch.commit();
+      invalidateJobCache(jobId);
 
       // Notify the helper
       await _notificationService.createNotification(
@@ -503,6 +568,7 @@ class JobService {
         'status': 'cancelled',
         'cancelledAt': FieldValue.serverTimestamp(),
       });
+      invalidateJobCache(jobId);
     });
   }
 
@@ -530,6 +596,7 @@ class JobService {
 
   // Start job (Transition to in_progress)
   Future<void> startJob(String jobId) async {
+    invalidateJobCache(jobId);
     await _firestore.collection('jobs').doc(jobId).update({
       'status': 'in_progress',
       'startedAt': FieldValue.serverTimestamp(),
@@ -604,6 +671,7 @@ class JobService {
         });
       });
 
+      invalidateJobCache(jobId);
       return true;
     });
   }
@@ -666,6 +734,7 @@ class JobService {
         });
       });
 
+      invalidateJobCache(jobId);
       return true;
     });
   }

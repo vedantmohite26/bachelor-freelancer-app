@@ -36,6 +36,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   Stream<Budget?>? _budgetStream;
   Stream<List<FinanceTransaction>>? _transactionsStream;
+  String? _cachedUserId;
 
   final List<String> _expenseCategories = [
     'Food',
@@ -73,13 +74,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final user = Provider.of<AuthService>(context, listen: false).user;
-    if (user != null) {
-      final financeService = Provider.of<FinanceService>(
-        context,
-        listen: false,
-      );
-      _budgetStream = financeService.getBudgetStream(user.uid);
-      _transactionsStream = financeService.getTransactionsStream(user.uid);
+    final currentUid = user?.uid;
+    // Cache stream instances to avoid re-subscribing on every widget rebuild or keystroke
+    if (currentUid != _cachedUserId) {
+      _cachedUserId = currentUid;
+      if (currentUid != null) {
+        final financeService = Provider.of<FinanceService>(
+          context,
+          listen: false,
+        );
+        _budgetStream = financeService.getBudgetStream(currentUid);
+        _transactionsStream = financeService.getTransactionsStream(currentUid);
+      } else {
+        _budgetStream = null;
+        _transactionsStream = null;
+      }
     }
   }
 

@@ -1,7 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+class _RatingCacheEntry {
+  final Map<int, int> distribution;
+  final DateTime timestamp;
+
+  _RatingCacheEntry(this.distribution, this.timestamp);
+
+  bool isExpired(Duration ttl) =>
+      DateTime.now().difference(timestamp) > ttl;
+}
+
 class RatingService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  // In-memory cache for helper rating distributions with TTL and max size bound
+  static const Duration _cacheTtl = Duration(minutes: 5);
+  static const int _maxCacheSize = 50;
+  final Map<String, _RatingCacheEntry> _ratingDistributionCache = {};
+
+  RatingService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // Submit rating with validation
   Future<void> submitRating({
@@ -61,6 +79,9 @@ class RatingService {
 
     // Update helper's average rating
     await _updateHelperRating(helperId);
+
+    // Invalidate cached rating distribution for this helper AFTER update completes
+    _ratingDistributionCache.remove(helperId);
   }
 
   // Update helper's average rating
@@ -103,6 +124,12 @@ class RatingService {
 
   // Get rating distribution (for profile page)
   Future<Map<int, int>> getRatingDistribution(String helperId) async {
+    // Return cached rating distribution if valid and non-expired to avoid redundant Firestore reads
+    final cachedEntry = _ratingDistributionCache[helperId];
+    if (cachedEntry != null && !cachedEntry.isExpired(_cacheTtl)) {
+      return Map<int, int>.from(cachedEntry.distribution);
+    }
+
     final ratingsSnapshot = await _firestore
         .collection('ratings')
         .where('helperId', isEqualTo: helperId)
@@ -115,7 +142,16 @@ class RatingService {
       distribution[rating] = (distribution[rating] ?? 0) + 1;
     }
 
-    return distribution;
+    // Bound cache size to prevent memory leaks
+    if (_ratingDistributionCache.length >= _maxCacheSize) {
+      _ratingDistributionCache.remove(_ratingDistributionCache.keys.first);
+    }
+
+    _ratingDistributionCache[helperId] = _RatingCacheEntry(
+      Map<int, int>.from(distribution),
+      DateTime.now(),
+    );
+    return Map<int, int>.from(distribution);
   }
 
   // Check if user already rated this job

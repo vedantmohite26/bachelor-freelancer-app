@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LeaderboardService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  // Constructor with optional FirebaseFirestore dependency injection
+  LeaderboardService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // Get leaderboard (top helpers by points)
   Stream<List<Map<String, dynamic>>> getLeaderboard({int limit = 50}) {

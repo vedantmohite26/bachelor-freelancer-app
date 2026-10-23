@@ -16,7 +16,7 @@ import 'package:freelancer/core/services/rating_service.dart';
 import 'package:freelancer/features/jobs/screens/helper_completed_jobs_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class HelperProfileScreen extends StatelessWidget {
+class HelperProfileScreen extends StatefulWidget {
   final String helperId;
   final bool bypassPrivacy;
 
@@ -27,17 +27,66 @@ class HelperProfileScreen extends StatelessWidget {
   });
 
   @override
+  State<HelperProfileScreen> createState() => _HelperProfileScreenState();
+}
+
+class _HelperProfileScreenState extends State<HelperProfileScreen> {
+  // Performance: Cache stream instances to prevent StreamBuilder re-subscriptions on rebuilds
+  Stream<Map<String, dynamic>?>? _userProfileStream;
+  Stream<FriendStatus>? _friendStatusStream;
+  Stream<List<Map<String, dynamic>>>? _helperRatingsStream;
+  String? _cachedHelperId;
+  String? _cachedCurrentUserId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final currentUserId = authService.user?.uid ?? '';
+
+    if (_cachedHelperId != widget.helperId ||
+        _cachedCurrentUserId != currentUserId ||
+        _userProfileStream == null) {
+      _initStreams();
+    }
+  }
+
+  @override
+  void didUpdateWidget(HelperProfileScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.helperId != widget.helperId) {
+      _initStreams();
+    }
+  }
+
+  void _initStreams() {
+    final userService = Provider.of<UserService>(context, listen: false);
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final friendService = Provider.of<FriendService>(context, listen: false);
+    final ratingService = Provider.of<RatingService>(context, listen: false);
+    final currentUserId = authService.user?.uid ?? '';
+
+    _cachedHelperId = widget.helperId;
+    _cachedCurrentUserId = currentUserId;
+    _userProfileStream = userService.getUserProfileStream(widget.helperId);
+    _friendStatusStream = friendService.getFriendStatusStream(
+      currentUserId,
+      widget.helperId,
+    );
+    _helperRatingsStream = ratingService.getHelperRatings(widget.helperId);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final userService = Provider.of<UserService>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
-    final ratingService = Provider.of<RatingService>(context, listen: false);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text(
-          authService.user?.uid == helperId ? "My Profile" : "Helper Profile",
+          authService.user?.uid == widget.helperId ? "My Profile" : "Helper Profile",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.onSurface,
@@ -48,7 +97,7 @@ class HelperProfileScreen extends StatelessWidget {
         elevation: 0,
         foregroundColor: colorScheme.onSurface,
         actions: [
-          if (authService.user?.uid == helperId)
+          if (authService.user?.uid == widget.helperId)
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () {
@@ -61,7 +110,7 @@ class HelperProfileScreen extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<Map<String, dynamic>?>(
-        stream: userService.getUserProfileStream(helperId),
+        stream: _userProfileStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -72,14 +121,14 @@ class HelperProfileScreen extends StatelessWidget {
           }
 
           final helper = snapshot.data!;
-          final isMe = authService.user?.uid == helperId;
+          final isMe = authService.user?.uid == widget.helperId;
 
           final safetySettings =
               helper['safetySettings'] as Map<String, dynamic>?;
           final isProfileVisible = safetySettings?['profileVisibility'] ?? true;
 
           // Privacy Check
-          if (!isProfileVisible && !bypassPrivacy && !isMe) {
+          if (!isProfileVisible && !widget.bypassPrivacy && !isMe) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -149,7 +198,7 @@ class HelperProfileScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (authService.user?.uid == helperId)
+                if (authService.user?.uid == widget.helperId)
                   Padding(
                     padding: EdgeInsets.only(top: 12.h),
                     child: ElevatedButton.icon(
@@ -170,7 +219,7 @@ class HelperProfileScreen extends StatelessWidget {
                                 ),
                                 SizedBox(height: 16.h),
                                 QrImageView(
-                                  data: helperId,
+                                  data: widget.helperId,
                                   version: QrVersions.auto,
                                   size: 200.0.sp,
                                   backgroundColor: Colors.white,
@@ -240,7 +289,7 @@ class HelperProfileScreen extends StatelessWidget {
                     ),
                   ),
                 if (helper['phoneNumber'] != null &&
-                    authService.user?.uid == helperId)
+                    authService.user?.uid == widget.helperId)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -255,7 +304,7 @@ class HelperProfileScreen extends StatelessWidget {
                 SizedBox(height: 24.h),
 
                 // 2. Action Buttons
-                if (authService.user?.uid == helperId)
+                if (authService.user?.uid == widget.helperId)
                   Row(
                     children: [
                       Expanded(
@@ -308,10 +357,7 @@ class HelperProfileScreen extends StatelessWidget {
                   Consumer<FriendService>(
                     builder: (context, friendService, _) {
                       return StreamBuilder<FriendStatus>(
-                        stream: friendService.getFriendStatusStream(
-                          authService.user?.uid ?? '',
-                          helperId,
-                        ),
+                        stream: _friendStatusStream,
                         builder: (context, snapshot) {
                           final status = snapshot.data ?? FriendStatus.none;
 
@@ -338,13 +384,13 @@ class HelperProfileScreen extends StatelessWidget {
                                     if (status == FriendStatus.none) {
                                       await friendService.sendFriendRequest(
                                         currentUser.uid,
-                                        helperId,
+                                        widget.helperId,
                                       );
                                     } else if (status ==
                                         FriendStatus.pendingSent) {
                                       await friendService.cancelFriendRequest(
                                         currentUser.uid,
-                                        helperId,
+                                        widget.helperId,
                                       );
                                     } else if (status ==
                                         FriendStatus.pendingReceived) {
@@ -400,7 +446,7 @@ class HelperProfileScreen extends StatelessWidget {
                                       try {
                                         final chatId = await chatService
                                             .createChat(
-                                              helperId,
+                                              widget.helperId,
                                               currentUser.uid,
                                             );
                                         if (context.mounted) {
@@ -450,11 +496,12 @@ class HelperProfileScreen extends StatelessWidget {
                 SizedBox(height: 24.h),
 
                 // 3. Online Status Card
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 12.h,
-                  ),
+                RepaintBoundary(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 12.h,
+                    ),
                   decoration: BoxDecoration(
                     color: colorScheme.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(16.w),
@@ -526,12 +573,13 @@ class HelperProfileScreen extends StatelessWidget {
                             scanning = false;
                           }
 
-                          await userService.updateOnlineStatus(helperId, value);
+                          await userService.updateOnlineStatus(widget.helperId, value);
                         },
                         activeThumbColor: const Color(0xFF10B981),
                       ),
                     ],
                   ),
+                ),
                 ),
 
                 SizedBox(height: 24.h),
@@ -550,98 +598,100 @@ class HelperProfileScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 12.h),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(20.w),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16.w),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "TOTAL EARNINGS",
-                          style: TextStyle(
-                            color: colorScheme.onSurfaceVariant,
-                            fontSize: 12.sp,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Text(
-                          "₹${walletBalance.toStringAsFixed(2)}",
-                          style: TextStyle(
-                            fontSize: 32.sp,
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.trending_up,
-                              color: const Color(0xFF10B981),
-                              size: 16.sp,
+                  RepaintBoundary(
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(20.w),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(16.w),
+                        border: Border.all(color: colorScheme.outlineVariant),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "TOTAL EARNINGS",
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
+                              fontSize: 12.sp,
+                              letterSpacing: 1,
                             ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              "+₹50.00 this week",
-                              style: TextStyle(
+                          ),
+                          SizedBox(height: 8.h),
+                          Text(
+                            "₹${walletBalance.toStringAsFixed(2)}",
+                            style: TextStyle(
+                              fontSize: 32.sp,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.trending_up,
                                 color: const Color(0xFF10B981),
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w500,
+                                size: 16.sp,
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 24.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "$gigsCompleted",
-                                  style: TextStyle(
-                                    fontSize: 24.sp,
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.onSurface,
-                                  ),
+                              SizedBox(width: 4.w),
+                              Text(
+                                "+₹50.00 this week",
+                                style: TextStyle(
+                                  color: const Color(0xFF10B981),
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                Text(
-                                  "Gigs Completed",
-                                  style: TextStyle(
-                                    color: colorScheme.onSurfaceVariant,
-                                    fontSize: 12.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        const HelperCompletedJobsScreen(),
-                                  ),
-                                );
-                              },
-                              child: Row(
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 24.h),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text("View History"),
-                                  SizedBox(width: 4.w),
-                                  Icon(Icons.arrow_forward, size: 16.sp),
+                                  Text(
+                                    "$gigsCompleted",
+                                    style: TextStyle(
+                                      fontSize: 24.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Gigs Completed",
+                                    style: TextStyle(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontSize: 12.sp,
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const HelperCompletedJobsScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Row(
+                                  children: [
+                                    const Text("View History"),
+                                    SizedBox(width: 4.w),
+                                    Icon(Icons.arrow_forward, size: 16.sp),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 24.h),
@@ -716,15 +766,16 @@ class HelperProfileScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 12.h),
-                Container(
-                  padding: EdgeInsets.all(20.w),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16.w),
-                    border: Border.all(color: colorScheme.outlineVariant),
-                  ),
-                  child: StreamBuilder<List<Map<String, dynamic>>>(
-                    stream: ratingService.getHelperRatings(helperId),
+                RepaintBoundary(
+                  child: Container(
+                    padding: EdgeInsets.all(20.w),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(16.w),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                    ),
+                    child: StreamBuilder<List<Map<String, dynamic>>>(
+                    stream: _helperRatingsStream,
                     builder: (context, ratingsSnapshot) {
                       final reviews = ratingsSnapshot.data ?? [];
                       final count = reviews.length;
@@ -807,7 +858,7 @@ class HelperProfileScreen extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => HelperReviewsScreen(
-                                      helperId: helperId,
+                                      helperId: widget.helperId,
                                       averageRating: avg,
                                       reviewCount: count,
                                     ),
@@ -830,6 +881,7 @@ class HelperProfileScreen extends StatelessWidget {
                       );
                     },
                   ),
+                ),
                 ),
                 SizedBox(height: 40.h),
               ],

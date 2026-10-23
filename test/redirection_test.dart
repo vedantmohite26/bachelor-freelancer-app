@@ -20,6 +20,7 @@ import 'package:freelancer/core/services/friend_service.dart';
 import 'package:freelancer/core/services/category_service.dart';
 import 'package:freelancer/core/services/rewards_service.dart';
 import 'package:freelancer/core/services/payment_service.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 
 // Manual Mocks
 
@@ -418,7 +419,14 @@ void main() {
         Provider<RewardsService>.value(value: mockRewardsService),
         ChangeNotifierProvider<PaymentService>.value(value: mockPaymentService),
       ],
-      child: const MaterialApp(home: LoginScreen()),
+      child: MaterialApp(
+        home: Builder(
+          builder: (context) {
+            Responsive.init(context);
+            return const LoginScreen();
+          },
+        ),
+      ),
     );
   }
 
@@ -484,7 +492,9 @@ void main() {
 
       // Tap "I want to work"
       debugPrint('Tapping "I want to work"');
-      await tester.tap(find.text('I want to work'));
+      final workButton = find.text('I want to work');
+      await tester.ensureVisible(workButton);
+      await tester.tap(workButton);
       await tester.pumpAndSettle();
 
       // Fill in email and password

@@ -12,8 +12,29 @@ import 'package:freelancer/features/ratings/widgets/rating_summary_card.dart';
 import 'package:freelancer/features/jobs/screens/helper_completed_jobs_screen.dart';
 import 'package:freelancer/core/widgets/shimmer_widgets.dart';
 
-class MyProfileScreen extends StatelessWidget {
+class MyProfileScreen extends StatefulWidget {
   const MyProfileScreen({super.key});
+
+  @override
+  State<MyProfileScreen> createState() => _MyProfileScreenState();
+}
+
+class _MyProfileScreenState extends State<MyProfileScreen> {
+  // Performance: Cache stream instance to prevent StreamBuilder re-subscriptions on rebuilds
+  Stream<Map<String, dynamic>?>? _userProfileStream;
+  String? _cachedUserId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final userService = Provider.of<UserService>(context, listen: false);
+    final userId = authService.user?.uid ?? '';
+    if (_cachedUserId != userId || _userProfileStream == null) {
+      _cachedUserId = userId;
+      _userProfileStream = userService.getUserProfileStream(userId);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +71,7 @@ class MyProfileScreen extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<Map<String, dynamic>?>(
-        stream: userService.getUserProfileStream(userId),
+        stream: _userProfileStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const ShimmerProfile();
@@ -78,8 +99,9 @@ class MyProfileScreen extends StatelessWidget {
             child: Column(
               children: [
                 // Header Card
-                Container(
-                  color: colorScheme.surface,
+                RepaintBoundary(
+                  child: Container(
+                    color: colorScheme.surface,
                   padding: EdgeInsets.all(24.w),
                   child: Column(
                     children: [
@@ -307,13 +329,15 @@ class MyProfileScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                ),
 
                 SizedBox(height: 16.h),
 
                 // Stats Grid
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Row(
+                RepaintBoundary(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Row(
                     children: [
                       Expanded(
                         child: _StatCard(
@@ -346,18 +370,20 @@ class MyProfileScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                ),
 
                 SizedBox(height: 16.h),
 
                 // XP Progress Bar
-                _XpProgressCard(totalPoints: totalPoints),
+                RepaintBoundary(child: _XpProgressCard(totalPoints: totalPoints)),
 
                 SizedBox(height: 16.h),
 
                 // Skills
                 if (skills.isNotEmpty) ...[
-                  Container(
-                    width: double.infinity,
+                  RepaintBoundary(
+                    child: Container(
+                      width: double.infinity,
                     margin: EdgeInsets.symmetric(horizontal: 20.w),
                     padding: EdgeInsets.all(20.w),
                     decoration: BoxDecoration(
@@ -405,12 +431,14 @@ class MyProfileScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  ),
                   SizedBox(height: 16.h),
                 ],
 
                 // Reviews Section
-                Container(
-                  width: double.infinity,
+                RepaintBoundary(
+                  child: Container(
+                    width: double.infinity,
                   margin: EdgeInsets.symmetric(horizontal: 20.w),
                   padding: EdgeInsets.all(20.w),
                   decoration: BoxDecoration(
@@ -465,6 +493,7 @@ class MyProfileScreen extends StatelessWidget {
                       ],
                     ],
                   ),
+                ),
                 ),
 
                 SizedBox(height: 24.h),

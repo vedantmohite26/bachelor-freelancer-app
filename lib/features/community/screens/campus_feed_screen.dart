@@ -11,8 +11,29 @@ import 'package:freelancer/core/widgets/cached_network_avatar.dart';
 import 'package:freelancer/features/community/screens/leaderboard_screen.dart';
 import 'package:freelancer/features/profile/screens/helper_profile_screen.dart';
 
-class CampusFeedScreen extends StatelessWidget {
+class CampusFeedScreen extends StatefulWidget {
   const CampusFeedScreen({super.key});
+
+  @override
+  State<CampusFeedScreen> createState() => _CampusFeedScreenState();
+}
+
+class _CampusFeedScreenState extends State<CampusFeedScreen> {
+  // Optimization: Cache stream instance in state to avoid re-subscribing
+  // to Firestore on every parent rebuild.
+  Stream<List<Map<String, dynamic>>>? _postsStream;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_postsStream == null) {
+      final communityService = Provider.of<CommunityService>(
+        context,
+        listen: false,
+      );
+      _postsStream = communityService.getPostsStream();
+    }
+  }
 
   void _showCreatePostDialog(BuildContext context) {
     showDialog(
@@ -21,9 +42,22 @@ class CampusFeedScreen extends StatelessWidget {
     );
   }
 
+  void _showSearchDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => const _SearchUserDialog(),
+    );
+  }
+
+  String _formatTimeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inMinutes < 60) return "${diff.inMinutes}m ago";
+    if (diff.inHours < 24) return "${diff.inHours}h ago";
+    return "${diff.inDays}d ago";
+  }
+
   @override
   Widget build(BuildContext context) {
-    final communityService = Provider.of<CommunityService>(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -71,7 +105,7 @@ class CampusFeedScreen extends StatelessWidget {
         child: const Icon(Icons.add),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: communityService.getPostsStream(),
+        stream: _postsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -108,35 +142,24 @@ class CampusFeedScreen extends StatelessWidget {
               final timestamp =
                   (post['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now();
 
-              return _PostCard(
-                key: ValueKey(post['id']),
-                authorName: post['authorName'] ?? 'Student',
-                timeAgo: _formatTimeAgo(timestamp),
-                content: post['content'] ?? '',
-                isOfficial: post['isOfficial'] ?? false,
-                likes: post['likes'] ?? 0,
-                comments: post['comments'] ?? 0,
-                postId: post['id'],
-                authorId: post['authorId'],
+              // Optimization: RepaintBoundary isolates card repaints during scrolling or like toggles
+              return RepaintBoundary(
+                child: _PostCard(
+                  key: ValueKey(post['id']),
+                  authorName: post['authorName'] ?? 'Student',
+                  timeAgo: _formatTimeAgo(timestamp),
+                  content: post['content'] ?? '',
+                  isOfficial: post['isOfficial'] ?? false,
+                  likes: post['likes'] ?? 0,
+                  comments: post['comments'] ?? 0,
+                  postId: post['id'],
+                  authorId: post['authorId'],
+                ),
               );
             },
           );
         },
       ),
-    );
-  }
-
-  String _formatTimeAgo(DateTime date) {
-    final diff = DateTime.now().difference(date);
-    if (diff.inMinutes < 60) return "${diff.inMinutes}m ago";
-    if (diff.inHours < 24) return "${diff.inHours}h ago";
-    return "${diff.inDays}d ago";
-  }
-
-  void _showSearchDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => const _SearchUserDialog(),
     );
   }
 }

@@ -20,6 +20,7 @@ import 'package:freelancer/core/services/friend_service.dart';
 import 'package:freelancer/core/services/category_service.dart';
 import 'package:freelancer/core/services/rewards_service.dart';
 import 'package:freelancer/core/services/payment_service.dart';
+import 'package:freelancer/core/utils/responsive.dart';
 
 // Manual Mocks
 
@@ -418,7 +419,13 @@ void main() {
         Provider<RewardsService>.value(value: mockRewardsService),
         ChangeNotifierProvider<PaymentService>.value(value: mockPaymentService),
       ],
-      child: const MaterialApp(home: LoginScreen()),
+      child: MaterialApp(
+        builder: (context, child) {
+          Responsive.init(context);
+          return child!;
+        },
+        home: const LoginScreen(),
+      ),
     );
   }
 

@@ -1,9 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LeaderboardService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  LeaderboardService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // Get leaderboard (top helpers by points)
+  // OPTIMIZATION: Avoid intermediate MapEntry list allocation from snapshot.docs.asMap().entries.map(...)
   Stream<List<Map<String, dynamic>>> getLeaderboard({int limit = 50}) {
     return _firestore
         .collection('users')
@@ -11,13 +15,15 @@ class LeaderboardService {
         .orderBy('points', descending: true)
         .limit(limit)
         .snapshots()
-        .map(
-          (snapshot) => snapshot.docs.asMap().entries.map((entry) {
-            final index = entry.key;
-            final doc = entry.value;
-            return {...doc.data(), 'id': doc.id, 'rank': index + 1};
-          }).toList(),
-        );
+        .map((snapshot) {
+          final docs = snapshot.docs;
+          final result = <Map<String, dynamic>>[];
+          for (var i = 0; i < docs.length; i++) {
+            final doc = docs[i];
+            result.add({...doc.data(), 'id': doc.id, 'rank': i + 1});
+          }
+          return result;
+        });
   }
 
   // Get user's rank

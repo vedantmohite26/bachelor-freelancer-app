@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -5,8 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:freelancer/core/services/notification_service.dart';
 
 class PaymentService extends ChangeNotifier {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final NotificationService _notificationService = NotificationService();
+  final FirebaseFirestore _db;
+  final NotificationService _notificationService;
+
+  PaymentService({
+    FirebaseFirestore? firestore,
+    NotificationService? notificationService,
+  })  : _db = firestore ?? FirebaseFirestore.instance,
+        _notificationService = notificationService ?? NotificationService();
 
   /// Generate a simulated UPI reference ID
   String _generateUpiRefId() {
@@ -231,20 +238,53 @@ class PaymentService extends ChangeNotifier {
               .toList(),
         );
 
-    // Merge both streams
-    return earnedStream.asyncExpand((earned) {
-      return spentStream.map((spent) {
-        final all = [...earned, ...spent];
-        // Sort by createdAt descending
-        all.sort((a, b) {
-          final aTime =
-              (a['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
-          final bTime =
-              (b['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
-          return bTime.compareTo(aTime);
-        });
-        return all;
+    // BOLT OPTIMIZATION: Combine earned and spent streams using a single StreamController
+    // rather than using `asyncExpand` which re-subscribes to `spentStream` on every `earnedStream` event.
+    // This avoids redundant Firestore snapshot listener allocations and re-fetching from network.
+    late StreamController<List<Map<String, dynamic>>> controller;
+    StreamSubscription<List<Map<String, dynamic>>>? earnedSub;
+    StreamSubscription<List<Map<String, dynamic>>>? spentSub;
+
+    List<Map<String, dynamic>> latestEarned = [];
+    List<Map<String, dynamic>> latestSpent = [];
+
+    void emitCombined() {
+      if (controller.isClosed) return;
+      final all = [...latestEarned, ...latestSpent];
+      // Sort by createdAt descending
+      all.sort((a, b) {
+        final aTime =
+            (a['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
+        final bTime =
+            (b['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ?? 0;
+        return bTime.compareTo(aTime);
       });
-    });
+      controller.add(all);
+    }
+
+    controller = StreamController<List<Map<String, dynamic>>>(
+      onListen: () {
+        earnedSub = earnedStream.listen(
+          (earned) {
+            latestEarned = earned;
+            emitCombined();
+          },
+          onError: controller.addError,
+        );
+        spentSub = spentStream.listen(
+          (spent) {
+            latestSpent = spent;
+            emitCombined();
+          },
+          onError: controller.addError,
+        );
+      },
+      onCancel: () async {
+        await earnedSub?.cancel();
+        await spentSub?.cancel();
+      },
+    );
+
+    return controller.stream;
   }
 }

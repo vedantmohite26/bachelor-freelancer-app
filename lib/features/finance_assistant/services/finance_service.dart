@@ -7,9 +7,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class FinanceService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
 
-  FinanceService();
+  FinanceService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // --- Transaction Management ---
 

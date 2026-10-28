@@ -1,0 +1,3 @@
+## 2026-06-22 - Single-pass transaction aggregation on dashboard screens
+**Learning:** In Flutter dashboard screens displaying complex financial or transaction metrics across multiple sub-widgets, performing repeated `.where().fold()` filtering passes and date comparisons in separate widget builder methods causes severe O(K * N) overhead on every stream update and widget rebuild. Pre-computing a single summary data structure (`_TransactionSummary`) in a single linear pass reduces traversals from 14+ down to 1 while eliminating redundant iterable allocations.
+**Action:** When building dashboard widgets with multiple metric summary widgets over the same dataset, consolidate calculations into a single $O(N)$ pass object per snapshot before passing data down to sub-widgets.

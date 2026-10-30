@@ -1,0 +1,3 @@
+## 2026-06-21 - Consolidating Calculations & Stream Caching in Job Feed
+**Learning:** In Flutter's `StreamBuilder`, instantiating streams inline inside `build()` tears down and re-subscribes to stream listeners on every rebuild. Additionally, calculating trigonometric functions like `Geolocator.distanceBetween` both in filtering and again inside `ListView.separated` item builders causes repeated recalculations on every scroll frame.
+**Action:** Cache stream instances in `didChangeDependencies` and consolidate filtering & formatting calculations into a single O(N) pass per stream update before passing pre-computed data to item builders.

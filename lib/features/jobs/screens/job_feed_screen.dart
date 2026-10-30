@@ -17,12 +17,24 @@ class JobFeedScreen extends StatefulWidget {
   State<JobFeedScreen> createState() => _JobFeedScreenState();
 }
 
+class _JobWithDistance {
+  final Map<String, dynamic> job;
+  final String distanceDisplay;
+
+  const _JobWithDistance({
+    required this.job,
+    required this.distanceDisplay,
+  });
+}
+
 class _JobFeedScreenState extends State<JobFeedScreen> {
   static const double _maxRadiusKm = 10.0; // 10 km radius filter
   bool _isMapView = false;
   Position? _currentPosition;
   Set<String> _appliedJobIds = {};
   StreamSubscription? _applicationsSubscription;
+  Stream<List<Map<String, dynamic>>>? _jobsStream;
+  String? _cachedUserId;
 
   @override
   void initState() {
@@ -31,6 +43,19 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _subscribeToApplications();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final authService = Provider.of<AuthService>(context);
+    final currentUserId = authService.user?.uid;
+    // Cache stream instance to prevent re-subscribing on widget rebuilds
+    if (_jobsStream == null || _cachedUserId != currentUserId) {
+      _cachedUserId = currentUserId;
+      _jobsStream = Provider.of<FirestoreService>(context, listen: false)
+          .getJobsStream(currentUserId: currentUserId);
+    }
   }
 
   void _subscribeToApplications() {
@@ -108,9 +133,6 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
         ? colorScheme.surfaceContainerHighest
         : colorScheme.surfaceContainerLow;
     final primaryBlue = colorScheme.primary;
-
-    final authService = Provider.of<AuthService>(context);
-    final currentUserId = authService.user?.uid;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -225,9 +247,7 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
           ),
           Expanded(
             child: StreamBuilder<List<Map<String, dynamic>>>(
-              stream: Provider.of<FirestoreService>(
-                context,
-              ).getJobsStream(currentUserId: currentUserId),
+              stream: _jobsStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const ShimmerListScreen();
@@ -242,33 +262,52 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
                 }
                 final allJobs = snapshot.data ?? [];
 
-                // Filter jobs within 10km radius
-                final jobs = _currentPosition != null
-                    ? allJobs.where((job) {
-                        if (job['latitude'] == null ||
-                            job['longitude'] == null) {
-                          return true; // Show jobs without location data
-                        }
-                        try {
-                          final distMeters = Geolocator.distanceBetween(
-                            _currentPosition!.latitude,
-                            _currentPosition!.longitude,
-                            job['latitude'],
-                            job['longitude'],
-                          );
-                          return distMeters <= _maxRadiusKm * 1000;
-                        } catch (_) {
-                          return true;
-                        }
-                      }).toList()
-                    : allJobs;
+                // Performance optimization: Consolidate distance calculation & string formatting
+                // into a single pass per snapshot instead of repeating trigonometric math on every scroll frame.
+                final List<_JobWithDistance> formattedJobs = [];
+                for (final job in allJobs) {
+                  String distanceDisplay = "...";
+                  bool isWithinRadius = true;
+                  if (_currentPosition != null &&
+                      job['latitude'] != null &&
+                      job['longitude'] != null) {
+                    try {
+                      final distMeters = Geolocator.distanceBetween(
+                        _currentPosition!.latitude,
+                        _currentPosition!.longitude,
+                        job['latitude'],
+                        job['longitude'],
+                      );
+                      if (distMeters > _maxRadiusKm * 1000) {
+                        isWithinRadius = false;
+                      } else if (distMeters < 1000) {
+                        distanceDisplay = "${distMeters.toStringAsFixed(0)} m";
+                      } else {
+                        distanceDisplay =
+                            "${(distMeters / 1000).toStringAsFixed(1)} km";
+                      }
+                    } catch (_) {}
+                  }
+                  if (isWithinRadius) {
+                    formattedJobs.add(
+                      _JobWithDistance(
+                        job: job,
+                        distanceDisplay: distanceDisplay,
+                      ),
+                    );
+                  }
+                }
+
                 if (_isMapView) {
-                  return MapScreen(onToggleView: _toggleView, jobs: jobs);
+                  return MapScreen(
+                    onToggleView: _toggleView,
+                    jobs: formattedJobs.map((e) => e.job).toList(),
+                  );
                 }
                 return Column(
                   children: [
                     SizedBox(height: 16.h),
-                    if (jobs.isEmpty)
+                    if (formattedJobs.isEmpty)
                       const Expanded(
                         child: Center(
                           child: Text(
@@ -284,40 +323,20 @@ class _JobFeedScreenState extends State<JobFeedScreen> {
                             horizontal: 16.w,
                             vertical: 8.h,
                           ),
-                          cacheExtent:
-                              500, // Pre-render cards off-screen for smoother scrolling
+                          cacheExtent: 500,
                           addRepaintBoundaries: true,
-                          itemCount: jobs.length,
+                          itemCount: formattedJobs.length,
                           separatorBuilder: (context, index) =>
                               SizedBox(height: 12.h),
                           itemBuilder: (context, index) {
-                            final job = jobs[index];
-                            String distanceDisplay = "...";
-                            if (_currentPosition != null &&
-                                job['latitude'] != null &&
-                                job['longitude'] != null) {
-                              try {
-                                double distMeters = Geolocator.distanceBetween(
-                                  _currentPosition!.latitude,
-                                  _currentPosition!.longitude,
-                                  job['latitude'],
-                                  job['longitude'],
-                                );
-                                if (distMeters < 1000) {
-                                  distanceDisplay =
-                                      "${distMeters.toStringAsFixed(0)} m";
-                                } else {
-                                  distanceDisplay =
-                                      "${(distMeters / 1000).toStringAsFixed(1)} km";
-                                }
-                              } catch (_) {}
-                            }
+                            final item = formattedJobs[index];
+                            final job = item.job;
                             String timeDisplay = job['time'] ?? "Flexible";
                             return JobCard(
                               key: ValueKey(job['id'] ?? 'job_$index'),
                               title: job['title'] ?? 'Untitled Job',
                               price: job['price'] ?? 0,
-                              distance: distanceDisplay,
+                              distance: item.distanceDisplay,
                               category: job['category'] ?? 'General',
                               time: timeDisplay,
                               jobData: job,

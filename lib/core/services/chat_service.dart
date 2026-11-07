@@ -4,8 +4,28 @@ import 'package:flutter/foundation.dart';
 import 'package:freelancer/core/services/notification_service.dart';
 
 class ChatService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final NotificationService _notificationService = NotificationService();
+  final FirebaseFirestore _firestore;
+  final NotificationService _notificationService;
+
+  /// In-memory cache mapping two sorted participant user IDs to their chatId.
+  /// Eliminates redundant Firestore queries across the app when opening chats.
+  final Map<String, String> _chatIdCache = {};
+
+  ChatService({
+    FirebaseFirestore? firestore,
+    NotificationService? notificationService,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _notificationService = notificationService ?? NotificationService();
+
+  /// Generates a normalized cache key for two user IDs regardless of argument order.
+  static String _participantKey(String userA, String userB) {
+    return userA.compareTo(userB) < 0 ? '$userA:$userB' : '$userB:$userA';
+  }
+
+  /// Clears in-memory chat cache (useful for testing or sign-out).
+  void clearCache() {
+    _chatIdCache.clear();
+  }
 
   // Get stream of chats for a user
   Stream<List<Map<String, dynamic>>> getUserChats(String userId) {
@@ -17,18 +37,29 @@ class ChatService {
           final chats = snapshot.docs.map((doc) {
             final data = doc.data();
             data['id'] = doc.id;
+
+            // Cache 2-participant chat IDs to accelerate subsequent createChat calls
+            final participants = data['participants'];
+            if (participants is List && participants.length == 2) {
+              final p0 = participants[0]?.toString();
+              final p1 = participants[1]?.toString();
+              if (p0 != null && p1 != null && p0.isNotEmpty && p1.isNotEmpty) {
+                _chatIdCache[_participantKey(p0, p1)] = doc.id;
+              }
+            }
+
             return data;
           }).toList();
 
-          // In-memory sort by lastMessageTime descending
+          // Optimization: Directly compare Firestore Timestamps to eliminate
+          // repeated DateTime allocations inside O(N log N) comparator iterations.
           chats.sort((a, b) {
-            final aTime =
-                (a['lastMessageTime'] as Timestamp?)?.toDate() ??
-                DateTime.fromMillisecondsSinceEpoch(0);
-            final bTime =
-                (b['lastMessageTime'] as Timestamp?)?.toDate() ??
-                DateTime.fromMillisecondsSinceEpoch(0);
-            return bTime.compareTo(aTime);
+            final aTs = a['lastMessageTime'] as Timestamp?;
+            final bTs = b['lastMessageTime'] as Timestamp?;
+            if (aTs == null && bTs == null) return 0;
+            if (aTs == null) return 1;
+            if (bTs == null) return -1;
+            return bTs.compareTo(aTs);
           });
 
           return chats;
@@ -131,8 +162,13 @@ class ChatService {
       }
     }
 
-    // Check if chat exists (This is a simplified check, optimized for cost)
-    // In production, might store chatIds in user profile or use a composite ID
+    final cacheKey = _participantKey(currentUserId, otherUserId);
+    final cachedChatId = _chatIdCache[cacheKey];
+    if (cachedChatId != null) {
+      return cachedChatId;
+    }
+
+    // Check if chat exists (optimized for cost and read count)
     final query = await _firestore
         .collection('chats')
         .where('participants', arrayContains: currentUserId)
@@ -141,6 +177,7 @@ class ChatService {
     for (var doc in query.docs) {
       final participants = List<String>.from(doc.data()['participants']);
       if (participants.contains(otherUserId)) {
+        _chatIdCache[cacheKey] = doc.id;
         return doc.id;
       }
     }
@@ -153,6 +190,7 @@ class ChatService {
       'lastMessageTime': FieldValue.serverTimestamp(),
     });
 
+    _chatIdCache[cacheKey] = doc.id;
     return doc.id;
   }
 }

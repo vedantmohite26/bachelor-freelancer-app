@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirestoreService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _db;
+
+  FirestoreService({FirebaseFirestore? firestore})
+      : _db = firestore ?? FirebaseFirestore.instance;
 
   // Collection References
   CollectionReference get _users => _db.collection('users');
@@ -18,20 +21,20 @@ class FirestoreService {
         .limit(20)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs
-              .map((doc) {
-                final data = doc.data() as Map<String, dynamic>;
-                data['id'] = doc.id;
-                return data;
-              })
-              .where((job) {
-                // Filter out jobs posted by the current user
-                if (currentUserId != null && job['posterId'] == currentUserId) {
-                  return false;
-                }
-                return true;
-              })
-              .toList();
+          // Single-pass list population avoiding intermediate iterable allocations
+          // (.map().where().toList() creates multiple lazy wrappers and intermediate objects).
+          final List<Map<String, dynamic>> results = [];
+          for (final doc in snapshot.docs) {
+            final data = doc.data() as Map<String, dynamic>;
+            if (currentUserId != null && data['posterId'] == currentUserId) {
+              continue;
+            }
+            results.add({
+              ...data,
+              'id': doc.id,
+            });
+          }
+          return results;
         });
   }
 
